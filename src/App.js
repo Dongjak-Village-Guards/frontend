@@ -1,46 +1,47 @@
 /**
  * 애플리케이션의 루트 컴포넌트
- * Layout과 페이지 라우팅
+ * React Router를 사용한 라우팅과 인증 상태 관리
  * Zustand 스토어를 사용하여 전역 상태를 관리
- * 현재 페이지에 따라 컴포넌트 렌더링
  */
 import './App.css';
+import { useEffect } from 'react';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Home from './pages/Home';
-import Like from './pages/Like';
-import Schedule from './pages/Schedule';
-import MyPage from './pages/MyPage';
-import Layout from './components/Layout';
-import useStore from './store/useStore';
+import MainPageApp from './pages/MainPageApp';
+import useUserInfo from './hooks/user/useUserInfo';
 
 function App() {
-  // Zustand 스토어에서 페이지 관련 상태와 액션 가져오기
-  const { currentPage, setCurrentPage } = useStore();
+  // useUserInfo에서 사용자 상태 가져오기
+  const { authUser, tokenExpiry, logoutUser } = useUserInfo();
 
-  /**
-   * 현재 페이지에 따른 컴포넌트 렌더링 함수
-   * @returns {JSX.Element} 현재 페이지에 해당하는 컴포넌트
-   */
-  const renderCurrentPage = () => {
-    switch (currentPage) {
-      case "home":
-        return <Home />;
-      case "favorites":
-        return <Like />; // 나중에 Favorites 컴포넌트로 교체
-      case "history":
-        return <Schedule />; // 나중에 History 컴포넌트로 교체
-      case "mypage":
-        return <MyPage />;
-      default:
-        return <Home />;
-    }
-  };
+  // 토큰 만료 체크
+  useEffect(() => {
+    const checkTokenExpiry = () => {
+      if (authUser && tokenExpiry && Date.now() > tokenExpiry) {
+        console.log('토큰 만료로 자동 로그아웃');
+        logoutUser();
+      }
+    };
+
+    // 초기 체크
+    checkTokenExpiry();
+
+    // 1분마다 체크
+    const interval = setInterval(checkTokenExpiry, 60000);
+    
+    return () => clearInterval(interval);
+  }, [authUser, tokenExpiry, logoutUser]);
 
   return (
-    <Layout currentPage={currentPage} onPageChange={setCurrentPage}>
-      {renderCurrentPage()}
-    </Layout>
+    <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
+      <Router>
+        <Routes>
+          {/* 모든 페이지를 MainPageApp으로 통합 */}
+          <Route path="/" element={<MainPageApp />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Router>
+    </GoogleOAuthProvider>
   );
 }
 
