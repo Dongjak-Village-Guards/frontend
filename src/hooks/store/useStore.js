@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { STORES_DATA } from '../apis/mock/mockShopList';
+import { STORES_DATA } from '../../apis/mock/mockShopList';
 
 /**  전역 상태 관리 스토어(Zustand) **/
 

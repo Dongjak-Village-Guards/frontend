@@ -43,6 +43,7 @@ const LoginWrapper = styled.div`
   flex-direction: row;
   justify-content: center;
   width: 100%;
+  height: 100%; // Layout크기에 맞출려고 수정
 `
 
 const Container = styled.div`
