@@ -55,7 +55,7 @@ const ImageGroup = styled.div`
 
   width: 100%;
   height: 100%;
-  border: 1px solid red; // Test용
+  //  border: 1px solid red; // Test용
 `;
 
 /* 메인 카드 이미지
