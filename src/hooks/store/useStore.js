@@ -28,6 +28,19 @@ const useStore = create((set, get) => ({
   /** 현재 정렬 옵션 ('discount' | 'price') */
   sortOption: 'discount',
   
+  // ===== 필터 기준 상태 관리 =====
+  /** 상세 필터 기준 (상세필터 페이지/바텀시트에서 수정) */
+  filters: {
+    // 선택된 업종 목록 (예: ['nail', 'hair'])
+    categories: [],
+    // 표시할 시간(가용 시간 기준). 형식: 'HH:MM' 또는 null
+    availableAt: null,
+    // 추후 확장: 거리, 평점, 최소 할인율 등
+    // distanceKm: null,
+    // ratingMin: null,
+    // discountMin: null,
+  },
+  
   // ===== 가게 데이터 상태 관리 ===== //
   /* mockShopList.js에서 가져온 가게 목록 데이터 */
   stores: STORES_DATA,
@@ -78,6 +91,19 @@ const useStore = create((set, get) => ({
   setSortOption: (option) => set({ sortOption: option }),
   
   /**
+   * 상세 필터 기준 일부 업데이트
+   * @param {Partial<typeof filters>} partial - 변경할 필드만 전달
+   */
+  setFilters: (partial) => set((state) => ({
+    filters: { ...state.filters, ...partial }
+  })),
+  
+  /** 필터 초기화 */
+  resetFilters: () => set({
+    filters: { categories: [], availableAt: null }
+  }),
+  
+  /**
    * 가게 좋아요 토글
    * @param {number} storeId - 가게 ID
    */
@@ -96,9 +122,15 @@ const useStore = create((set, get) => ({
    * @returns {Array} 정렬된 가게 목록
    */
   getSortedStores: () => {
-    const { stores, sortOption } = get();
+    const { stores, sortOption, filters } = get();
     const sortedStores = [...stores];
     
+    // 1) 필터 적용 (데모 데이터에는 시간/업종 정보가 없어 필터는 no-op)
+    // 추후 store 객체에 시간/업종 메타가 추가되면 여기서 필터링
+    // if (filters.availableAt) { ... }
+    // if (filters.categories.length) { ... }
+
+    // 2) 정렬 적용
     switch (sortOption) {
       case 'discount':
         return sortedStores.sort((a, b) => b.discountRate - a.discountRate);

@@ -6,14 +6,31 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { FiChevronDown } from "react-icons/fi";
 import { AiFillCaretDown } from "react-icons/ai";
+import BottomSheet from "../components/common/BottomSheet";
+import TimeToggle from "../components/filter/TimeToggle";
+import CategoryToggle from "../components/filter/CategoryToggle";
 import useStore from "../hooks/store/useStore";
 import useUserInfo from "../hooks/user/useUserInfo";
 import Card from "../components/shop/Card";
 import bannerImage from "../assets/images/bannerImage.png";
 
+// 30분 간격 시간 옵션 생성
+const generateTimeOptions = () => {
+  const list = [];
+  for (let h = 0; h < 24; h += 1) {
+    for (let m = 0; m < 60; m += 30) {
+      const hh = String(h).padStart(2, '0');
+      const mm = String(m).padStart(2, '0');
+      list.push(`${hh}:${mm}`);
+    }
+  }
+  return list;
+};
+
 export default function HomePage() {
   /* 토글 상태 관리 */
   const [isSortOpen, setIsSortOpen] = useState(false);
+  const [isTimeSheetOpen, setIsTimeSheetOpen] = useState(false);
   
   /* Zustand 스토어에서 필요한 상태와 액션 가져오기 */
   const { 
@@ -22,7 +39,9 @@ export default function HomePage() {
     updateCurrentTime, 
     sortOption, 
     setSortOption, 
-    getSortedStores 
+    getSortedStores,
+    filters,
+    setFilters,
   } = useStore();
 
   /* 사용자 정보에서 등록된 주소 가져오기 */
@@ -77,11 +96,14 @@ export default function HomePage() {
 
       {/* 필터/정렬 영역 (배너 아래에 위치, 스크롤 시 주소바 바로 아래에 고정) */}
       <FilterRow>
-        <TimeFilterTab active>
-          <span>{currentTime}</span>
-          <FiChevronDown size={16} />
-        </TimeFilterTab>
-        <FilterTab>업종</FilterTab>
+        <TimeToggle
+          label={filters.availableAt || currentTime}
+          active={!!filters.availableAt}
+          onClick={() => setIsTimeSheetOpen(true)}
+        />
+
+        <CategoryToggle onClick={() => {/* TODO: 업종 바텀시트 열기 */}} />
+
         <SortToggleContainer>
           <SortToggle onClick={handleToggleSort}>
             <span>{sortOption === 'discount' ? '할인율순' : '가격순'}</span>
@@ -99,6 +121,37 @@ export default function HomePage() {
           )}
         </SortToggleContainer>
       </FilterRow>
+
+      {/* 시간 선택 바텀시트 */}
+      <BottomSheet
+        open={isTimeSheetOpen}
+        title="시간 선택"
+        onClose={() => setIsTimeSheetOpen(false)}
+      >
+        <TimeList>
+          {generateTimeOptions().map((t) => (
+            <TimeItem
+              key={t}
+              onClick={() => {
+                setFilters({ availableAt: t });
+                setIsTimeSheetOpen(false);
+              }}
+              aria-label={`시간 ${t} 선택`}
+            >
+              {t}
+            </TimeItem>
+          ))}
+        </TimeList>
+        <ResetRow>
+          <ResetButton
+            type="button"
+            onClick={() => {
+              setFilters({ availableAt: null });
+              setIsTimeSheetOpen(false);
+            }}
+          >초기화</ResetButton>
+        </ResetRow>
+      </BottomSheet>
 
       {/* 매장 리스트 */}
       <StoreList>
@@ -222,46 +275,33 @@ const FilterRow = styled.div`
   will-change: transform;
 `;
 
-/* 시간 필터 탭 버튼
-(시간 표시와 드롭다운 아이콘 포함.) */
-const TimeFilterTab = styled.button`
-  width: clamp(60px, 20vw, 74px);
-  height: clamp(26px, 7vh, 30px);
-  border-radius: clamp(12px, 3vw, 16px);
-  border: 1px solid ${props => props.active ? "#DA2538" : "#CCC"};
-  background: #fff;
-  color: ${props => props.active ? "#DA2538" : "#666"};
-  font-size: clamp(13px, 4vw, 15px);
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: clamp(4px, 2vw, 8px);
-  padding: 0 clamp(4px, 2vw, 8px);
-
-  &:hover {
-    background: #f8f8f8;
-  }
+/* Time list for bottom sheet */
+const TimeList = styled.div`
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
 `;
 
-/* 필터 탭 버튼
-(시간 표시와 업종 필터를 위한 버튼) */
-const FilterTab = styled.button`
-  padding: clamp(3px, 1vw, 5px) clamp(12px, 4vw, 18px);
-  border-radius: clamp(12px, 3vw, 16px);
-  border: 1px solid ${props => props.active ? "#DA2538" : "#CCC"};
+const TimeItem = styled.button`
+  padding: 10px 8px;
+  border-radius: 8px;
+  border: 1px solid #eee;
   background: #fff;
-  color: ${props => props.active ? "#DA2538" : "#666"};
-  font-size: clamp(13px, 4vw, 15px);
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  font-size: 14px;
+`;
 
-  &:hover {
-    background: #f8f8f8;
-  }
+const ResetRow = styled.div`
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+`;
+
+const ResetButton = styled.button`
+  border: 1px solid #ddd;
+  background: #fafafa;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 13px;
 `;
 
 /* 정렬 토글 컨테이너(토글 버튼 & 드롭다운) */
