@@ -1,5 +1,5 @@
 /**
- * 메인 페이지(Home) 컴포넌트
+ * 메인 페이지(HomePage) 컴포넌트
  * 주소 표시, 배너, 필터, 가게 목록을 포함함.
  */
 import { useEffect, useState } from "react";
@@ -11,7 +11,7 @@ import useUserInfo from "../hooks/user/useUserInfo";
 import Card from "../components/shop/Card";
 import bannerImage from "../assets/images/bannerImage.png";
 
-export default function Home() {
+export default function HomePage() {
   /* 토글 상태 관리 */
   const [isSortOpen, setIsSortOpen] = useState(false);
   

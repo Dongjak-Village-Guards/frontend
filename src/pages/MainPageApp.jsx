@@ -5,12 +5,12 @@
  * 현재 페이지에 따라 컴포넌트 렌더링
  */
 import React, { useEffect } from 'react';
-import Home from './Home';
-import Like from './Like';
-import Schedule from './Schedule';
+import HomePage from './HomePage';
+import FavoritePage from './FavoritePage';
+import SchedulePage from './SchedulePage';
 import MyPage from './MyPage';
-import SearchAddress from './SearchAddress';
-import Login from './Login';
+import SearchAddressPage from './SearchAddressPage';
+import LoginPage from './LoginPage';
 import Layout from '../components/Layout/Layout';
 import useStore from '../hooks/store/useStore';
 import useUserInfo from '../hooks/user/useUserInfo';
@@ -33,7 +33,7 @@ const MainPageApp = () => {
   if (!authUser && currentPage !== "login") {
     return (
       <Layout currentPage="login" onPageChange={setCurrentPage}>
-        <Login />
+        <LoginPage />
       </Layout>
     );
   }
@@ -42,7 +42,7 @@ const MainPageApp = () => {
   if (!userAddress && currentPage !== "login") {
     return (
       <Layout currentPage="search-address" onPageChange={setCurrentPage}>
-        <SearchAddress />
+        <SearchAddressPage />
       </Layout>
     );
   }
@@ -54,19 +54,19 @@ const MainPageApp = () => {
   const renderCurrentPage = () => {
     switch (currentPage) {
       case "login":
-        return <Login />;
+        return <LoginPage />;
       case "search-address":
-        return <SearchAddress />;
+        return <SearchAddressPage />;
       case "home":
-        return <Home />;
+        return <HomePage />;
       case "favorites":
-        return <Like />; // 나중에 Favorites 컴포넌트로 교체
+        return <FavoritePage />; // 나중에 Favorites 컴포넌트로 교체
       case "history":
-        return <Schedule />; // 나중에 History 컴포넌트로 교체
+        return <SchedulePage />; // 나중에 History 컴포넌트로 교체
       case "mypage":
         return <MyPage />;
       default:
-        return <Home />;
+        return <HomePage />;
     }
   };
 

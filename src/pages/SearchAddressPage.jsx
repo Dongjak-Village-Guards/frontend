@@ -2,7 +2,7 @@ import React from 'react'
 import Search from '../components/address/Search'
 import styled from 'styled-components'
 
-const SearchAddress = () => {
+const SearchAddressPage = () => {
   return (
     <AddressWrapper>
       <AddressContainer>
@@ -20,7 +20,7 @@ const SearchAddress = () => {
   )
 }
 
-export default SearchAddress
+export default SearchAddressPage;
 
 const AddressWrapper = styled.div`
   background-color: #ffffff;
