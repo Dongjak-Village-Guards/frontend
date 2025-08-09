@@ -2,8 +2,8 @@ import React from 'react'
 
 const MyPage = () => {
   return (
-    <div>MyPage</div>
+    <div>MyPage_Tmp</div>
   )
 }
 
-export default MyPage
+export default MyPage ;
