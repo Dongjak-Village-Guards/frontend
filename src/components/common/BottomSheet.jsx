@@ -20,6 +20,8 @@ const BottomSheet = ({ open, title, onClose, children }) => {
 
 export default BottomSheet;
 
+// ===== Styled Components ===== //
+
 const Backdrop = styled.div`
   position: fixed;
   inset: 0;
@@ -28,7 +30,7 @@ const Backdrop = styled.div`
 `;
 
 const Sheet = styled.section`
-  position: fixed;
+  position: absolute;
   left: 0; right: 0; bottom: 0;
   background: #fff;
   border-top-left-radius: 16px;

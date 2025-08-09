@@ -14,15 +14,15 @@ import useUserInfo from "../hooks/user/useUserInfo";
 import Card from "../components/shop/Card";
 import bannerImage from "../assets/images/bannerImage.png";
 
-// 30분 간격 시간 옵션 생성
+// 간격 시간(1시간) 옵션 생성
 const generateTimeOptions = () => {
   const list = [];
   for (let h = 0; h < 24; h += 1) {
-    for (let m = 0; m < 60; m += 30) {
       const hh = String(h).padStart(2, '0');
-      const mm = String(m).padStart(2, '0');
-      list.push(`${hh}:${mm}`);
-    }
+    //for (let m = 0; m < 60; m += 30) {
+    //  const mm = String(m).padStart(2, '0');
+    //}
+    list.push(`${hh}:00`);
   }
   return list;
 };
@@ -278,16 +278,19 @@ const FilterRow = styled.div`
 /* Time list for bottom sheet */
 const TimeList = styled.div`
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(1, 1fr);
+//  gap: 10px;
 `;
 
 const TimeItem = styled.button`
-  padding: 10px 8px;
-  border-radius: 8px;
+  // 픽셀 눈바디가 안 맞아서 임의 수정
+  padding: 12px 16px;
+//  border-radius: 8px;
   border: 1px solid #eee;
   background: #fff;
   font-size: 14px;
+  display: flex;
+  justify-contents: flex-start;
 `;
 
 const ResetRow = styled.div`
