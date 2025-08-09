@@ -1,9 +1,9 @@
 import React from 'react'
 
-const TimeToggle = () => {
+const TimeFilter = () => {
   return (
-    <div>TimeToggle</div>
+    <div>TimeFilter</div>
   )
 }
 
-export default TimeToggle
+export default TimeFilter

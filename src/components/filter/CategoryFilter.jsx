@@ -1,9 +1,9 @@
 import React from 'react'
 
-const TypeToggle = () => {
+const CategoryFilter = () => {
   return (
-    <div>TypeToggle</div>
+    <div>CategoryFilter</div>
   )
 }
 
-export default TypeToggle
+export default CategoryFilter;
