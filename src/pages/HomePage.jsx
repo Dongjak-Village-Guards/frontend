@@ -55,9 +55,6 @@ export default function HomePage() {
   /* 로딩 상태 관리 */
   const [isLoading, setIsLoading] = useState(false);
   
-  // 디버깅: 로딩 상태 확인
-  console.log('HomePage isLoading:', isLoading);
-  
   // 디버깅: setIsLoading 래퍼 함수 (콜백 사용)
   const setLoadingWithLog = (loading) => {
     console.log('setIsLoading 호출됨:', loading);
@@ -202,9 +199,9 @@ export default function HomePage() {
                 setTimeout(async () => {
                   console.log('setTimeout 콜백 실행 - 로딩 시작');
                   setLoadingWithLog(true);
-                  console.log('2초 로딩 시작');
-                  await new Promise(resolve => setTimeout(resolve, 2000));
-                  console.log('2초 로딩 완료');
+                  console.log('0.3초 로딩 시작');
+                  await new Promise(resolve => setTimeout(resolve, 300));
+                  console.log('0.3초 로딩 완료');
                   setLoadingWithLog(false);
                   console.log('시간필터 로딩 완료');
                 }, 300);
@@ -215,15 +212,6 @@ export default function HomePage() {
             </TimeItem>
           ))}
         </TimeList>
-        <ResetRow>
-          <ResetButton
-            type="button"
-            onClick={() => {
-              setFilters({ availableAt: null });
-              setIsTimeSheetOpen(false);
-            }}
-          >초기화</ResetButton>
-        </ResetRow>
       </BottomSheet>
 
       {/* 매장 리스트 */}
@@ -366,26 +354,16 @@ const TimeList = styled.div`
 const TimeItem = styled.button`
   // 픽셀 눈바디가 안 맞아서 임의 수정
   padding: 12px 16px;
-//  border-radius: 8px;
-  border: 1px solid #eee;
+  border: none;
+  border-bottom: 1px solid #CCC;
   background: #fff;
-  font-size: 14px;
+  font-size: 15px;
   display: flex;
   justify-contents: flex-start;
-`;
 
-const ResetRow = styled.div`
-  margin-top: 12px;
-  display: flex;
-  justify-content: flex-end;
-`;
-
-const ResetButton = styled.button`
-  border: 1px solid #ddd;
-  background: #fafafa;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 13px;
+  &:hover {
+    color: #DA2538;
+  }
 `;
 
 /* 정렬 토글 컨테이너(토글 버튼 & 드롭다운) */
