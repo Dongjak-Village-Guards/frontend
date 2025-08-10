@@ -32,6 +32,10 @@ const useStore = create((set, get) => ({
   /** 현재 정렬 옵션 ('discount' | 'price') */
   sortOption: 'discount',
 
+  // ===== 가게 데이터 상태 관리 =====
+  /** mockShopList.js에서 가져온 가게 목록 데이터 */
+  stores: STORES_DATA,
+
   // ===== 액션 함수들 =====
   
   /**
