@@ -53,8 +53,21 @@ export default function HomePage() {
   const [isTimeSheetOpen, setIsTimeSheetOpen] = useState(false);
   
   /* 로딩 상태 관리 */
-  const [isLoading, setIsLoading] = useState(true);
-  const [isDataLoading, setIsDataLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // 디버깅: 로딩 상태 확인
+  console.log('HomePage isLoading:', isLoading);
+  
+  // 디버깅: setIsLoading 래퍼 함수 (콜백 사용)
+  const setLoadingWithLog = (loading) => {
+    console.log('setIsLoading 호출됨:', loading);
+    setIsLoading(loading);
+  };
+  
+  // 디버깅: isLoading 상태 변화 추적
+  useEffect(() => {
+    console.log('isLoading 상태 변화됨:', isLoading);
+  }, [isLoading]);
   
   /* Zustand 스토어에서 필요한 상태와 액션 가져오기 */
   const { 
@@ -71,23 +84,24 @@ export default function HomePage() {
   /* 사용자 정보에서 등록된 주소 가져오기 */
   const { userAddress } = useUserInfo();
 
-  /* 컴포넌트 마운트 시 초기화 및 로딩 처리 */
+  /* 컴포넌트 마운트 시 초기 로딩 처리 */
   useEffect(() => {
+    console.log('useEffect 실행됨 - 초기 로딩 시작');
     const initializePage = async () => {
-      try {
-        setIsLoading(true);
-        
-        // 초기 시간 설정 (새로고침 시에만 실행)
-        updateCurrentTime();
-        
-        // 데이터 로딩 시뮬레이션 (실제 API 호출 시 대체)
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        setIsLoading(false);
-      } catch (error) {
-        console.error('페이지 초기화 오류:', error);
-        setIsLoading(false);
-      }
+      console.log('initializePage 함수 시작');
+      setLoadingWithLog(true);
+      
+      // 초기 시간 설정 (새로고침 시에만 실행)
+      console.log('updateCurrentTime 호출');
+      updateCurrentTime();
+      
+      // 0.1초 지연으로 렌더링 시간 시뮬레이션
+      console.log('0.1초 지연 시작');
+      await new Promise(resolve => setTimeout(resolve, 100));
+      console.log('0.1초 지연 완료');
+      
+      setLoadingWithLog(false);
+      console.log('initializePage 함수 완료');
     };
 
     initializePage();
@@ -97,24 +111,16 @@ export default function HomePage() {
    * 정렬 옵션 변경 핸들러
    * @param {string} option - 정렬 옵션
    */
-  const handleSortChange = async (option) => {
-    try {
-      setIsDataLoading(true);
-      setSortOption(option);
-      setIsSortOpen(false);
-      
-      // 정렬 처리 시뮬레이션 (실제 API 호출 시 대체)
-      await new Promise(resolve => setTimeout(resolve, 500));
-    } catch (error) {
-      console.error('정렬 처리 오류:', error);
-    } finally {
-      setIsDataLoading(false);
-    }
+  const handleSortChange = (option) => {
+    setSortOption(option);
+    setIsSortOpen(false);
   };
 
   /* 토글 상태 변경 handler 함수 */
   const handleToggleSort = () => {
-    setIsSortOpen(!isSortOpen);
+    if (!isLoading) {
+      setIsSortOpen(!isSortOpen);
+    }
   };
 
   // 정렬된 가게 목록 가져오기
@@ -122,18 +128,6 @@ export default function HomePage() {
 
   // 표시할 주소 결정 (등록된 주소가 있으면 사용, 없으면 기본 주소)
   const displayAddress = userAddress ? userAddress.roadAddr : currentAddress;
-
-  // 로딩 중일 때 Spinner 표시
-  if (isLoading) {
-    return (
-      <HomeContainer>
-        <LoadingOverlay>
-          <Spinner />
-          <LoadingText>페이지를 불러오는 중...</LoadingText>
-        </LoadingOverlay>
-      </HomeContainer>
-    );
-  }
 
   return (
     <HomeContainer>
@@ -161,22 +155,22 @@ export default function HomePage() {
         <TimeToggle
           label={filters.availableAt || currentTime}
           active={!!filters.availableAt}
-          onClick={() => setIsTimeSheetOpen(true)}
+          onClick={() => !isLoading && setIsTimeSheetOpen(true)}
         />
 
-        <CategoryToggle onClick={() => {/* TODO: 업종 바텀시트 열기 */}} />
+        <CategoryToggle onClick={() => !isLoading && {/* TODO: 업종 바텀시트 열기 */}} />
 
         <SortToggleContainer>
           <SortToggle onClick={handleToggleSort}>
             <span>{sortOption === 'discount' ? '할인율순' : '가격순'}</span>
             <AiFillCaretDown size={16} color="#000" />
           </SortToggle>
-          {isSortOpen && (
+          {isSortOpen && !isLoading && (
             <SortDropdown>
-              <SortOption onClick={() => handleSortChange('discount')}>
+              <SortOption onClick={() => !isLoading && handleSortChange('discount')}>
                 할인율순
               </SortOption>
-              <SortOption onClick={() => handleSortChange('price')}>
+              <SortOption onClick={() => !isLoading && handleSortChange('price')}>
                 가격순
               </SortOption>
             </SortDropdown>
@@ -197,9 +191,23 @@ export default function HomePage() {
           {generateTimeOptions(currentTime).map((t) => (
             <TimeItem
               key={t}
-              onClick={() => {
+              onClick={async () => {
+                console.log('시간 선택됨:', t);
+                // 시간 선택 시 로딩 처리
                 setFilters({ availableAt: t });
                 setIsTimeSheetOpen(false);
+                
+                console.log('setTimeout 설정 - 0.3초 후 로딩 시작');
+                // 0.3초 후 바텀시트 닫힘, 2초 로딩 (테스트용)
+                setTimeout(async () => {
+                  console.log('setTimeout 콜백 실행 - 로딩 시작');
+                  setLoadingWithLog(true);
+                  console.log('2초 로딩 시작');
+                  await new Promise(resolve => setTimeout(resolve, 2000));
+                  console.log('2초 로딩 완료');
+                  setLoadingWithLog(false);
+                  console.log('시간필터 로딩 완료');
+                }, 300);
               }}
               aria-label={`시간 ${t} 선택`}
             >
@@ -220,15 +228,16 @@ export default function HomePage() {
 
       {/* 매장 리스트 */}
       <StoreList>
-        {isDataLoading ? (
-          <DataLoadingContainer>
-            <Spinner />
-            <LoadingText>데이터를 불러오는 중...</LoadingText>
-          </DataLoadingContainer>
+        {isLoading ? (
+          <LoadingContainer>
+                <Spinner />
+          </LoadingContainer>
         ) : (
-          sortedStores.map(store => (
-            <Card key={store.id} store={store} />
-          ))
+          <>
+            {sortedStores.map(store => (
+              <Card key={store.id} store={store} />
+            ))}
+          </>
         )}
       </StoreList>
 
@@ -437,38 +446,32 @@ const SortOption = styled.div`
 const StoreList = styled.div`
   background: #fff;
   width: 100%;
+  height: 100%;
   overflow-x: hidden;
+  position: relative;
 `;
 
-/* 로딩 오버레이 */
-const LoadingOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+/* 로딩 컨테이너 */
+const LoadingContainer = styled.div`
+  height: 100%;
+  overflow-y: hidden;
+  position: relative;
+  top: 1rem;
   background: rgba(255, 255, 255, 0.95);
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
-`;
-
-/* 데이터 로딩 컨테이너 */
-const DataLoadingContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 40px 20px;
-  min-height: 200px;
-`;
-
-/* 로딩 텍스트 */
-const LoadingText = styled.div`
-  margin-top: 16px;
-  font-size: 14px;
-  color: #666;
-  text-align: center;
+//  border: 3px solid red; /* 디버깅용 테두리 */
+  min-height: 200px; /* 최소 높이 보장 */
+  
+  /* 디버깅용 스타일 강화 */
+//  &::before {
+//    content: 'LoadingContainer 영역';
+//    position: absolute;
+//    top: 10px;
+//    left: 10px;
+//    color: red;
+//    font-size: 12px;
+//    font-weight: bold;
+//  }
 `;
