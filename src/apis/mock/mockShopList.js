@@ -10,7 +10,6 @@ export const STORES_DATA = [
       menu: "후라이드 치킨",
       distance: 150,
       walkTime: 3,
-      image: "/assets/images/friedchicken.png",
       isLiked: false,
       hasDesigners: false,
       menus: [
@@ -39,7 +38,6 @@ export const STORES_DATA = [
       menu: "페퍼로니 피자",
       distance: 200,
       walkTime: 4,
-      image: "/assets/images/pizza.png",
       isLiked: true,
       hasDesigners: false,
       menus: [
@@ -68,7 +66,6 @@ export const STORES_DATA = [
       menu: "닭가슴살 샐러드",
       distance: 100,
       walkTime: 2,
-      image: "/assets/images/salad.png",
       isLiked: false,
       hasDesigners: false,
       menus: [
@@ -97,7 +94,6 @@ export const STORES_DATA = [
       menu: "립 스테이크",
       distance: 300,
       walkTime: 6,
-      image: "/assets/images/steak.png",
       isLiked: false,
       menus: [
         {
@@ -125,7 +121,6 @@ export const STORES_DATA = [
       menu: "불고기",
       distance: 180,
       walkTime: 4,
-      image: "/assets/images/korean.png",
       isLiked: true,
       hasDesigners: false,
       menus: [
@@ -151,16 +146,15 @@ export const STORES_DATA = [
     {
       id: 6,
       name: "A 미용실",
-      menu: "제품명",
+      menu: "히피펌",
       distance: 255,
       walkTime: 3,
-      image: "/assets/images/hair.png",
       isLiked: false,
       hasDesigners: false,
       menus: [
         {
             id: "menu1",
-            name: "제품명",
+            name: "볼륨 매직",
             discountRate: 10,
             originalPrice: 100000,
             discountPrice: 99000,
@@ -168,7 +162,7 @@ export const STORES_DATA = [
         },
         {
             id: "menu2",
-            name: "제품명",
+            name: "히피 펌",
             discountRate: 99,
             originalPrice: 100000,
             discountPrice: 1000,
@@ -176,7 +170,7 @@ export const STORES_DATA = [
         },
         {
             id: "menu3",
-            name: "제품명",
+            name: "레이어드 펌",
             discountRate: 55,
             originalPrice: 100000,
             discountPrice: 45000,
@@ -184,10 +178,10 @@ export const STORES_DATA = [
         },
         {
             id: "menu4",
-            name: "제품명",
+            name: "학생 컷",
             discountRate: 50,
-            originalPrice: 100000,
-            discountPrice: 50000,
+            originalPrice: 20000,
+            discountPrice: 10000,
             isReserved: false,
         },
       ],
@@ -199,7 +193,6 @@ export const STORES_DATA = [
       menu: "아이돌 펌",
       distance: 260,
       walkTime: 4,
-      image: "/assets/images/hair.png",
       isLiked: false,
       hasDesigners: true,
       menus: [],
@@ -243,14 +236,6 @@ export const STORES_DATA = [
       ],
     },
   ];
-  
-  // 배너 데이터
-  export const BANNER_DATA = {
-    image: "/assets/nail-banner.jpg",
-    subtitle: "꾸미기 딱 좋은 날 ♥",
-    title: "우리동네 네일샵<br />최대 50% 할인!",
-    onClick: () => console.log("배너 클릭")
-  };
   
   // 주소 데이터
   export const ADDRESS_DATA = "마포구 사천로 24길";

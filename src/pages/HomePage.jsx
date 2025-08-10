@@ -195,6 +195,7 @@ const BannerWrapper = styled.div`
   overflow: hidden;
   position: relative;
   background-color: #000000a9;
+  font-family: Pretendard;
 `;
 
 /* 배너 이미지 */
@@ -259,6 +260,7 @@ const TimeFilterTab = styled.button`
   border: 1px solid ${props => props.active ? "#DA2538" : "#CCC"};
   background: #fff;
   color: ${props => props.active ? "#DA2538" : "#666"};
+  font-family: Pretendard;
   font-size: clamp(13px, 4vw, 15px);
   font-weight: 500;
   cursor: pointer;
@@ -282,6 +284,7 @@ const FilterTab = styled.button`
   border: 1px solid ${props => props.active ? "#DA2538" : "#CCC"};
   background: #fff;
   color: ${props => props.active ? "#DA2538" : "#666"};
+  font-family: Pretendard;
   font-size: clamp(13px, 4vw, 15px);
   font-weight: 500;
   cursor: pointer;
@@ -302,6 +305,7 @@ const SortToggleContainer = styled.div`
 const SortToggle = styled.button`
   font-size: clamp(12px, 3.5vw, 14px);
   color: #000;
+  font-family: Pretendard;
   cursor: pointer;
   border: none;
   background: none;
@@ -329,6 +333,7 @@ const SortDropdown = styled.div`
 const SortOption = styled.div`
   padding: clamp(6px, 2vw, 8px) clamp(8px, 3vw, 12px);
   font-size: clamp(12px, 3.5vw, 14px);
+  font-family: Pretendard;
   color: #000;
   cursor: pointer;
   transition: background-color 0.2s ease;

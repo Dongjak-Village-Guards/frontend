@@ -50,8 +50,6 @@ const CardLike = styled.button`
   height: 24px;
 
   position: relative;
-  left: 3px;
-  bottom: 10px;
 
   &:hover {
     transform: scale(1.1);
