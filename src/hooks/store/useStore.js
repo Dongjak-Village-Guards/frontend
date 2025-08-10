@@ -24,6 +24,13 @@ const useStore = create((set, get) => ({
     hour12: false 
   }),
   
+  // 디버깅: 초기 currentTime 값 확인
+  // console.log('useStore 초기 currentTime:', new Date().toLocaleTimeString('ko-KR', { 
+  //   hour: '2-digit', 
+  //   minute: '2-digit',
+  //   hour12: false 
+  // })),
+  
   // ===== 정렬 옵션 상태 관리 =====
   /** 현재 정렬 옵션 ('discount' | 'price') */
   sortOption: 'discount',
@@ -76,13 +83,15 @@ const useStore = create((set, get) => ({
   /**
    * 현재 시간 업데이트 (1분마다 자동 호출)
    */
-  updateCurrentTime: () => set({ 
-    currentTime: new Date().toLocaleTimeString('ko-KR', { 
+  updateCurrentTime: () => {
+    const newTime = new Date().toLocaleTimeString('ko-KR', { 
       hour: '2-digit', 
       minute: '2-digit',
       hour12: false 
-    })
-  }),
+    });
+    console.log('updateCurrentTime 호출됨, 새 currentTime:', newTime);
+    set({ currentTime: newTime });
+  },
   
   /**
    * 정렬 옵션 변경
@@ -123,6 +132,7 @@ const useStore = create((set, get) => ({
    */
   getSortedStores: () => {
     const { stores, sortOption, filters } = get();
+    console.log('getSortedStores 호출, 현재 store 상태:', get());
     const sortedStores = [...stores];
     
     // 1) 필터 적용 (데모 데이터에는 시간/업종 정보가 없어 필터는 no-op)
