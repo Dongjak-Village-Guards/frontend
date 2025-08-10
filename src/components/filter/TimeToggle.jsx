@@ -29,7 +29,11 @@ const Button = styled.button`
   gap: clamp(4px, 2vw, 8px);
   padding: 0 clamp(4px, 2vw, 8px);
   
-  &:hover { background: #f8f8f8; }
+//  &:hover { background: #f8f8f8; }
+  &:hover { 
+    border: 1px solid #DA2538;
+    color: #DA2538;
+  }
 `;
 
 const Caret = styled.span`
