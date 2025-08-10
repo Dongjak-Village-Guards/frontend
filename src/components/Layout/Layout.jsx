@@ -13,6 +13,9 @@ const Layout = forwardRef(({ children, currentPage = "home", onPageChange }, con
           {children}
         </ContentArea>
         {showNavBar && <NavBar current={currentPage} onSelect={onPageChange} />}
+        
+        {/* 바텀시트 포털 마운트 지점 */}
+        <PortalRoot id="bottom-sheet-portal" />
       </PhoneFrame>
     </Container>
   );
@@ -101,4 +104,12 @@ const ContentArea = styled.div`
       width: 0;
     }
   }
+`;
+
+// 바텀시트 포털 마운트 지점 (Layout 내부 전역 레이어)
+const PortalRoot = styled.div`
+  position: absolute;
+  inset: 0;
+  z-index: 30; /* NavBar(20)보다 높게 */
+  pointer-events: none; /* 시트가 없을 때 이벤트 차단 */
 `;
