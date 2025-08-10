@@ -9,7 +9,7 @@ const Spinner = () => {
   )
 }
 
-export default Spinner
+export default Spinner;
 
 const spin = keyframes`
     0% { transform: rotate(0deg); }
@@ -18,7 +18,7 @@ const spin = keyframes`
 
 const SpinnerWrapper = styled.div`
     position: relative;
-    top: 140px;
+    //top: 140px;
     display: flex;
     justify-content: center;
     align-items: center;

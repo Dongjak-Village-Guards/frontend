@@ -35,7 +35,7 @@ const Card = ({ store }) => {
 };
 export default Card;
 
-// ===== Styled Components =====
+// ===== Styled Components ===== //
 
 /**
  * 카드 컨테이너

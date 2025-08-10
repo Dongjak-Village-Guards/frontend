@@ -79,4 +79,11 @@ export const STORES_DATA = [
     { value: "distance", label: "거리순" },
     { value: "price", label: "가격순" },
     { value: "rating", label: "평점순" }
+  ];
+
+  // 업종 목록 데이터
+  export const CATEGORY_OPTIONS = [
+    { value: "hair", label: "미용실" },
+    { value: "nail", label: "네일샵" },
+    { value: "pilates", label: "필라테스" }
   ]; 
