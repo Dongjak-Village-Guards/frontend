@@ -13,19 +13,38 @@ import useStore from "../hooks/store/useStore";
 import useUserInfo from "../hooks/user/useUserInfo";
 import Card from "../components/shop/Card";
 import bannerImage from "../assets/images/bannerImage.png";
+import { type } from "@testing-library/user-event/dist/type";
 
 // 간격 시간(1시간) 옵션 생성
-const generateTimeOptions = () => {
-  const list = [];
-  for (let h = 0; h < 24; h += 1) {
-      const hh = String(h).padStart(2, '0');
-    //for (let m = 0; m < 60; m += 30) {
-    //  const mm = String(m).padStart(2, '0');
-    //}
-    list.push(`${hh}:00`);
+//const generateTimeOptions = (currentTime) => {
+
+//    const [h, m] = String(currentTime).split(':').map(Number);
+
+//    let startHour = (m === 0 ? (h + 1) : (h + 1)) % 24;
+//    const result = [];
+//    for (let i = 0; i < 12; i += 1) {
+//        const hour = (startHour + i) % 24;
+//        result.push(`${String(hour).padStart(2, '0')}:00`);
+//    }
+//    return result;
+//};
+
+// 현재 시간 이후부터 12시간, 1시간 단위로 생성
+const generateTimeOptions = (currentTime) => {
+  const [currentHour, currentMinute] = String(currentTime).split(':').map(Number);
+  
+  const result = [];
+  // 다음 정각부터 시작 (현재가 정각이면 그 다음 시간)
+  let startHour = currentMinute === 0 ? (currentHour + 1) % 24 : (currentHour + 1) % 24;
+  
+  for (let i = 0; i < 12; i++) {
+    const hour = (startHour + i) % 24;
+    result.push(`${String(hour).padStart(2, '0')}:00`);
   }
-  return list;
+  
+  return result;
 };
+
 
 export default function HomePage() {
   /* 토글 상태 관리 */
@@ -49,6 +68,7 @@ export default function HomePage() {
 
   /* 컴포넌트 마운트 시 현재 시간을 한 번만 설정(갱신기준: 새로고침) */
   useEffect(() => {
+    console.log("currentTime", type(currentTime));
     // 초기 시간 설정 (새로고침 시에만 실행)
     updateCurrentTime();
   }, [updateCurrentTime]);
@@ -78,8 +98,8 @@ export default function HomePage() {
       {/* 상단 주소 선택 바 (Layout 내부에서 고정) */}
       <AddressBar>
         <AddressText>
-          {/* 제목 6글자까지 표시*/}
-          {displayAddress.length > 6 ? `${displayAddress.slice(0, 6)}...` : displayAddress}
+          {/* 제목 8글자까지 표시*/}
+          {displayAddress.length > 8 ? `${displayAddress.slice(0, 8)}...` : displayAddress}
           <FiChevronDown size={24} color="#DA2538" />
         </AddressText>
       </AddressBar>
@@ -122,14 +142,17 @@ export default function HomePage() {
         </SortToggleContainer>
       </FilterRow>
 
-      {/* 시간 선택 바텀시트 */}
+      {/* 예약 시간 선택 바텀시트 */}
       <BottomSheet
         open={isTimeSheetOpen}
-        title="시간 선택"
-        onClose={() => setIsTimeSheetOpen(false)}
+        title="예약 시간"
+        onClose={() => {
+          console.log('HomePage에서 onClose 호출됨');
+          setIsTimeSheetOpen(false);
+        }}
       >
         <TimeList>
-          {generateTimeOptions().map((t) => (
+          {generateTimeOptions(currentTime).map((t) => (
             <TimeItem
               key={t}
               onClick={() => {

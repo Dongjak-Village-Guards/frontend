@@ -1,20 +1,74 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import styled from 'styled-components';
 
 const BottomSheet = ({ open, title, onClose, children }) => {
-  if (!open) return null;
+  const [portalRoot, setPortalRoot] = useState(null);
 
-  return (
+  useEffect(() => {
+    const root = document.getElementById('bottom-sheet-portal');
+    setPortalRoot(root);
+  }, []);
+
+  // 디버깅: props 확인
+  console.log('BottomSheet props:', { open, title, onClose: typeof onClose, children: !!children });
+
+  if (!open || !portalRoot) return null;
+
+  // 디버깅: onClose 함수 래핑
+  const handleClose = (e) => {
+    console.log('닫기 버튼 클릭됨', e);
+    if (onClose) {
+      console.log('onClose 함수 호출');
+      onClose();
+    } else {
+      console.error('onClose 함수가 없음!');
+    }
+  };
+
+  const handleBackdropClick = (e) => {
+    console.log('배경 클릭됨', e);
+    if (onClose) {
+      console.log('onClose 함수 호출 (배경)');
+      onClose();
+    } else {
+      console.error('onClose 함수가 없음! (배경)');
+    }
+  };
+
+  // Layout 내부 포털로 렌더링하여 HomePage 스크롤과 분리
+  return createPortal(
     <>
-      <Backdrop onClick={onClose} />
+      <Backdrop onClick={handleBackdropClick} />
       <Sheet role="dialog" aria-modal="true">
-        <SheetHeader>
+        <SheetHeader 
+          onClick={(e) => console.log('SheetHeader 클릭됨', e)}
+          style={{ border: '1px solid blue' }}
+        >
           <SheetTitle>{title}</SheetTitle>
-          <CloseButton type="button" onClick={onClose}>닫기</CloseButton>
+          <CloseButton 
+            type="button" 
+            onClick={handleClose}
+            onMouseDown={(e) => console.log('닫기 버튼 마우스다운', e)}
+            onMouseUp={(e) => console.log('닫기 버튼 마우스업', e)}
+            onTouchStart={(e) => console.log('닫기 버튼 터치시작', e)}
+            onTouchEnd={(e) => console.log('닫기 버튼 터치종료', e)}
+            style={{ 
+              border: '2px solid red', 
+              backgroundColor: 'yellow',
+              minWidth: '50px',
+              minHeight: '30px'
+            }}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M13.2141 12L19.3664 4.66641C19.4695 4.54453 19.3828 4.35938 19.2234 4.35938H17.3531C17.243 4.35938 17.1375 4.40859 17.0648 4.49297L11.9906 10.5422L6.9164 4.49297C6.84609 4.40859 6.74062 4.35938 6.62812 4.35938H4.75781C4.59843 4.35938 4.51172 4.54453 4.61484 4.66641L10.7672 12L4.61484 19.3336C4.59174 19.3608 4.57692 19.394 4.57214 19.4293C4.56736 19.4647 4.57282 19.5006 4.58787 19.533C4.60293 19.5653 4.62694 19.5926 4.65706 19.6117C4.68718 19.6308 4.72215 19.6408 4.75781 19.6406H6.62812C6.73828 19.6406 6.84375 19.5914 6.9164 19.507L11.9906 13.4578L17.0648 19.507C17.1352 19.5914 17.2406 19.6406 17.3531 19.6406H19.2234C19.3828 19.6406 19.4695 19.4555 19.3664 19.3336L13.2141 12Z" fill="black"/>
+            </svg>
+          </CloseButton>
         </SheetHeader>
         <SheetBody>{children}</SheetBody>
       </Sheet>
-    </>
+    </>,
+    portalRoot
   );
 };
 
@@ -23,24 +77,31 @@ export default BottomSheet;
 // ===== Styled Components ===== //
 
 const Backdrop = styled.div`
-  position: fixed;
+  position: absolute; /* Layout 내부 기준 */
   inset: 0;
   background: rgba(0,0,0,0.35);
-  z-index: 1000;
+  z-index: 31; /* PortalRoot(30)보다 높게 */
+  pointer-events: auto;
 `;
 
 const Sheet = styled.section`
-  position: absolute;
+  position: absolute; /* Layout 내부 기준 */
   left: 0; right: 0; bottom: 0;
   background: #fff;
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
   box-shadow: 0 -8px 24px rgba(0,0,0,0.12);
-  z-index: 1001;
-  max-height: 70vh;
+  z-index: 32; /* Backdrop(31)보다 높게 */
+  max-height: 60vh;
   display: flex;
   flex-direction: column;
   animation: slideUp 160ms ease-out;
+  
+  /* 모바일 safe-area 고려 */
+  padding-bottom: env(safe-area-inset-bottom);
+  
+  /* 포인터 이벤트 명시적 설정 */
+  pointer-events: auto;
 
   @keyframes slideUp {
     from { transform: translateY(8%); opacity: 0.8; }
@@ -54,6 +115,9 @@ const SheetHeader = styled.header`
   justify-content: space-between;
   padding: 12px 16px;
   border-bottom: 1px solid #eee;
+  position: relative;
+  z-index: 9998;
+  pointer-events: auto;
 `;
 
 const SheetTitle = styled.h3`
@@ -67,6 +131,19 @@ const CloseButton = styled.button`
   font-size: 14px;
   color: #DA2538;
   padding: 6px 8px;
+  cursor: pointer;
+  z-index: 9999 !important; /* 강제로 최상위로 */
+  position: relative;
+  
+  /* 디버깅용 스타일 */
+  &:hover {
+    background: rgba(218, 37, 56, 0.1);
+    border-radius: 4px;
+  }
+  
+  &:active {
+    background: rgba(218, 37, 56, 0.2);
+  }
 `;
 
 const SheetBody = styled.div`
