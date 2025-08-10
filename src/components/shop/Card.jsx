@@ -89,10 +89,10 @@ const CardFooter = styled.div`
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
+    font-family: Pretendard;
     /* 반응형 웹 수정: 반응형 패딩 사용 */
-    padding: 0px clamp(12px, 4vw, 16.5px) 0px clamp(12px, 4vw, 16.5px);
-    margin-bottom: 6px;
+    padding: 0px clamp(12px, 4vw, 16.5px);
 
     // 레이아웃 확인용
     //border: 1px solid blue;

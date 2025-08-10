@@ -1,23 +1,46 @@
 /**
  * 가게 사진 정보를 표시하는 컴포넌트
- * 메인 이미지와 썸네일 이미지들을 담당함.
+ * 메인 이미지를 담당함.
  */
 import styled from "styled-components";
-import chickenImage from "../../assets/images/cardImage.png";
+import chickenImage from "../../assets/images/chicken.png";
+import pizzaImage from "../../assets/images/pizza.png";
+import saladImage from "../../assets/images/salad.png";
+import steakImage from "../../assets/images/steak.png";
+import koreanImage from "../../assets/images/korean.png";
+import hairImage from "../../assets/images/hair.png";
 
 /**
  * StoreCard 컴포넌트
- * @param {Object} store - 가게 정보 객체 (현재는 사용하지 않음)
+ * @param {Object} store - 가게 정보 객체
+ * @param {string} store.id - 가게 ID
+ * @param {string} store.name - 가게 이름 (alt 텍스트용)
  */
 const StoreCard = ({ store }) => {
+  // 가게 ID에 따라 이미지 매핑 (임시)
+  const imageMap = {
+    1: chickenImage,
+    2: pizzaImage,
+    3: saladImage,
+    4: steakImage,
+    5: koreanImage,
+    6: hairImage,
+    7: hairImage,
+  };
+
+  const imageSrc = imageMap[store.id] || chickenImage;
+
   return (
     <CardImageContainer>
       <ImageGroup>
-        <MainCardImage src={chickenImage} alt="치킨 메인 이미지" />
-        <ThumbnailContainer>
-          <CardImage src={chickenImage} alt="치킨 썸네일 1" />
-          <CardImage src={chickenImage} alt="치킨 썸네일 2" />
-        </ThumbnailContainer>
+        <MainCardImage
+          src={imageSrc}
+          alt={`${store.name} 메인 이미지`}
+          onError={(e) => {
+            console.warn(`이미지 로드 실패: ${store.id}, using fallback`);
+            e.target.src = chickenImage;  // 이미지 로드 실패 시 기본 치킨 이미지로 대체
+          }}
+        />
       </ImageGroup>
     </CardImageContainer>
   );
@@ -59,42 +82,12 @@ const ImageGroup = styled.div`
 `;
 
 /* 메인 카드 이미지
-(248x148 크기의 메인 이미지 영역)
+(328x148 크기의 메인 이미지 영역)
 */
 const MainCardImage = styled.img`
   /* 반응형 웹 수정: 고정 크기 대신 반응형 크기 사용 */
-  width: clamp(180px, 60vw, 248px);
+  width: 100%;
   height: clamp(120px, 35vh, 148px);
   object-fit: cover;
   flex-shrink: 0;
-`;
-
-/* 카드 이미지
-(썸네일용 크기의 이미지) */
-const CardImage = styled.img`
-  /* 반응형 웹 수정: 고정 크기 대신 반응형 크기 사용 */
-    width: clamp(50px, 15vw, 72px);
-//  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: space-between;
-//  height: clamp(50px, 15vw, 72px);
-  object-fit: cover;
-  flex-shrink: 0;
-  aspect-ratio: 1/1;
-`;
-
-/* 썸네일 이미지 컨테이너
-(두 개의 썸네일 이미지를 세로로 배치함) */
-const ThumbnailContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex-shrink: 0;
-  
-  /* 반응형 웹 수정: 모바일에서 간격 조정 */
-  @media (max-width: 480px) {
-    gap: clamp(6px, 2vw, 8px);
-  }
 `;

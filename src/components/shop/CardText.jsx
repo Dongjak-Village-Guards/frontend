@@ -71,9 +71,15 @@ export default CardText;
 
 /* 텍스트 간격 임시 설정을 위한 영역 분리 */
 const InfoWrapperLeft = styled.div`
-margin-right: 24px;
+  margin-right: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 `;
 const InfoWrapperRight = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 `;
 
 /* 가게 정보 컨테이너
@@ -90,19 +96,16 @@ const StoreInfo = styled.div`
 
 /* 가게 이름 (가장 큰 폰트로 표시되는 가게명) */
 const StoreName = styled.div`
-  font-family: Pretendard;
-
   //  긴 text ...으로 대체
   white-space: nowrap;
-  overflow: hidden;
   text-overflow: ellipsis;
 
   color: var(--, #000);
   font-size: 16px;
   font-style: normal;
   font-weight: 700;
-  line-height: 14px; /* 87.5% */
-  margin-bottom: 8px;
+  line-height: 16px;
+  margin-bottom: 12px;
   white-space: nowrap;
   max-width: 120px;
 `;
@@ -124,12 +127,11 @@ const StoreMenu = styled.div`
 /* 할인된 가격(우측 아래 최종 지불 가격) */
 const StoreDiscountPrice = styled.div`
     color: var(--, #000);
-    font-family: Pretendard;
     font-size: 12px;
     font-style: normal;
     font-weight: 600;
     line-height: 14px; /* 116.667% */
-    margin-top: 5px;
+    margin-top: 3px;
 `;
 
 /* 거리 및 도보 시간 정보 담는 컨테이너
@@ -151,7 +153,6 @@ const MetaDistance = styled.span`
 /* 도보 시간 정보(예상 도보 시간 표시) */
 const MetaWorkTime = styled.span`
   color: #6D6D6D;
-  font-family: Pretendard;
   font-size: 12px;
   font-style: normal;
   font-weight: 400;
@@ -170,5 +171,6 @@ const StorePrice = styled.div`
     text-decoration: line-through;
     color: #888;
     font-weight: 400;
+    padding-left: 2px;
   }
 `;
