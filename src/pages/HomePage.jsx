@@ -10,53 +10,13 @@ import BottomSheet from "../components/common/BottomSheet";
 import TimeToggle from "../components/filter/TimeToggle";
 import CategoryToggle from "../components/filter/CategoryToggle";
 import CategoryFilter from "../components/filter/CategoryFilter";
+import TimeFilter from "../components/filter/TimeFilter";
 import Spinner from "../components/common/Spinner";
 import useStore from "../hooks/store/useStore";
 import useUserInfo from "../hooks/user/useUserInfo";
 import Card from "../components/shop/Card";
 import bannerImage from "../assets/images/bannerImage.png";
 import { type } from "@testing-library/user-event/dist/type";
-
-// 간격 시간(1시간) 옵션 생성
-//const generateTimeOptions = (currentTime) => {
-
-//    const [h, m] = String(currentTime).split(':').map(Number);
-
-//    let startHour = (m === 0 ? (h + 1) : (h + 1)) % 24;
-//    const result = [];
-//    for (let i = 0; i < 12; i += 1) {
-//        const hour = (startHour + i) % 24;
-//        result.push(`${String(hour).padStart(2, '0')}:00`);
-//    }
-//    return result;
-//};
-
-// 현재 시간 이후부터 12시간, 1시간 단위로 생성
-const generateTimeOptions = (currentTime) => {
-  const [currentHour, currentMinute] = String(currentTime).split(':').map(Number);
-  
-  const result = [];
-  // 다음 정각부터 시작 (현재가 정각이면 그 다음 시간)
-  let startHour = currentMinute === 0 ? (currentHour + 1) % 24 : (currentHour + 1) % 24;
-  
-  for (let i = 0; i < 12; i++) {
-    const hour = (startHour + i) % 24;
-    result.push(`${String(hour).padStart(2, '0')}:00`);
-  }
-  
-  return result;
-};
-
-// 현재 시간의 다음 정각을 계산하는 함수
-const getNearestHour = (currentTime) => {
-  const [currentHour, currentMinute] = String(currentTime).split(':').map(Number);
-  
-  // 현재가 정각이면 다음 시간, 아니면 다음 정각
-  const nextHour = currentMinute === 0 ? (currentHour + 1) % 24 : (currentHour + 1) % 24;
-  
-  return `${String(nextHour).padStart(2, '0')}:00`;
-};
-
 
 export default function HomePage() {
   /* 토글 상태 관리 */
@@ -182,6 +142,16 @@ export default function HomePage() {
     return displayAddress.length > 8 ? `${displayAddress.slice(0, 8)}...` : displayAddress;
   };
 
+  // 현재 시간의 다음 정각을 계산하는 함수
+  const getNearestHour = (currentTime) => {
+    const [currentHour, currentMinute] = String(currentTime).split(':').map(Number);
+    
+    // 현재가 정각이면 다음 시간, 아니면 다음 정각
+    const nextHour = currentMinute === 0 ? (currentHour + 1) % 24 : (currentHour + 1) % 24;
+    
+    return `${String(nextHour).padStart(2, '0')}:00`;
+  };
+
   // 업종 필터 라벨 생성
   const getCategoryLabel = () => {
     if (filters.categories.length === 0) return '업종';
@@ -259,34 +229,28 @@ export default function HomePage() {
           setIsTimeSheetOpen(false);
         }}
       >
-        <TimeList>
-          {generateTimeOptions(getNearestHour(currentTime)).map((t) => (
-            <TimeItem
-              key={t}
-              onClick={async () => {
-                console.log('시간 선택됨:', t);
-                // 시간 선택 시 로딩 처리
-                setFilters({ availableAt: t });
-                setIsTimeSheetOpen(false);
-                
-                console.log('setTimeout 설정 - 0.3초 후 로딩 시작');
-                // 0.3초 후 바텀시트 닫힘, 2초 로딩 (테스트용)
-                setTimeout(async () => {
-                  console.log('setTimeout 콜백 실행 - 로딩 시작');
-                  setLoadingWithLog(true);
-                  console.log('0.3초 로딩 시작');
-                  await new Promise(resolve => setTimeout(resolve, 300));
-                  console.log('0.3초 로딩 완료');
-                  setLoadingWithLog(false);
-                  console.log('시간필터 로딩 완료');
-                }, 300);
-              }}
-              aria-label={`시간 ${t} 선택`}
-            >
-              {t}
-            </TimeItem>
-          ))}
-        </TimeList>
+        <TimeFilter
+          currentTime={currentTime}
+          selectedTime={filters.availableAt}
+          onTimeSelect={(time) => {
+            console.log('시간 선택됨:', time);
+            // 시간 선택 시 로딩 처리
+            setFilters({ availableAt: time });
+            
+            console.log('setTimeout 설정 - 0.3초 후 로딩 시작');
+            // 0.3초 후 바텀시트 닫힘, 2초 로딩 (테스트용)
+            setTimeout(async () => {
+              console.log('setTimeout 콜백 실행 - 로딩 시작');
+              setLoadingWithLog(true);
+              console.log('0.3초 로딩 시작');
+              await new Promise(resolve => setTimeout(resolve, 300));
+              console.log('0.3초 로딩 완료');
+              setLoadingWithLog(false);
+              console.log('시간필터 로딩 완료');
+            }, 300);
+          }}
+          onClose={() => setIsTimeSheetOpen(false)}
+        />
       </BottomSheet>
 
       {/* 업종 선택 바텀시트 */}
@@ -368,7 +332,6 @@ const AddressBar = styled.div`
 /* 주소 텍스트 */
 const AddressText = styled.div`
   overflow: hidden;
-  border: 1px solid blue;
   color: var(--, #000);
   text-overflow: ellipsis;
   font-family: Pretendard;
@@ -471,28 +434,6 @@ const FilterRow = styled.div`
   /* sticky 포지션이 확실히 작동하도록 추가 설정 */
   transform: translateZ(0);
   will-change: transform;
-`;
-
-/* Time list for bottom sheet */
-const TimeList = styled.div`
-  display: grid;
-  grid-template-columns: repeat(1, 1fr);
-//  gap: 10px;
-`;
-
-const TimeItem = styled.button`
-  // 픽셀 눈바디가 안 맞아서 임의 수정
-  padding: 12px 16px;
-  border: none;
-  border-bottom: 1px solid #CCC;
-  background: #fff;
-  font-size: 15px;
-  display: flex;
-  justify-contents: flex-start;
-
-  &:hover {
-    color: #DA2538;
-  }
 `;
 
 /* 정렬 토글 컨테이너(토글 버튼 & 드롭다운) */
