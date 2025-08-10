@@ -12,6 +12,9 @@ const useStore = create((set, get) => ({
   /** 현재 활성화된 페이지 */
   currentPage: 'login',
   
+  /** 주소 설정 페이지 접근 경로 추적 */
+  fromHomePage: false,
+  
   // ===== 주소 상태 관리 =====
   /** 현재 주소 (7글자 초과 시 ... 처리) */
   currentAddress: '노량진동 240-30',
@@ -70,6 +73,12 @@ const useStore = create((set, get) => ({
    * @param {string} page - 변경할 페이지명
    */
   setCurrentPage: (page) => set({ currentPage: page }),
+  
+  /**
+   * 주소 설정 페이지 접근 경로 설정
+   * @param {boolean} fromHome - HomePage에서 접근했는지 여부
+   */
+  setFromHomePage: (fromHome) => set({ fromHomePage: fromHome }),
   
   /**
    * 현재 주소 변경 (7글자 초과 시 ... 처리)

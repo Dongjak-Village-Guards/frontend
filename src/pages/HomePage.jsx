@@ -63,7 +63,6 @@ export default function HomePage() {
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [isTimeSheetOpen, setIsTimeSheetOpen] = useState(false);
   const [isCategorySheetOpen, setIsCategorySheetOpen] = useState(false);
-  const [isAddressExpanded, setIsAddressExpanded] = useState(false);
   
   /* 로딩 상태 관리 */
   const [isLoading, setIsLoading] = useState(false);
@@ -89,6 +88,8 @@ export default function HomePage() {
     getSortedStores,
     filters,
     setFilters,
+    setCurrentPage,
+    setFromHomePage,
   } = useStore();
 
   /* 사용자 정보에서 등록된 주소 가져오기 */
@@ -134,11 +135,16 @@ export default function HomePage() {
   };
 
   /**
-   * 주소 토글 핸들러
+   * 주소 설정 페이지로 이동 핸들러
    */
-  const handleAddressToggle = () => {
+  const handleAddressClick = () => {
+    console.log('주소 아이콘 클릭됨');
     if (!isLoading) {
-      setIsAddressExpanded(!isAddressExpanded);
+      console.log('주소 설정 페이지로 이동');
+      setCurrentPage('search-address');
+      setFromHomePage(true); // 주소 설정 페이지로 이동할 때 fromHomePage 플래그를 true로 설정
+    } else {
+      console.log('로딩 중이므로 클릭 무시');
     }
   };
 
@@ -171,11 +177,8 @@ export default function HomePage() {
   // 표시할 주소 결정 (등록된 주소가 있으면 사용, 없으면 기본 주소)
   const displayAddress = userAddress ? userAddress.roadAddr : currentAddress;
 
-  // 주소 표시 텍스트 생성
+  // 주소 표시 텍스트 생성 (8글자 초과 시 "..." 표시)
   const getAddressDisplayText = () => {
-    if (isAddressExpanded) {
-      return displayAddress;
-    }
     return displayAddress.length > 8 ? `${displayAddress.slice(0, 8)}...` : displayAddress;
   };
 
@@ -197,16 +200,11 @@ export default function HomePage() {
     <HomeContainer>
       {/* 상단 주소 선택 바 (Layout 내부에서 고정) */}
       <AddressBar>
-        <AddressText onClick={handleAddressToggle}>
-          {getAddressDisplayText()}
-          <FiChevronDown 
-            size={24} 
-            color="#DA2538" 
-            style={{ 
-              transform: isAddressExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-              transition: 'transform 0.2s ease'
-            }}
-          />
+        <AddressText>
+          <AddressTextContent>{getAddressDisplayText()}</AddressTextContent>
+          <AddressIcon onClick={handleAddressClick}>
+            <FiChevronDown size={16} color="#DA2538" />
+          </AddressIcon>
         </AddressText>
       </AddressBar>
 
@@ -356,7 +354,7 @@ const AddressBar = styled.div`
   align-items: center;
   padding: clamp(16px, 4vh, 32px) 0 clamp(8px, 2vh, 16px) 0; // 주소바 하단 padding 변경요구 반영
   gap: 6px;
-  justify-content: space-between;
+//  justify-content: flex-start;
   background: #fff;
   width: 100%;
   
@@ -370,6 +368,7 @@ const AddressBar = styled.div`
 /* 주소 텍스트 */
 const AddressText = styled.div`
   overflow: hidden;
+  border: 1px solid blue;
   color: var(--, #000);
   text-overflow: ellipsis;
   font-family: Pretendard;
@@ -379,14 +378,35 @@ const AddressText = styled.div`
   line-height: normal;
   display: flex;
   align-items: center;
+//  justify-content: flex-start;
   gap: clamp(2px, 2vw, 4px);
-  cursor: pointer;
-  transition: all 0.2s ease;
   padding: 4px 8px;
   border-radius: 8px;
-  
+//  width: 100%;
+`;
+
+/* 주소 텍스트 내용 */
+const AddressTextContent = styled.span`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+`;
+
+/* 주소 아이콘 */
+const AddressIcon = styled.span`
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border-radius: 4px;
+  flex-shrink: 0;
+
   &:hover {
-    background-color: #f8f8f8;
+    transform: rotate(180deg);
+    //background-color: #f8f8f8;
   }
 `;
 
