@@ -47,12 +47,23 @@ const generateTimeOptions = (currentTime) => {
   return result;
 };
 
+// 현재 시간의 다음 정각을 계산하는 함수
+const getNearestHour = (currentTime) => {
+  const [currentHour, currentMinute] = String(currentTime).split(':').map(Number);
+  
+  // 현재가 정각이면 다음 시간, 아니면 다음 정각
+  const nextHour = currentMinute === 0 ? (currentHour + 1) % 24 : (currentHour + 1) % 24;
+  
+  return `${String(nextHour).padStart(2, '0')}:00`;
+};
+
 
 export default function HomePage() {
   /* 토글 상태 관리 */
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [isTimeSheetOpen, setIsTimeSheetOpen] = useState(false);
   const [isCategorySheetOpen, setIsCategorySheetOpen] = useState(false);
+  const [isAddressExpanded, setIsAddressExpanded] = useState(false);
   
   /* 로딩 상태 관리 */
   const [isLoading, setIsLoading] = useState(false);
@@ -123,6 +134,15 @@ export default function HomePage() {
   };
 
   /**
+   * 주소 토글 핸들러
+   */
+  const handleAddressToggle = () => {
+    if (!isLoading) {
+      setIsAddressExpanded(!isAddressExpanded);
+    }
+  };
+
+  /**
    * 업종 필터 변경 핸들러
    * @param {Array} categories - 선택된 업종 배열
    */
@@ -151,6 +171,14 @@ export default function HomePage() {
   // 표시할 주소 결정 (등록된 주소가 있으면 사용, 없으면 기본 주소)
   const displayAddress = userAddress ? userAddress.roadAddr : currentAddress;
 
+  // 주소 표시 텍스트 생성
+  const getAddressDisplayText = () => {
+    if (isAddressExpanded) {
+      return displayAddress;
+    }
+    return displayAddress.length > 8 ? `${displayAddress.slice(0, 8)}...` : displayAddress;
+  };
+
   // 업종 필터 라벨 생성
   const getCategoryLabel = () => {
     if (filters.categories.length === 0) return '업종';
@@ -169,10 +197,16 @@ export default function HomePage() {
     <HomeContainer>
       {/* 상단 주소 선택 바 (Layout 내부에서 고정) */}
       <AddressBar>
-        <AddressText>
-          {/* 제목 8글자까지 표시*/}
-          {displayAddress.length > 8 ? `${displayAddress.slice(0, 8)}...` : displayAddress}
-          <FiChevronDown size={24} color="#DA2538" />
+        <AddressText onClick={handleAddressToggle}>
+          {getAddressDisplayText()}
+          <FiChevronDown 
+            size={24} 
+            color="#DA2538" 
+            style={{ 
+              transform: isAddressExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s ease'
+            }}
+          />
         </AddressText>
       </AddressBar>
 
@@ -189,7 +223,7 @@ export default function HomePage() {
       {/* 필터/정렬 영역 (배너 아래에 위치, 스크롤 시 주소바 바로 아래에 고정) */}
       <FilterRow>
         <TimeToggle
-          label={filters.availableAt || currentTime}
+          label={filters.availableAt || getNearestHour(currentTime)}
           active={!!filters.availableAt}
           onClick={() => !isLoading && setIsTimeSheetOpen(true)}
         />
@@ -228,7 +262,7 @@ export default function HomePage() {
         }}
       >
         <TimeList>
-          {generateTimeOptions(currentTime).map((t) => (
+          {generateTimeOptions(getNearestHour(currentTime)).map((t) => (
             <TimeItem
               key={t}
               onClick={async () => {
@@ -346,6 +380,14 @@ const AddressText = styled.div`
   display: flex;
   align-items: center;
   gap: clamp(2px, 2vw, 4px);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 4px 8px;
+  border-radius: 8px;
+  
+  &:hover {
+    background-color: #f8f8f8;
+  }
 `;
 
 /* 배너 광고 영역(주소바 아래에 위치) */
