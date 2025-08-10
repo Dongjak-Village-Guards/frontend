@@ -9,6 +9,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import MainPageApp from './pages/MainPageApp';
 import useUserInfo from './hooks/user/useUserInfo';
+import ShopDetailPage from './pages/ShopDetailPage';
 
 function App() {
   // useUserInfo에서 사용자 상태 가져오기
@@ -38,6 +39,8 @@ function App() {
         <Routes>
           {/* 모든 페이지를 MainPageApp으로 통합 */}
           <Route path="/" element={<MainPageApp />} />
+          { /* 가게 상세 페이지: 디자이너 유무에 따라 동적 렌더링 */}
+          <Route path="/shop/:id" element={<ShopDetailPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>

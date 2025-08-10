@@ -11,24 +11,40 @@ import styled from "styled-components";
  * @param {string} store.menu - 메뉴 정보
  * @param {number} store.distance - 거리 (미터)
  * @param {number} store.walkTime - 도보 시간 (분)
- * @param {number} store.originalPrice - 원가
- * @param {number} store.discountPrice - 할인가
- * @param {number} store.discontRate - 할인율
+ * @param {Object[]} store.menus - 메뉴 목록
+ * @param {Object[]} store.designers - 디자이너 목록
+ * @param {boolean} store.hasDesigners - 디자이너 유무
  */
 const CardText = ({ store }) => {
-  const { name,
-          menu, 
-          distance, 
-          walkTime, 
-          originalPrice, 
-          discountPrice, 
-          discountRate 
-        } = store;
+  const { name, menu, distance, walkTime, menus, designers, hasDesigners } = store;
+  
+  // 최대 할인율 메뉴 선택
+  const featuredMenu = (() => {
+    // 디자이너가 있는 경우
+    if (store.hasDesigners && store.designers?.length > 0) {
+      const allMenus = store.designers.flatMap(designer => designer.menus || []);
+      if (allMenus.length === 0) {
+        return { discountRate: 0, originalPrice: 0, discountPrice: 0, name: '메뉴 없음' };
+      }
+      return allMenus.reduce(
+        (prev, curr) => (prev.discountRate > curr.discountRate ? prev : curr),
+        { discountRate: 0, originalPrice: 0, discountPrice: 0, name: '메뉴 없음' }
+      );
+    }
+    // 디자이너가 없는 경우
+    if (!store.menus || store.menus.length === 0) {
+      return { discountRate: 0, originalPrice: 0, discountPrice: 0, name: '메뉴 없음' };
+    }
+    return store.menus.reduce(
+      (prev, curr) => (prev.discountRate > curr.discountRate ? prev : curr),
+      { discountRate: 0, originalPrice: 0, discountPrice: 0, name: '메뉴 없음' }
+    );
+  })();
 
   return (
     <StoreInfo>
       <InfoWrapperLeft>
-        {/* 제목 6글자까지 표시*/}
+        {/* 제목 6글자까지 표시 */}
         <StoreName>{name.length > 6 ? `${name.slice(0, 6)}...` : name}</StoreName>
         <StoreMeta>
             <MetaDistance>{distance}m </MetaDistance>
@@ -37,13 +53,13 @@ const CardText = ({ store }) => {
       </InfoWrapperLeft>
 
       <InfoWrapperRight>
-        <StoreMenu>{menu}</StoreMenu>
+        <StoreMenu>{store.menu}</StoreMenu>
         <StorePrice>
-            {discountRate}%
-            <span>{originalPrice.toLocaleString()}원</span> {/* CSS 분리할려고 span에 감쌈 */}
+            {featuredMenu.discountRate}%
+            <span>{featuredMenu.originalPrice.toLocaleString()}원</span> {/* CSS 분리할려고 span에 감쌈 */}
         </StorePrice>
         <StoreDiscountPrice>
-            {discountPrice.toLocaleString()}원
+            {featuredMenu.discountPrice.toLocaleString()}원
         </StoreDiscountPrice>
       </InfoWrapperRight>
     </StoreInfo>
