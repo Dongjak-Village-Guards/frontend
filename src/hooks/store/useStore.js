@@ -133,21 +133,30 @@ const useStore = create((set, get) => ({
   getSortedStores: () => {
     const { stores, sortOption, filters } = get();
     console.log('getSortedStores 호출, 현재 store 상태:', get());
-    const sortedStores = [...stores];
+    let filteredStores = [...stores];
     
-    // 1) 필터 적용 (데모 데이터에는 시간/업종 정보가 없어 필터는 no-op)
-    // 추후 store 객체에 시간/업종 메타가 추가되면 여기서 필터링
-    // if (filters.availableAt) { ... }
-    // if (filters.categories.length) { ... }
+    // 1) 업종 필터 적용
+    if (filters.categories.length > 0) {
+      // 현재 mock 데이터에는 업종 정보가 없으므로 임시로 모든 가게를 표시
+      // 추후 store 객체에 category 필드가 추가되면 아래 주석을 해제
+      // filteredStores = filteredStores.filter(store => 
+      //   filters.categories.includes(store.category)
+      // );
+      console.log('업종 필터 적용됨:', filters.categories);
+    }
 
-    // 2) 정렬 적용
+    // 2) 시간 필터 적용 (데모 데이터에는 시간 정보가 없어 필터는 no-op)
+    // 추후 store 객체에 시간 메타가 추가되면 여기서 필터링
+    // if (filters.availableAt) { ... }
+
+    // 3) 정렬 적용
     switch (sortOption) {
       case 'discount':
-        return sortedStores.sort((a, b) => b.discountRate - a.discountRate);
+        return filteredStores.sort((a, b) => b.discountRate - a.discountRate);
       case 'price':
-        return sortedStores.sort((a, b) => a.discountPrice - b.discountPrice);
+        return filteredStores.sort((a, b) => a.discountPrice - b.discountPrice);
       default:
-        return sortedStores;
+        return filteredStores;
     }
   }
 }));

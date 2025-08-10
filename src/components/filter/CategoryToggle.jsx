@@ -4,7 +4,8 @@ import styled from 'styled-components';
 const CategoryToggle = ({ label = '업종', active, onClick }) => {
   return (
     <Button type="button" onClick={onClick} $active={active} aria-pressed={!!active}>
-      {label}
+      <span>{label}</span>
+      <Caret>▾</Caret>
     </Button>
   );
 };
@@ -12,9 +13,9 @@ const CategoryToggle = ({ label = '업종', active, onClick }) => {
 export default CategoryToggle;
 
 const Button = styled.button`
-  width: clamp(60px, 20vw, 72px);
+  min-width: clamp(60px, 20vw, 72px);
+  width: auto;
   height: clamp(30px, 7vh, 36px);
-  padding: clamp(3px, 1vw, 5px) clamp(12px, 4vw, 18px);
   border-radius: clamp(12px, 3vw, 16px);
   border: 1px solid ${props => props.$active ? '#DA2538' : '#CCC'};
   background: #fff;
@@ -23,7 +24,20 @@ const Button = styled.button`
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(4px, 2vw, 8px);
+  padding: 0 clamp(8px, 3vw, 12px);
+  white-space: nowrap;
   
-  &:hover { background: #f8f8f8; }
+  &:hover { 
+    border: 1px solid #DA2538;
+    color: #DA2538;
+  }
+`;
+
+const Caret = styled.span`
+  font-size: 12px;
 `;
 

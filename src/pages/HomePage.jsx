@@ -9,6 +9,7 @@ import { AiFillCaretDown } from "react-icons/ai";
 import BottomSheet from "../components/common/BottomSheet";
 import TimeToggle from "../components/filter/TimeToggle";
 import CategoryToggle from "../components/filter/CategoryToggle";
+import CategoryFilter from "../components/filter/CategoryFilter";
 import Spinner from "../components/common/Spinner";
 import useStore from "../hooks/store/useStore";
 import useUserInfo from "../hooks/user/useUserInfo";
@@ -51,6 +52,7 @@ export default function HomePage() {
   /* 토글 상태 관리 */
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [isTimeSheetOpen, setIsTimeSheetOpen] = useState(false);
+  const [isCategorySheetOpen, setIsCategorySheetOpen] = useState(false);
   
   /* 로딩 상태 관리 */
   const [isLoading, setIsLoading] = useState(false);
@@ -120,11 +122,48 @@ export default function HomePage() {
     }
   };
 
+  /**
+   * 업종 필터 변경 핸들러
+   * @param {Array} categories - 선택된 업종 배열
+   */
+  const handleCategoryChange = (categories) => {
+    console.log('업종 선택됨:', categories);
+    setFilters({ categories });
+    
+    // 업종 필터 변경 시 로딩 처리
+    setLoadingWithLog(true);
+    setTimeout(async () => {
+      console.log('업종필터 로딩 시작');
+      await new Promise(resolve => setTimeout(resolve, 300));
+      console.log('업종필터 로딩 완료');
+      setLoadingWithLog(false);
+      
+      // 업종이 모두 해제되었을 때(선택안함 클릭 시) 바텀시트 닫기
+      if (categories.length === 0) {
+        setIsCategorySheetOpen(false);
+      }
+    }, 300);
+  };
+
   // 정렬된 가게 목록 가져오기
   const sortedStores = getSortedStores();
 
   // 표시할 주소 결정 (등록된 주소가 있으면 사용, 없으면 기본 주소)
   const displayAddress = userAddress ? userAddress.roadAddr : currentAddress;
+
+  // 업종 필터 라벨 생성
+  const getCategoryLabel = () => {
+    if (filters.categories.length === 0) return '업종';
+    if (filters.categories.length === 1) {
+      const categoryMap = { hair: '미용실', nail: '네일샵', pilates: '필라테스' };
+      return categoryMap[filters.categories[0]] || '업종';
+    }
+    // 2개 이상 선택 시: "첫번째업종 외 N종" 형태
+    const categoryMap = { hair: '미용실', nail: '네일샵', pilates: '필라테스' };
+    const firstCategory = categoryMap[filters.categories[0]] || '업종';
+    const remainingCount = filters.categories.length - 1;
+    return `${firstCategory} 외 ${remainingCount}종`;
+  };
 
   return (
     <HomeContainer>
@@ -155,7 +194,11 @@ export default function HomePage() {
           onClick={() => !isLoading && setIsTimeSheetOpen(true)}
         />
 
-        <CategoryToggle onClick={() => !isLoading && {/* TODO: 업종 바텀시트 열기 */}} />
+        <CategoryToggle 
+          label={getCategoryLabel()}
+          active={filters.categories.length > 0}
+          onClick={() => !isLoading && setIsCategorySheetOpen(true)} 
+        />
 
         <SortToggleContainer>
           <SortToggle onClick={handleToggleSort}>
@@ -212,6 +255,30 @@ export default function HomePage() {
             </TimeItem>
           ))}
         </TimeList>
+      </BottomSheet>
+
+      {/* 업종 선택 바텀시트 */}
+      <BottomSheet
+        open={isCategorySheetOpen}
+        title="업종"
+        onClose={() => {
+          console.log('업종 바텀시트 닫기');
+          // 업종 바텀시트 닫기 시 로딩 처리
+          setLoadingWithLog(true);
+          setTimeout(async () => {
+            console.log('업종 바텀시트 로딩 시작');
+            await new Promise(resolve => setTimeout(resolve, 300));
+            console.log('업종 바텀시트 로딩 완료');
+            setLoadingWithLog(false);
+        }, 300);
+        setIsCategorySheetOpen(false);
+        }}
+      >
+        <CategoryFilter
+          selectedCategories={filters.categories}
+          onCategoryChange={handleCategoryChange}
+          onClose={() => setIsCategorySheetOpen(false)}
+        />
       </BottomSheet>
 
       {/* 매장 리스트 */}
