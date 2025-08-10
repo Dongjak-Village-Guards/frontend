@@ -5,7 +5,6 @@ const TimeToggle = ({ label, active, onClick }) => {
   return (
     <Button type="button" onClick={onClick} $active={active} aria-pressed={!!active}>
       <span>{label}</span>
-      <Caret>▾</Caret>
     </Button>
   );
 };
@@ -18,14 +17,14 @@ const Button = styled.button`
   border-radius: clamp(12px, 3vw, 16px);
   border: 1px solid ${props => props.$active ? '#DA2538' : '#CCC'};
   background: #fff;
-  color: ${props => props.$active ? '#DA2538' : '#666'};
+  color: ${props => props.$active ? '#DA2538' : '#000000'};
   font-size: clamp(13px, 4vw, 15px);
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: clamp(4px, 2vw, 8px);
   padding: 0 clamp(4px, 2vw, 8px);
   
@@ -34,9 +33,5 @@ const Button = styled.button`
     border: 1px solid #DA2538;
     color: #DA2538;
   }
-`;
-
-const Caret = styled.span`
-  font-size: 12px;
 `;
 
