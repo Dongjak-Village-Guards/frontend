@@ -9,6 +9,7 @@ import { AiFillCaretDown } from "react-icons/ai";
 import BottomSheet from "../components/common/BottomSheet";
 import TimeToggle from "../components/filter/TimeToggle";
 import CategoryToggle from "../components/filter/CategoryToggle";
+import Spinner from "../components/common/Spinner";
 import useStore from "../hooks/store/useStore";
 import useUserInfo from "../hooks/user/useUserInfo";
 import Card from "../components/shop/Card";
@@ -51,6 +52,10 @@ export default function HomePage() {
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [isTimeSheetOpen, setIsTimeSheetOpen] = useState(false);
   
+  /* 로딩 상태 관리 */
+  const [isLoading, setIsLoading] = useState(true);
+  const [isDataLoading, setIsDataLoading] = useState(false);
+  
   /* Zustand 스토어에서 필요한 상태와 액션 가져오기 */
   const { 
     currentAddress, 
@@ -66,20 +71,45 @@ export default function HomePage() {
   /* 사용자 정보에서 등록된 주소 가져오기 */
   const { userAddress } = useUserInfo();
 
-  /* 컴포넌트 마운트 시 현재 시간을 한 번만 설정(갱신기준: 새로고침) */
+  /* 컴포넌트 마운트 시 초기화 및 로딩 처리 */
   useEffect(() => {
-    console.log("currentTime", type(currentTime));
-    // 초기 시간 설정 (새로고침 시에만 실행)
-    updateCurrentTime();
+    const initializePage = async () => {
+      try {
+        setIsLoading(true);
+        
+        // 초기 시간 설정 (새로고침 시에만 실행)
+        updateCurrentTime();
+        
+        // 데이터 로딩 시뮬레이션 (실제 API 호출 시 대체)
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        setIsLoading(false);
+      } catch (error) {
+        console.error('페이지 초기화 오류:', error);
+        setIsLoading(false);
+      }
+    };
+
+    initializePage();
   }, [updateCurrentTime]);
 
   /**
    * 정렬 옵션 변경 핸들러
    * @param {string} option - 정렬 옵션
    */
-  const handleSortChange = (option) => {
-    setSortOption(option);
-    setIsSortOpen(false);
+  const handleSortChange = async (option) => {
+    try {
+      setIsDataLoading(true);
+      setSortOption(option);
+      setIsSortOpen(false);
+      
+      // 정렬 처리 시뮬레이션 (실제 API 호출 시 대체)
+      await new Promise(resolve => setTimeout(resolve, 500));
+    } catch (error) {
+      console.error('정렬 처리 오류:', error);
+    } finally {
+      setIsDataLoading(false);
+    }
   };
 
   /* 토글 상태 변경 handler 함수 */
@@ -92,6 +122,18 @@ export default function HomePage() {
 
   // 표시할 주소 결정 (등록된 주소가 있으면 사용, 없으면 기본 주소)
   const displayAddress = userAddress ? userAddress.roadAddr : currentAddress;
+
+  // 로딩 중일 때 Spinner 표시
+  if (isLoading) {
+    return (
+      <HomeContainer>
+        <LoadingOverlay>
+          <Spinner />
+          <LoadingText>페이지를 불러오는 중...</LoadingText>
+        </LoadingOverlay>
+      </HomeContainer>
+    );
+  }
 
   return (
     <HomeContainer>
@@ -178,9 +220,16 @@ export default function HomePage() {
 
       {/* 매장 리스트 */}
       <StoreList>
-        {sortedStores.map(store => (
-          <Card key={store.id} store={store} />
-        ))}
+        {isDataLoading ? (
+          <DataLoadingContainer>
+            <Spinner />
+            <LoadingText>데이터를 불러오는 중...</LoadingText>
+          </DataLoadingContainer>
+        ) : (
+          sortedStores.map(store => (
+            <Card key={store.id} store={store} />
+          ))
+        )}
       </StoreList>
 
     </HomeContainer>
@@ -389,4 +438,37 @@ const StoreList = styled.div`
   background: #fff;
   width: 100%;
   overflow-x: hidden;
+`;
+
+/* 로딩 오버레이 */
+const LoadingOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.95);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+`;
+
+/* 데이터 로딩 컨테이너 */
+const DataLoadingContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+  min-height: 200px;
+`;
+
+/* 로딩 텍스트 */
+const LoadingText = styled.div`
+  margin-top: 16px;
+  font-size: 14px;
+  color: #666;
+  text-align: center;
 `;
