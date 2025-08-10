@@ -79,7 +79,7 @@ const Sheet = styled.section`
   border-top-right-radius: 16px;
   box-shadow: 0 -8px 24px rgba(0,0,0,0.12);
   z-index: 32; /* Backdrop(31)보다 높게 */
-  max-height: 60vh;
+  max-height: 51.5vh; // 눈바디
   display: flex;
   flex-direction: column;
   animation: slideUp 160ms ease-out;
