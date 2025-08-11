@@ -114,17 +114,20 @@ const ShopDetailPage = () => {
   return (
     <PageContainer>
         {/* 상단 네비게이션 바 */}
-        <NavBar>
-            <BackButton className='back-button' onClick={handleBack}></BackButton>
-            <NavTitle>
-                {showPiAgreement ? '개인정보 제3자 제공 동의서' :
-                 isReserving ? '예약하기' :
-                 shopName}
-            </NavTitle>
-            {!isReserving && !showPiAgreement && (
-                <LikeButton storeId={shop.id} isLiked={shop.isLiked} />
-            )}
-        </NavBar>
+        <FixedHeader>
+            <TopSpacer />
+            <NavBar>
+                <BackButton className='back-button' onClick={handleBack}></BackButton>
+                <NavTitle>
+                    {showPiAgreement ? '개인정보 제3자 제공 동의서' :
+                     isReserving ? '예약하기' :
+                     shopName}
+                </NavTitle>
+                {!isReserving && !showPiAgreement && (
+                    <LikeButton storeId={shop.id} isLiked={shop.isLiked} />
+                )}
+            </NavBar>
+        </FixedHeader>
 
         {/* 콘텐츠 영역 */}
         <ContentContainer>
@@ -220,14 +223,23 @@ const PageContainer = styled.div`
     font-family: Pretendard;
 `;
 
-/* 상단 네비게이션 바 */
-const NavBar = styled.div`
-    position: absolute;
-    top: 44px;
+const FixedHeader = styled.div`
+    position: fixed;
+    top: 0;
     left: 0;
     right: 0;
-    padding: 8px 16px;
+    z-index: 20;
     background: #fff;
+`;
+
+const TopSpacer = styled.div`
+    height: 44px;
+    background: #fff;
+`
+
+/* 상단 네비게이션 바 */
+const NavBar = styled.div`
+    padding: 8px 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
