@@ -4,11 +4,11 @@
  * 1. hasDesigners=true: 디자이너 목록 표시 후, 디자이너 선택 시 메뉴 표시
  * 2. hasDesigners=false: 바로 메뉴 표시
  * mockShopList.js의 STORES_DATA에서 데이터 동적 로드
+ * 예약 페이지 및 개인정보 동의서 표시 추가
  */
 
 import React, { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom';
-import { STORES_DATA } from '../apis/mock/mockShopList';
 import useStore from '../hooks/store/useStore';
 import LikeButton from '../components/shop/LikeButton';
 import MenuCard from '../components/shop/MenuCard';
@@ -24,13 +24,23 @@ import koreanImage from "../assets/images/korean.png";
 import hairImage from "../assets/images/hair.png";
 import { ReactComponent as BackButton } from "../assets/images/back.svg";
 import DesignerInfo from '../components/shop/DesignerInfo';
+import ReservationPage from './ReservationPage';
 
 const ShopDetailPage = () => {
     const navigate = useNavigate();
     const { id } = useParams();
-    const [selectedMenu, setSelectedMenu] = useState(null);
-    const [selectedDesigner, setSelectedDesigner] = useState(null);
-    const { stores, currentTime } = useStore();
+    const { 
+        stores, 
+        currentTime, 
+        isReserving, 
+        selectedMenu, 
+        selectedDesigner, 
+        showPiAgreement, 
+        selectDesigner,
+        startReservation, 
+        cancelReservation, 
+        togglePiAgreement 
+    } = useStore();
 
     /* STORES_DATA에서 직접 데이터를 찾으면 Zustand stores 상태와 별개로 mock 데이터를 읽는 거라
     홈 화면과의 좋아요 상태가 공유되지 않음. 따라서 STORES_DATA 대신 useStore에서 상태를 불러와야 함
@@ -73,21 +83,25 @@ const ShopDetailPage = () => {
 
     // 뒤로 가기 처리
     const handleBack = () => {
-        if (shop.hasDesigners && selectedDesigner) {
-            setSelectedDesigner(null);  // 디자이너 선택 해제
+        if (showPiAgreement) {
+            togglePiAgreement(); // 동의서 숨김
+        } else if (isReserving) {
+            cancelReservation(); // 예약 상태 초기화
+        } else if (shop.hasDesigners && selectedDesigner) {
+            cancelReservation(); // 디자이너 선택 해제
         } else {
-            navigate('/')
+            navigate('/');
         }
     };
 
     // 예약 버튼 클릭 시
     const handleReserve = (menu) => {
-        setSelectedMenu(menu);
+        startReservation(menu, selectedDesigner);
     };
 
     // 디자이너 선택
     const handleSelectDesigner = (designer) => {
-        setSelectedDesigner(designer);
+        selectDesigner(designer);
     };
 
     // 대표 메뉴 이름 (전문 분야로 사용)
@@ -95,19 +109,27 @@ const ShopDetailPage = () => {
     prev.discountRate > curr.discountRate ? prev : curr
     )?.name || 'N/A';
 
+    const shopName = selectedDesigner ? `${shop.name} / ${selectedDesigner.name}` : shop.name;
+
   return (
     <PageContainer>
         {/* 상단 네비게이션 바 */}
         <NavBar>
             <BackButton className='back-button' onClick={handleBack}></BackButton>
             <NavTitle>
-                {shop.name}{selectedDesigner ? ` / ${selectedDesigner.name}` : ''}
+                {showPiAgreement ? '개인정보 제3자 제공 동의서' :
+                 isReserving ? '예약하기' :
+                 shopName}
             </NavTitle>
             <LikeButton storeId={shop.id} isLiked={shop.isLiked} />
         </NavBar>
 
         {/* 콘텐츠 영역 */}
         <ContentContainer>
+            {isReserving ? (
+                <ReservationPage shop={shop} />
+            ) : (
+                <>
                 {!shop.hasDesigners || !selectedDesigner ? (
                     <ShopImage 
                         src={imageSrc} 
@@ -131,7 +153,7 @@ const ShopDetailPage = () => {
                 {shop.hasDesigners ? (
                     !selectedDesigner ? (
                         <>
-                            <Line></Line>
+                            <Line />
                             <DesignerSection>
                                 {shop.designers.map(designer => (
                                     <DesignerCard
@@ -144,7 +166,7 @@ const ShopDetailPage = () => {
                         </>
                     ) : (
                         <>
-                            <Line></Line>
+                            <Line />
                             <MenuSection>
                                 <SectionTitle>가장 할인율이 큰 대표 메뉴!</SectionTitle>
                                 <MenuCard
@@ -152,7 +174,7 @@ const ShopDetailPage = () => {
                                     onReserve={() => handleReserve(getFeaturedMenu())}
                                 />
                             </MenuSection>
-                            <Line></Line>
+                            <Line />
                             <MenuSection>
                                 <SectionTitle>다른 할인 메뉴</SectionTitle>
                                 <MenuList menus={getOtherMenus()} onReserve={handleReserve} />
@@ -161,7 +183,7 @@ const ShopDetailPage = () => {
                     )
                 ) : (
                     <>
-                        <Line></Line>
+                        <Line />
                         <MenuSection>
                             <SectionTitle>가장 할인율이 큰 대표 메뉴!</SectionTitle>
                             <MenuCard
@@ -169,13 +191,15 @@ const ShopDetailPage = () => {
                                 onReserve={() => handleReserve(getFeaturedMenu())}
                             />
                         </MenuSection>
-                        <Line></Line>
+                        <Line />
                         <MenuSection>
                             <SectionTitle>다른 할인 메뉴</SectionTitle>
                             <MenuList menus={getOtherMenus()} onReserve={handleReserve} />
                         </MenuSection>
                     </>
                 )}
+                </>
+            )}
             </ContentContainer>
     </PageContainer>
   );

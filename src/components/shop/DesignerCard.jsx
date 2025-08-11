@@ -5,6 +5,7 @@
 import React from 'react'
 import styled from 'styled-components';
 import designerImage from '../../assets/images/designer.png';
+import useStore from '../../hooks/store/useStore';
 
 /**
  * DesignerCard 컴포넌트
@@ -15,8 +16,17 @@ import designerImage from '../../assets/images/designer.png';
  */
 
 const DesignerCard = ({ designer, onSelect }) => {
+    const { startReservation, selectDesigner } = useStore();
+
     // 최대 할인율 계산
     const maxDiscountRate = Math.max(...designer.menus.map(menu => menu.discountRate));
+
+    const handleReserve = (e) => {
+        e.stopPropagation();
+        const firstMenu = designer.menus[0];
+        startReservation(firstMenu, designer);
+        onSelect();
+    };
 
   return (
     <Card>
@@ -29,7 +39,7 @@ const DesignerCard = ({ designer, onSelect }) => {
                 </DiscountText>
             </Detail>
         </Div>
-        <SelectButton onClick={onSelect}>예약하기</SelectButton>
+        <SelectButton onClick={handleReserve}>예약하기</SelectButton>
     </Card>
   );
 };

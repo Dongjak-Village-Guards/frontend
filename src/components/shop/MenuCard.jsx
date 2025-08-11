@@ -6,6 +6,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import menuImage from '../../assets/images/menu.png';
+import useStore from '../../hooks/store/useStore';
 
 /**
  * MenuCard 컴포넌트
@@ -18,7 +19,15 @@ import menuImage from '../../assets/images/menu.png';
  * @param {Function} onReserve - 예약 버튼 클릭 시 호출
  */
 
-const MenuCard = ({ menu, onReserve }) => {
+const MenuCard = ({ menu, onReserve, hideButton = false }) => {
+    const { startReservation, selectedDesigner } = useStore();
+
+    const handleReserve = (e) => {
+        e.stopPropagation();
+        startReservation(menu, selectedDesigner);
+        onReserve();
+    };
+
   return (
     <Card>
         <Div>
@@ -32,7 +41,7 @@ const MenuCard = ({ menu, onReserve }) => {
                 <DiscountPrice>{menu.discountPrice.toLocaleString()}원</DiscountPrice>
             </Detail>
         </Div>
-        <ReserveButton disabled={menu.isReserved} onClick={onReserve}>
+        <ReserveButton disabled={menu.isReserved} onClick={handleReserve}>
             {menu.isReserved ? "예약마감" : "예약하기"}
         </ReserveButton>
     </Card>
