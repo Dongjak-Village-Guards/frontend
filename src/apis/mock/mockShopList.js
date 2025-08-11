@@ -8,8 +8,9 @@ export const STORES_DATA = [
       id: 1,
       name: "우리동네 치킨집",
       menu: "후라이드 치킨",
-      distance: 150,
-      walkTime: 3,
+      address: "서울 동작구 흑석로 79",
+      distance: 599,
+      walkTime: 15,
       isLiked: false,
       hasDesigners: false,
       menus: [
@@ -36,8 +37,9 @@ export const STORES_DATA = [
       id: 2,
       name: "맛있는 피자집",
       menu: "페퍼로니 피자",
-      distance: 200,
-      walkTime: 4,
+      address: "서울 동작구 흑석로9길 6",
+      distance: 443,
+      walkTime: 12,
       isLiked: true,
       hasDesigners: false,
       menus: [
@@ -64,8 +66,9 @@ export const STORES_DATA = [
       id: 3,
       name: "신선한 샐러드",
       menu: "닭가슴살 샐러드",
-      distance: 100,
-      walkTime: 2,
+      address: "서울 동작구 흑석로 25 지하 1층 102호",
+      distance: 772,
+      walkTime: 22,
       isLiked: false,
       hasDesigners: false,
       menus: [
@@ -92,8 +95,9 @@ export const STORES_DATA = [
       id: 4,
       name: "고급 스테이크하우스",
       menu: "립 스테이크",
-      distance: 300,
-      walkTime: 6,
+      address: "서울 동작구 흑석로 19 1층",
+      distance: 806,
+      walkTime: 30,
       isLiked: false,
       menus: [
         {
@@ -119,8 +123,9 @@ export const STORES_DATA = [
       id: 5,
       name: "전통 한식당",
       menu: "불고기",
-      distance: 180,
-      walkTime: 4,
+      address: "서울 동작구 상도로 296 1층",
+      distance: 1800,
+      walkTime: 32,
       isLiked: true,
       hasDesigners: false,
       menus: [
@@ -146,9 +151,10 @@ export const STORES_DATA = [
     {
       id: 6,
       name: "A 미용실",
-      menu: "히피펌",
-      distance: 255,
-      walkTime: 3,
+      menu: "히피 펌",
+      address: "서울 동작구 현충로 115",
+      distance: 248,
+      walkTime: 7,
       isLiked: false,
       hasDesigners: false,
       menus: [
@@ -191,8 +197,9 @@ export const STORES_DATA = [
       id: 7,
       name: "B 미용실",
       menu: "아이돌 펌",
-      distance: 260,
-      walkTime: 4,
+      address: "서울 동작구 흑석로9길 9 1층",
+      distance: 456,
+      walkTime: 12,
       isLiked: false,
       hasDesigners: true,
       menus: [],
@@ -236,9 +243,6 @@ export const STORES_DATA = [
       ],
     },
   ];
-  
-  // 주소 데이터
-  export const ADDRESS_DATA = "마포구 사천로 24길";
   
   // 필터 옵션 데이터
   export const SORT_OPTIONS = [

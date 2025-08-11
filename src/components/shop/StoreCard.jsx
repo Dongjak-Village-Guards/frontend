@@ -28,7 +28,7 @@ const StoreCard = ({ store }) => {
     7: hairImage,
   };
 
-  const imageSrc = imageMap[store.id] || chickenImage;
+  const imageSrc = imageMap[store.id] || '/assets/images/placeholder.png';
 
   return (
     <CardImageContainer>
@@ -38,7 +38,7 @@ const StoreCard = ({ store }) => {
           alt={`${store.name} 메인 이미지`}
           onError={(e) => {
             console.warn(`이미지 로드 실패: ${store.id}, using fallback`);
-            e.target.src = chickenImage;  // 이미지 로드 실패 시 기본 치킨 이미지로 대체
+            e.target.src = '../../assets/images/placeholder.png';  // 이미지 로드 실패 시 기본 치킨 이미지로 대체
           }}
         />
       </ImageGroup>

@@ -14,15 +14,15 @@ import styled from 'styled-components';
  * 
  */
 
-const ShopInfo = ({ name, address, distance, walkingTime, reservationTime }) => {
+const ShopInfo = ({ name, address, distance, reservationTime }) => {
   return (
     <InfoContainer>
-        <ShopName>{name.length > 15 ? `${name.slice(0, 12)}...` : name}</ShopName>
-        <InfoText>{address}</InfoText>
-        <InfoText>
-            {distance} | {walkingTime}
-        </InfoText>
-        <ReservationTime>{reservationTime}</ReservationTime>
+        <Title>
+            <ShopName>{name.length > 15 ? `${name.slice(0, 15)}...` : name}</ShopName>
+            <ReservationTime>{reservationTime}</ReservationTime>
+        </Title>
+        <InfoText className='address'>{address}</InfoText>
+        <InfoText className='distance'>{distance}</InfoText>
     </InfoContainer>
   );
 };
@@ -33,29 +33,44 @@ export default ShopInfo
 
 /* 가게 정보 컨테이너 */
 const InfoContainer = styled.div`
-    padding: 16px;
+    padding: 16px 22px;
     background: #fff;
+    font-family: Pretendard;
+`;
+
+const Title = styled.div`
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    align-items: center;
 `;
 
 /* 가게 이름 (긴 이름은 ... 처리) */
 const ShopName = styled.h2`
-    font-size: clamp(18px, 5vw, 20px);
+    font-size: 16px;
     font-weight: 700;
     color: #000;
-    margin-bottom: 8px;
 `;
 
-/* 주소, 거리, 도보 시간 텍스트 */
+/* 주소, 거리 텍스트 */
 const InfoText = styled.p`
-    font-size: clamp(12px, 3.5vw, 14px);
+    font-size: 14px;
     color: #000;
-    margin-bottom: 4px;
+    line-height: 14px;
+
+    &.address {
+        font-weight: 500;
+        margin-bottom: 10px;
+    }
+
+    &.distance {
+        font-weight: 600;
+    }
 `;
 
 /* 예약 시간 텍스트 */
 const ReservationTime = styled.p`
-    font-size: clamp(12px, 3.5vw, 14px);
+    font-size: 18px;
     color: #da2538;
-    font-weight: 600;
-    margin-top: 4px;
+    font-weight: 700;
 `
