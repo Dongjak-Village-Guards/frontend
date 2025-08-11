@@ -55,6 +55,7 @@ export default Card;
 const CardContainer = styled.div`
   display: flex;
   flex-direction: column;
+  cursor: pointer;
 
   /* 반응형 웹 수정: 고정 너비 제거하고 유동적 너비 사용 */
   width: 100%;

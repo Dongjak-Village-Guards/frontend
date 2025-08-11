@@ -34,7 +34,6 @@ export default MenuList
 const ListContainer = styled.div`
     display: flex;
     flex-direction: column;
-    gap: 12px;
 `;
 
 /* 메뉴 없음 메시지 */
