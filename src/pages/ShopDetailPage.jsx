@@ -30,9 +30,12 @@ const ShopDetailPage = () => {
     const { id } = useParams();
     const [selectedMenu, setSelectedMenu] = useState(null);
     const [selectedDesigner, setSelectedDesigner] = useState(null);
-    const { currentTime } = useStore();
+    const { stores, currentTime } = useStore();
 
-    const shop = STORES_DATA.find(store => store.id === parseInt(id)) || STORES_DATA[0];
+    /* STORES_DATA에서 직접 데이터를 찾으면 Zustand stores 상태와 별개로 mock 데이터를 읽는 거라
+    홈 화면과의 좋아요 상태가 공유되지 않음. 따라서 STORES_DATA 대신 useStore에서 상태를 불러와야 함
+    이렇게 하면 toggleLike 실행 시 상태가 전역으로 바뀌어서 홈 화면과 상세페이지 양쪽에 동일하게 반영됨 */
+    const shop = stores.find(store => store.id === parseInt(id)) || stores[0];
 
     // 가게 ID에 따라 이미지 매핑 (임시)
     const imageMap = {
