@@ -36,6 +36,15 @@ const useStore = create((set, get) => ({
   /** mockShopList.js에서 가져온 가게 목록 데이터 */
   stores: STORES_DATA,
 
+  // ===== 예약 상태 관리 =====
+  isReserving: false,
+  selectedMenu: null,
+  selectedDesigner: null,
+
+  // ===== 개인정보 동의서 상태 관리 =====
+  showPiAgreement: false,
+  isAgreed: false,
+
   // ===== 액션 함수들 =====
   
   /**
@@ -92,6 +101,46 @@ const useStore = create((set, get) => ({
         : store
     )
   })),
+
+  selectDesigner: (designer) => set({
+    selectedDesigner: designer,
+    selectedMenu: null,
+    isReserving: false,
+    isAgreed: false,
+    showPiAgreement: false,
+  }),
+
+  /**
+   * 예약 시작
+   * @param {Object} menu - 선택된 메뉴
+   * @param {Object} designer - 선택된 디자이너 (선택 사항)
+   */
+  startReservation: (menu, designer = null) => set({
+    isReserving: true,
+    selectedMenu: menu,
+    selectedDesigner: designer,
+    isAgreed: false,  // 초기화
+    showPiAgreement: false,
+  }),
+
+  /**
+   * 예약 취소
+   */
+  cancelReservation: () => set({
+    isReserving: false,
+    selectedMenu: null,
+    selectedDesigner: null,
+    showPiAgreement: false,
+    isAgreed: false,
+  }),
+
+  /**
+   * 개인정보 동의서 표시/숨김 토글
+   */
+  togglePiAgreement: () => set((state) => ({
+    showPiAgreement: !state.showPiAgreement,
+  })),
+  setAgreed: (agreed) => set({ isAgreed: agreed }),
   
   // ===== Getter 함수들 ===== //
   
