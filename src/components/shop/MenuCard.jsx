@@ -41,9 +41,11 @@ const MenuCard = ({ menu, onReserve, hideButton = false }) => {
                 <DiscountPrice>{menu.discountPrice.toLocaleString()}원</DiscountPrice>
             </Detail>
         </Div>
-        <ReserveButton disabled={menu.isReserved} onClick={handleReserve}>
+        {!hideButton && (
+            <ReserveButton disabled={menu.isReserved} onClick={handleReserve}>
             {menu.isReserved ? "예약마감" : "예약하기"}
-        </ReserveButton>
+            </ReserveButton>
+        )}
     </Card>
   )
 }
