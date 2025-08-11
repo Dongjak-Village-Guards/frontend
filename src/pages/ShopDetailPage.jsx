@@ -121,7 +121,9 @@ const ShopDetailPage = () => {
                  isReserving ? '예약하기' :
                  shopName}
             </NavTitle>
-            <LikeButton storeId={shop.id} isLiked={shop.isLiked} />
+            {!isReserving && !showPiAgreement && (
+                <LikeButton storeId={shop.id} isLiked={shop.isLiked} />
+            )}
         </NavBar>
 
         {/* 콘텐츠 영역 */}
