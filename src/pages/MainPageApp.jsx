@@ -11,7 +11,7 @@ import SchedulePage from './SchedulePage';
 import MyPage from './MyPage';
 import SearchAddressPage from './SearchAddressPage';
 import LoginPage from './LoginPage';
-import Layout from '../components/Layout/Layout';
+import Layout from '../components/layout/Layout';
 import useStore from '../hooks/store/useStore';
 import useUserInfo from '../hooks/user/useUserInfo';
 
