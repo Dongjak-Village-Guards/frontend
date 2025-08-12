@@ -1,7 +1,11 @@
+/**
+ * Zustand 스토어
+ * 홈 화면의 가게 목록 정렬, 시간, 페이지 상태를 관리
+ * STORES_DATA를 사용하여 discount와 price 정렬은 menus의 discountPrice 기준
+ */
+
 import { create } from 'zustand';
 import { STORES_DATA } from '../../apis/mock/mockShopList';
-
-/**  전역 상태 관리 스토어(Zustand) **/
 
 const useStore = create((set, get) => ({
   // ===== 인증 상태 관리 =====
@@ -50,10 +54,19 @@ const useStore = create((set, get) => ({
     // ratingMin: null,
     // discountMin: null,
   },
-  
-  // ===== 가게 데이터 상태 관리 ===== //
-  /* mockShopList.js에서 가져온 가게 목록 데이터 */
+
+  // ===== 가게 데이터 상태 관리 =====
+  /** mockShopList.js에서 가져온 가게 목록 데이터 */
   stores: STORES_DATA,
+
+  // ===== 예약 상태 관리 =====
+  isReserving: false,
+  selectedMenu: null,
+  selectedDesigner: null,
+
+  // ===== 개인정보 동의서 상태 관리 =====
+  showPiAgreement: false,
+  isAgreed: false,
 
   // ===== 액션 함수들 =====
   
@@ -132,6 +145,46 @@ const useStore = create((set, get) => ({
         : store
     )
   })),
+
+  selectDesigner: (designer) => set({
+    selectedDesigner: designer,
+    selectedMenu: null,
+    isReserving: false,
+    isAgreed: false,
+    showPiAgreement: false,
+  }),
+
+  /**
+   * 예약 시작
+   * @param {Object} menu - 선택된 메뉴
+   * @param {Object} designer - 선택된 디자이너 (선택 사항)
+   */
+  startReservation: (menu, designer = null) => set({
+    isReserving: true,
+    selectedMenu: menu,
+    selectedDesigner: designer,
+    isAgreed: false,  // 초기화
+    showPiAgreement: false,
+  }),
+
+  /**
+   * 예약 취소
+   */
+  cancelReservation: () => set({
+    isReserving: false,
+    selectedMenu: null,
+    selectedDesigner: null,
+    showPiAgreement: false,
+    isAgreed: false,
+  }),
+
+  /**
+   * 개인정보 동의서 표시/숨김 토글
+   */
+  togglePiAgreement: () => set((state) => ({
+    showPiAgreement: !state.showPiAgreement,
+  })),
+  setAgreed: (agreed) => set({ isAgreed: agreed }),
   
   // ===== Getter 함수들 ===== //
   
@@ -141,6 +194,7 @@ const useStore = create((set, get) => ({
    */
   getSortedStores: () => {
     const { stores, sortOption, filters } = get();
+    const sortedStores = [...stores];
     console.log('getSortedStores 호출, 현재 store 상태:', get());
     let filteredStores = [...stores];
     
@@ -160,10 +214,31 @@ const useStore = create((set, get) => ({
 
     // 3) 정렬 적용
     switch (sortOption) {
+      // 최대 할인율 기준 내림차순 정렬 (높은 할인율이 먼저)
       case 'discount':
-        return filteredStores.sort((a, b) => b.discountRate - a.discountRate);
+        return sortedStores.sort((a, b) => {
+          const aMaxDiscount = a.hasDesigners
+            ? Math.max(...a.designers.flatMap(d => d.menus.map(m => m.discountRate))) // 디자이너가 있으면 모든 디자이너의 메뉴에서 최대 할인율 추출
+            : Math.max(...a.menus.map(m => m.discountRate));  // 디자이너가 없으면 가게의 메뉴에서 최대 할인율 추출
+          const bMaxDiscount = b.hasDesigners
+            ? Math.max(...b.designers.flatMap(d => d.menus.map(m => m.discountRate))) // // 디자이너가 있으면 모든 디자이너의 메뉴에서 최대 할인율 추출
+            : Math.max(...b.menus.map(m => m.discountRate));  // 디자이너가 없으면 가게의 메뉴에서 최대 할인율 추출
+          return bMaxDiscount - aMaxDiscount; // 내림차순 정렬 (b가 a보다 크면 앞으로)
+        });
+      // 할인 가격 기준 오름차순 정렬 (낮은 가격이 먼저)
       case 'price':
-        return filteredStores.sort((a, b) => a.discountPrice - b.discountPrice);
+        return sortedStores.sort((a, b) => {
+          const aMinPrice = a.hasDesigners
+            ? Math.min(...a.designers.flatMap(d => d.menus.map(m => m.discountPrice)))
+            : Math.min(...a.menus.map(m => m.discountPrice));
+          const bMinPrice = b.hasDesigners
+            ? Math.min(...b.designers.flatMap(d => d.menus.map(m => m.discountPrice)))
+            : Math.min(...b.menus.map(m => m.discountPrice));
+          return aMinPrice - bMinPrice;
+        });
+      // 거리 기준 오름차순 정렬 (가까운 가게가 먼저)
+      case 'distance':
+        return sortedStores.sort((a, b) => a.distance - b.distance);
       default:
         return filteredStores;
     }

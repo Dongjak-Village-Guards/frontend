@@ -11,24 +11,40 @@ import styled from "styled-components";
  * @param {string} store.menu - 메뉴 정보
  * @param {number} store.distance - 거리 (미터)
  * @param {number} store.walkTime - 도보 시간 (분)
- * @param {number} store.originalPrice - 원가
- * @param {number} store.discountPrice - 할인가
- * @param {number} store.discontRate - 할인율
+ * @param {Object[]} store.menus - 메뉴 목록
+ * @param {Object[]} store.designers - 디자이너 목록
+ * @param {boolean} store.hasDesigners - 디자이너 유무
  */
 const CardText = ({ store }) => {
-  const { name,
-          menu, 
-          distance, 
-          walkTime, 
-          originalPrice, 
-          discountPrice, 
-          discountRate 
-        } = store;
+  const { name, menu, distance, walkTime, menus, designers, hasDesigners } = store;
+  
+  // 최대 할인율 메뉴 선택
+  const featuredMenu = (() => {
+    // 디자이너가 있는 경우
+    if (store.hasDesigners && store.designers?.length > 0) {
+      const allMenus = store.designers.flatMap(designer => designer.menus || []);
+      if (allMenus.length === 0) {
+        return { discountRate: 0, originalPrice: 0, discountPrice: 0, name: '메뉴 없음' };
+      }
+      return allMenus.reduce(
+        (prev, curr) => (prev.discountRate > curr.discountRate ? prev : curr),
+        { discountRate: 0, originalPrice: 0, discountPrice: 0, name: '메뉴 없음' }
+      );
+    }
+    // 디자이너가 없는 경우
+    if (!store.menus || store.menus.length === 0) {
+      return { discountRate: 0, originalPrice: 0, discountPrice: 0, name: '메뉴 없음' };
+    }
+    return store.menus.reduce(
+      (prev, curr) => (prev.discountRate > curr.discountRate ? prev : curr),
+      { discountRate: 0, originalPrice: 0, discountPrice: 0, name: '메뉴 없음' }
+    );
+  })();
 
   return (
     <StoreInfo>
       <InfoWrapperLeft>
-        {/* 제목 6글자까지 표시*/}
+        {/* 제목 6글자까지 표시 */}
         <StoreName>{name.length > 6 ? `${name.slice(0, 6)}...` : name}</StoreName>
         <StoreMeta>
             <MetaDistance>{distance}m </MetaDistance>
@@ -37,13 +53,13 @@ const CardText = ({ store }) => {
       </InfoWrapperLeft>
 
       <InfoWrapperRight>
-        <StoreMenu>{menu}</StoreMenu>
+        <StoreMenu>{store.menu}</StoreMenu>
         <StorePrice>
-            {discountRate}%
-            <span>{originalPrice.toLocaleString()}원</span> {/* CSS 분리할려고 span에 감쌈 */}
+            {featuredMenu.discountRate}%
+            <span>{featuredMenu.originalPrice.toLocaleString()}원</span> {/* CSS 분리할려고 span에 감쌈 */}
         </StorePrice>
         <StoreDiscountPrice>
-            {discountPrice.toLocaleString()}원
+            {featuredMenu.discountPrice.toLocaleString()}원
         </StoreDiscountPrice>
       </InfoWrapperRight>
     </StoreInfo>
@@ -55,9 +71,15 @@ export default CardText;
 
 /* 텍스트 간격 임시 설정을 위한 영역 분리 */
 const InfoWrapperLeft = styled.div`
-margin-right: 24px;
+  margin-right: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 `;
 const InfoWrapperRight = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 `;
 
 /* 가게 정보 컨테이너
@@ -74,19 +96,16 @@ const StoreInfo = styled.div`
 
 /* 가게 이름 (가장 큰 폰트로 표시되는 가게명) */
 const StoreName = styled.div`
-  font-family: Pretendard;
-
   //  긴 text ...으로 대체
   white-space: nowrap;
-  overflow: hidden;
   text-overflow: ellipsis;
 
   color: var(--, #000);
   font-size: 16px;
   font-style: normal;
   font-weight: 700;
-  line-height: 14px; /* 87.5% */
-  margin-bottom: 8px;
+  line-height: 16px;
+  margin-bottom: 12px;
   white-space: nowrap;
   max-width: 120px;
 `;
@@ -108,12 +127,11 @@ const StoreMenu = styled.div`
 /* 할인된 가격(우측 아래 최종 지불 가격) */
 const StoreDiscountPrice = styled.div`
     color: var(--, #000);
-    font-family: Pretendard;
     font-size: 12px;
     font-style: normal;
     font-weight: 600;
     line-height: 14px; /* 116.667% */
-    margin-top: 5px;
+    margin-top: 3px;
 `;
 
 /* 거리 및 도보 시간 정보 담는 컨테이너
@@ -135,7 +153,6 @@ const MetaDistance = styled.span`
 /* 도보 시간 정보(예상 도보 시간 표시) */
 const MetaWorkTime = styled.span`
   color: #6D6D6D;
-  font-family: Pretendard;
   font-size: 12px;
   font-style: normal;
   font-weight: 400;
@@ -154,5 +171,6 @@ const StorePrice = styled.div`
     text-decoration: line-through;
     color: #888;
     font-weight: 400;
+    padding-left: 2px;
   }
 `;

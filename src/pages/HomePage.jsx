@@ -1,6 +1,9 @@
 /**
  * 메인 페이지(HomePage) 컴포넌트
- * 주소 표시, 배너, 필터, 가게 목록을 포함함.
+ * 주소 표시, 배너, 필터, 가게 목록을 포함
+ * 배너의 최대 할인율은 STORES_DATA의 menus에서 동적으로 계산
+ * 가게 카드 클릭 시 상세 페이지(/shop/:id)로 이동
+ * SORT_OPTIONS를 사용하여 모든 정렬 옵션 표시
  */
 import { useEffect, useState } from "react";
 import styled from "styled-components";
@@ -17,8 +20,11 @@ import useUserInfo from "../hooks/user/useUserInfo";
 import Card from "../components/shop/Card";
 import bannerImage from "../assets/images/bannerImage.png";
 import { type } from "@testing-library/user-event/dist/type";
+import { useNavigate } from "react-router-dom";
+import { STORES_DATA } from "../apis/mock/mockShopList";
 
 export default function HomePage() {
+  const navigate = useNavigate();
   /* 토글 상태 관리 */
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [isTimeSheetOpen, setIsTimeSheetOpen] = useState(false);
@@ -131,8 +137,26 @@ export default function HomePage() {
     }, 300);
   };
 
+  /**
+   * 가게 카드 클릭 시 상세 페이지로 이동
+   * @param {number} storeId - 가게 ID
+   */
+  const handleCardClick = (storeId) => {
+    console.log(`shop/${storeId}로 이동`);    
+    navigate(`/shop/${storeId}`);
+  };
+
   // 정렬된 가게 목록 가져오기
   const sortedStores = getSortedStores();
+
+  // 최대 할인율 계산
+  const maxDiscount = Math.max(
+    ...STORES_DATA.flatMap(store =>
+      store.hasDesigners
+        ? store.designers.flatMap(designer => designer.menus.map(menu => menu.discountRate))
+        : store.menus.map(menu => menu.discountRate)
+    )
+  );
 
   // 표시할 주소 결정 (등록된 주소가 있으면 사용, 없으면 기본 주소)
   const displayAddress = userAddress ? userAddress.roadAddr : currentAddress;
@@ -286,7 +310,11 @@ export default function HomePage() {
         ) : (
           <>
             {sortedStores.map(store => (
-              <Card key={store.id} store={store} />
+              <Card
+            key={store.id}
+            store={store}
+            onClick={() => handleCardClick(store.id)}
+          />
             ))}
           </>
         )}
@@ -381,6 +409,7 @@ const BannerWrapper = styled.div`
   overflow: hidden;
   position: relative;
   background-color: #000000a9;
+  font-family: Pretendard;
 `;
 
 /* 배너 이미지 */
@@ -446,6 +475,7 @@ const SortToggleContainer = styled.div`
 const SortToggle = styled.button`
   font-size: clamp(12px, 3.5vw, 14px);
   color: #000;
+  font-family: Pretendard;
   cursor: pointer;
   border: none;
   background: none;
@@ -473,6 +503,7 @@ const SortDropdown = styled.div`
 const SortOption = styled.div`
   padding: clamp(6px, 2vw, 8px) clamp(8px, 3vw, 12px);
   font-size: clamp(12px, 3.5vw, 14px);
+  font-family: Pretendard;
   color: #000;
   cursor: pointer;
   transition: background-color 0.2s ease;

@@ -16,7 +16,12 @@ const LikeButton = ({ storeId, isLiked }) => {
   const { toggleLike } = useStore();
 
   /* 좋아요 토글 handler 함수(클릭 시 해당 가게의 좋아요 상태 변경함) */
-  const handleLikeToggle = () => {
+  const handleLikeToggle = (e) => {
+    // 이벤트 버블링 방지
+    // Card 컴포넌트에서 CardContainer에 onClick을 걸어놔서 LikeButton 클릭 시에도 이 이벤트가 버블링되어 onClick이 같이 실행되는 문제 해결하고자 사용
+    // 좋아요 버튼을 클릭해도 부모(Card)의 onClick이 실행되지 않아 상세페이지로 넘어가지 않음
+    e.stopPropagation();
+
     toggleLike(storeId);
   };
 
@@ -50,8 +55,6 @@ const CardLike = styled.button`
   height: 24px;
 
   position: relative;
-  left: 3px;
-  bottom: 10px;
 
   &:hover {
     transform: scale(1.1);

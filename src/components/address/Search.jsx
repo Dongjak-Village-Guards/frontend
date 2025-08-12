@@ -174,4 +174,7 @@ const ResultItem = styled.li`
   min-height: 50px;
   white-space: normal;
   word-break: break-word;
+
+  user-select: none;
+  cursor: pointer;
 `

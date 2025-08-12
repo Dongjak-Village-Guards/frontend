@@ -1,6 +1,7 @@
 /**  
  * 가게 카드의 전체 구조를 담당하는 컴포넌트
  * 할인 배지, 이미지, 텍스트 정보, 좋아요 버튼 통합 
+ * 카드 클릭 시 상세 페이지(/shop/:id)로 이동
  */
 import styled from "styled-components";
 import CardText from "./CardText";
@@ -12,15 +13,24 @@ import StoreCard from "./StoreCard";
  * Card 컴포넌트
  * @param {Object} store - 가게 정보 객체
  * @param {number} store.id - 가게 ID
- * @param {number} store.discountRate - 할인율
+ * @param {string} store.name - 가게 이름
+ * @param {string} store.menu - 최대 할인율 메뉴 이름
+ * @param {number} store.distance - 거리 (미터)
+ * @param {number} store.walkTime - 도보 시간 (분)
+ * @param {Object[]} store.menus - 메뉴 목록
  * @param {boolean} store.isLiked - 좋아요 상태
+ * @param {Function} onClick - 카드 클릭 시 호출되는 함수
  */
 
-const Card = ({ store }) => {
-  const { id, discountRate, isLiked } = store;
+const Card = ({ store, onClick }) => {
+  const { id, isLiked } = store;
+  // 최대 할인율 계산 (디자이너 유무에 따라 다르게 처리)
+  const discountRate = store.hasDesigners
+    ? Math.max(...store.designers.flatMap(designer => designer.menus.map(menu => menu.discountRate)))
+    : Math.max(...store.menus.map(menu => menu.discountRate));
 
   return (
-    <CardContainer>
+    <CardContainer onClick={onClick}>
       <CardHeader>
         <DiscountBadge discountRate={discountRate} />
         <StoreCard store={store} />
@@ -45,6 +55,7 @@ export default Card;
 const CardContainer = styled.div`
   display: flex;
   flex-direction: column;
+  cursor: pointer;
 
   /* 반응형 웹 수정: 고정 너비 제거하고 유동적 너비 사용 */
   width: 100%;
@@ -79,10 +90,10 @@ const CardFooter = styled.div`
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
+    font-family: Pretendard;
     /* 반응형 웹 수정: 반응형 패딩 사용 */
-    padding: 0px clamp(12px, 4vw, 16.5px) 0px clamp(12px, 4vw, 16.5px);
-    margin-bttom: 6px;
+    padding: 0px clamp(12px, 4vw, 16.5px);
 
     // 레이아웃 확인용
     //border: 1px solid blue;
