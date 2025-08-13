@@ -1,10 +1,10 @@
 import { forwardRef } from "react";
 import styled from 'styled-components';
-import NavBar from '../nav/NavBar';
+import NavBar from '../nav/BottomNavBar';
 
 const Layout = forwardRef(({ children, currentPage = "home", onPageChange }, contentAreaRef) => {
-  // 로그인/주소 검색 페이지에서는 NavBar 숨김
-  const showNavBar = !['login', 'search-address'].includes(currentPage);
+  // 로그인/주소검색/상세 페이지에서는 NavBar 숨김
+  const showNavBar = !['login', 'search-address', 'shop-detail'].includes(currentPage);
 
   return (
     <Container>
@@ -32,7 +32,7 @@ const Container = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px; /* 데스크톱에서만 패딩 */
+  padding: 10px; /* 데스크톱에서만 패딩 */
 
   /* 모바일에서는 전체 화면 */
   @media (max-width: 768px) {
@@ -47,7 +47,7 @@ const PhoneFrame = styled.div`
   max-width: 360px;
   height: 720px;
   background: #fff;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+  box-shadow: 2px 2px 16px rgba(0,0,0,0.07);
   position: relative;
   display: flex;
   flex-direction: column;

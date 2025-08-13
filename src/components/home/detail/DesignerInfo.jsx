@@ -1,5 +1,4 @@
-import React from 'react'
-import designerImage from '../../assets/images/designer.png';
+import designerImage from '../../../assets/images/designer.png';
 import styled from 'styled-components';
 
 const DesignerInfo = ({ name, specialty, reservationTime }) => {
@@ -12,10 +11,10 @@ const DesignerInfo = ({ name, specialty, reservationTime }) => {
             <Specialty>{specialty}</Specialty>
         </Detail>
     </DesignerInfoContainer>
-  )
-}
+  );
+};
 
-export default DesignerInfo
+export default DesignerInfo;
 
 // ===== Styled Components ===== //
 
@@ -42,7 +41,7 @@ const Detail = styled.div`
     align-items: flex-start;
     gap: 10px;
     width: 140px;
-`
+`;
 
 const DesignerName = styled.h3`
     font-size: 20px;

@@ -2,15 +2,17 @@
  * 좋아요 버튼 컴포넌트
  * 가게 카드의 우하단에 위치하며, 좋아요 상태를 토글함.
  */
+
 import styled from "styled-components";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
-import useStore from "../../hooks/store/useStore";
+import useStore from "../../../hooks/store/useStore";
 
 /**
  * LikeButton 컴포넌트
  * @param {number} storeId - 가게 ID
  * @param {boolean} isLiked - 현재 좋아요 상태
  */
+
 const LikeButton = ({ storeId, isLiked }) => {
   // Zustand 스토어에서 좋아요 토글 함수 가져오기
   const { toggleLike } = useStore();

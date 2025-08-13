@@ -1,13 +1,12 @@
-import React from 'react'
-import styled, { keyframes } from 'styled-components'
+import styled, { keyframes } from 'styled-components';
 
 const Spinner = () => {
   return (
     <SpinnerWrapper>
         <Loader />
     </SpinnerWrapper>
-  )
-}
+  );
+};
 
 export default Spinner;
 
@@ -18,7 +17,6 @@ const spin = keyframes`
 
 const SpinnerWrapper = styled.div`
     position: relative;
-    //top: 140px;
     display: flex;
     justify-content: center;
     align-items: center;

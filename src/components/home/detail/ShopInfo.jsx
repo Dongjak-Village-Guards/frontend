@@ -2,7 +2,6 @@
  * 가게 정보를 표시하는 컴포넌트
  */
 
-import React from 'react'
 import styled from 'styled-components';
 
 /**
@@ -27,7 +26,7 @@ const ShopInfo = ({ name, address, distance, reservationTime }) => {
   );
 };
 
-export default ShopInfo
+export default ShopInfo;
 
 // ===== Styled Components ===== //
 
@@ -73,4 +72,4 @@ const ReservationTime = styled.p`
     font-size: 18px;
     color: #da2538;
     font-weight: 700;
-`
+`;

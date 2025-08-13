@@ -3,10 +3,10 @@
  * 대표 메뉴와 다른 메뉴 목록에 모두 사용
  */
 
-import React from 'react'
 import styled from 'styled-components'
-import menuImage from '../../assets/images/menu.png';
-import useStore from '../../hooks/store/useStore';
+import menuImage from '../../../assets/images/menu.png';
+import useStore from '../../../hooks/store/useStore';
+import ReservationButton from '../../common/ReservationButton';
 
 /**
  * MenuCard 컴포넌트
@@ -19,14 +19,17 @@ import useStore from '../../hooks/store/useStore';
  * @param {Function} onReserve - 예약 버튼 클릭 시 호출
  */
 
-const MenuCard = ({ menu, onReserve, hideButton = false }) => {
-    const { startReservation, selectedDesigner } = useStore();
+const MenuCard = ({ menu, onReserve = false }) => {
+    const { startReservation, selectedDesigner, isReserving } = useStore();
 
     const handleReserve = (e) => {
         e.stopPropagation();
         startReservation(menu, selectedDesigner);
         onReserve();
     };
+
+    // 예약 페이지에서 메뉴 카드 속 '예약하기' 버튼 숨김
+    const hideButton = isReserving;
 
   return (
     <Card>
@@ -41,16 +44,18 @@ const MenuCard = ({ menu, onReserve, hideButton = false }) => {
                 <DiscountPrice>{menu.discountPrice.toLocaleString()}원</DiscountPrice>
             </Detail>
         </Div>
-        {!hideButton && (
-            <ReserveButton disabled={menu.isReserved} onClick={handleReserve}>
-            {menu.isReserved ? "예약마감" : "예약하기"}
-            </ReserveButton>
-        )}
+        <ButtonContainer>
+            {!hideButton && (
+                <ReservationButton onClick={handleReserve} disabled={menu.isReserved}>
+                    {menu.isReserved ? "예약마감" : "예약하기"}
+                </ReservationButton>
+            )}
+        </ButtonContainer>
     </Card>
-  )
-}
+  );
+};
 
-export default MenuCard
+export default MenuCard;
 
 // ===== Styled Components ===== //
 
@@ -112,11 +117,12 @@ const PriceInfo = styled.div`
 /* 할인율 표시 */
 const DiscountRate = styled.span`
     color: #F00;
+    font-size: 12px;
 `;
 
 /* 원래 가격 (취소선 처리) */
 const OriginalPrice = styled.span`
-    font-size: clamp(12px, 3.5vw, 14px);
+    font-size: 12px;
     color: #999;
     text-decoration: line-through;
 `;
@@ -129,16 +135,9 @@ const DiscountPrice = styled.span`
     line-height: 14px;
 `;
 
-/* 예약 버튼 (예약마감 시 비활성화) */
-const ReserveButton = styled.button`
-    background: ${props => (props.disabled ? "#737373" : "#da2538")};
-    color: #fff;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 10px;
-    font-family: Pretendard;
-    font-size: 14px;
-    font-weight: 400;
-    cursor: ${props => (props.disabled ? "not-allowed" : "pointer")};
-    margin-right: 16px;
-`
+const ButtonContainer = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-right: 16px;
+`;

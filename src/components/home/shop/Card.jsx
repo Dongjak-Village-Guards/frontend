@@ -3,11 +3,12 @@
  * 할인 배지, 이미지, 텍스트 정보, 좋아요 버튼 통합 
  * 카드 클릭 시 상세 페이지(/shop/:id)로 이동
  */
+
 import styled from "styled-components";
 import CardText from "./CardText";
 import DiscountBadge from "./DiscountBadge";
-import LikeButton from "./LikeButton";
-import StoreCard from "./StoreCard";
+import LikeButton from "../shop/LikeButton";
+import StoreCard from "./StoreImage";
 
 /**
  * Card 컴포넌트

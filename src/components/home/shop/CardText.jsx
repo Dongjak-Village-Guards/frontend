@@ -2,6 +2,7 @@
  * 가게 정보 텍스트를 표시하는 컴포넌트
  * 가게 이름, 메뉴, 거리, 가격 정보 담당
  */
+
 import styled from "styled-components";
 
 /**
@@ -15,8 +16,9 @@ import styled from "styled-components";
  * @param {Object[]} store.designers - 디자이너 목록
  * @param {boolean} store.hasDesigners - 디자이너 유무
  */
+
 const CardText = ({ store }) => {
-  const { name, menu, distance, walkTime, menus, designers, hasDesigners } = store;
+  const { name, distance, walkTime } = store;
   
   // 최대 할인율 메뉴 선택
   const featuredMenu = (() => {
