@@ -187,6 +187,16 @@ const useStore = create((set, get) => ({
   }),
 
   /**
+   * 예약 완료
+   */
+  completeReservation: () => {
+    alert('예약이 완료되었습니다!');
+    get().cancelReservation();
+    // 추후: 예약 내역 저장, 페이지 이동 등 추가 가능
+  },
+
+
+  /**
    * 개인정보 동의서 표시/숨김 토글
    */
   togglePiAgreement: () => set((state) => ({

@@ -12,13 +12,12 @@ import { ReactComponent as ArrowButton } from '../assets/images/piArrow.svg';
 import Line from '../components/common/Line';
 
 const ReservationPage = ({ shop }) => {
-  const { selectedMenu, selectedDesigner, currentTime, cancelReservation, togglePiAgreement, showPiAgreement, isAgreed, setAgreed } = useStore();
+  const { selectedMenu, selectedDesigner, currentTime, completeReservation, togglePiAgreement, showPiAgreement, isAgreed, setAgreed } = useStore();
 
   // 예약 확인 핸들러 (임시)
   const handleConfirm = () => {
     if (!isAgreed) return;
-    alert('예약이 완료되었습니다!');
-    cancelReservation();
+    completeReservation();
   };
 
   // 체크박스 변경 핸들러
