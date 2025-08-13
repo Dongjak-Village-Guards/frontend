@@ -33,8 +33,8 @@ const CategoryFilter = ({ options = [], selectedCategories = [], onCategoryChang
 export default CategoryFilter;
 
 const CategoryList = styled.div`
-  display: grid;
-  grid-template-columns: repeat(1, 1fr);
+  display: flex;
+  flex-direction: column;
   margin-bottom: 200px; //임시
 `;
 

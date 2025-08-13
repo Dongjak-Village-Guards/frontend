@@ -49,6 +49,7 @@ export default function HomePage() {
     setFromHomePage,
     fetchStores,
     fetchFilterOptions,
+    categoryOptions,
   } = useStore();
 
   /** 사용자 주소 */
@@ -256,6 +257,7 @@ export default function HomePage() {
         }}
       >
         <CategoryFilter
+          options={categoryOptions}
           selectedCategories={filters.categories}
           onCategoryChange={handleCategoryChange}
           onClose={() => setIsCategorySheetOpen(false)}
