@@ -17,22 +17,23 @@ const Search = () => {
   const { setCurrentPage } = useStore();
 
   const handleSearch = async () => {
-    if (!keyword.trim()) return;
+    const trimmedKeyword = keyword.trim();
+    if (!trimmedKeyword) return;
 
-    console.log('주소 검색 시작:', keyword); // 디버깅 로그 추가
     setHasSearched(true);
     setLoading(true);
     setError('');
     setResults([]);
 
     try {
-      const res = await fetchAddressResults(keyword);
-      console.log('주소 검색 결과:', res); // 디버깅 로그 추가
+      const res = await fetchAddressResults(trimmedKeyword);
+      if (res.length === 0) {
+        setError('검색 결과가 없습니다.');
+      }
       setResults(res);
     } catch (err) {
-      console.error('주소 검색 오류:', err); // 디버깅 로그 추가
-      setError(err.message);
-      setResults([]);
+      setError('주소 검색 중 오류가 발생했습니다.');
+      console.error('주소 검색 오류:', err);
     } finally {
       setLoading(false);
     }
