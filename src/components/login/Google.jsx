@@ -19,16 +19,14 @@ const Google = ({
    */
   const handleLogin = async () => {
     try {
-      const result = await signInWithPopup(auth, provider)
-      console.log("로그인 성공:", result.user);
-      
+      const result = await signInWithPopup(auth, provider)      
       // 사용자 정보 저장
       setAuthUser(result.user);
-      
       // 주소 검색 페이지로 이동
       setCurrentPage("search-address");
     } catch (error) {
       console.error("로그인 실패:", error.code, error.message);
+      alert("로그인에 실패했습니다. 다시 시도해주세요.");
     }
   }
 
