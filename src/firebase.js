@@ -2,13 +2,13 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDwg50EEYXYhsqeW42BcQOBOAlFQK1_LYU",
-  authDomain: "dongjak-village-guards.firebaseapp.com",
-  projectId: "dongjak-village-guards",
-  storageBucket: "dongjak-village-guards.firebasestorage.app",
-  messagingSenderId: "900539435014",
-  appId: "1:900539435014:web:4495d55080dd31e4c5db87",
-  measurementId: "G-RSM60L1NCX"
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
 };
 
 const app = initializeApp(firebaseConfig);
