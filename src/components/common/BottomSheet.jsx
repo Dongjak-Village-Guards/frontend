@@ -7,34 +7,18 @@ const BottomSheet = ({ open, title, onClose, children }) => {
 
   useEffect(() => {
     const root = document.getElementById('bottom-sheet-portal');
+    if (!root) {
+      console.warn('bottom-sheet-portal 요소가 없습니다. 포털 렌더링 실패');
+    }
     setPortalRoot(root);
   }, []);
-
-  // 디버깅: props 확인
-  console.log('BottomSheet props:', { open, title, onClose: typeof onClose, children: !!children });
 
   if (!open || !portalRoot) return null;
 
   // 디버깅: onClose 함수 래핑
-  const handleClose = (e) => {
-    console.log('닫기 버튼 클릭됨', e);
-    if (onClose) {
-      console.log('onClose 함수 호출');
-      onClose();
-    } else {
-      console.error('onClose 함수가 없음!');
-    }
-  };
+  const handleClose = (e) => onClose();
 
-  const handleBackdropClick = (e) => {
-    console.log('배경 클릭됨', e);
-    if (onClose) {
-      console.log('onClose 함수 호출 (배경)');
-      onClose();
-    } else {
-      console.error('onClose 함수가 없음! (배경)');
-    }
-  };
+  const handleBackdropClick = (e) => onClose();
 
   // Layout 내부 포털로 렌더링하여 HomePage 스크롤과 분리
   return createPortal(
