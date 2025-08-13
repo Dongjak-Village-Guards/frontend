@@ -2,7 +2,7 @@
  * 로그인 페이지
  */
 
-import { ReactComponent as Logo } from '../assets/images/logo.svg';
+import Logo from '../assets/images/logo.png';
 import { ReactComponent as Bubble } from '../assets/images/bubble.svg';
 import Google from '../components/login/Google';
 import styled from 'styled-components';
@@ -11,7 +11,7 @@ const Login = () => {
   return (
     <LoginWrapper>
       <Container>
-        <Logo className='logo-icon' />
+        <img src={Logo} alt="지금살래 로고" className="logo-icon" />
 
         <FirstTitle>
           <p className='main-title'>위기의 지갑을 구하는 3시간의 기적</p>
@@ -71,7 +71,6 @@ const FirstTitle = styled.div`
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  gap: 10px;
 
   .main-title {
     color: #282828;
@@ -119,7 +118,7 @@ const BubbleBox = styled.div`
 
   .bubble-text {
     position: absolute;
-    top: 9px;
+    top: 6px;
     color: #da2538;
     font-size: 16px;
     font-weight: 600;
