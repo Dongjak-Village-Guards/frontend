@@ -1,12 +1,12 @@
-import designerImage from '../../../assets/images/designer.png';
 import styled from 'styled-components';
+import { getDesignerImage, truncateText } from '../../../utils/uiUtils';
 
 const DesignerInfo = ({ name, specialty, reservationTime }) => {
   return (
     <DesignerInfoContainer>
-        <DesignerImage src={designerImage} alt='임시 디자이너 이미지' />
+        <DesignerImage src={getDesignerImage()} alt={`${name} 이미지`} />
         <Detail>
-            <DesignerName>{name}</DesignerName>
+            <DesignerName>{truncateText(name, 10)}</DesignerName>
             <ReservationTime>{reservationTime}</ReservationTime>
             <Specialty>{specialty}</Specialty>
         </Detail>

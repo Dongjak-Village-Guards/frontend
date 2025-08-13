@@ -3,6 +3,7 @@
  */
 
 import styled from 'styled-components';
+import { truncateText } from '../../../utils/uiUtils';
 
 /**
  * @param {string} name - 가게 이름
@@ -10,14 +11,13 @@ import styled from 'styled-components';
  * @param {string} distance - 거리
  * @param {string} walkingTime - 도보 시간
  * @param {string} reservationTime - 예약 시간
- * 
  */
 
 const ShopInfo = ({ name, address, distance, reservationTime }) => {
   return (
     <InfoContainer>
         <Title>
-            <ShopName>{name.length > 15 ? `${name.slice(0, 15)}...` : name}</ShopName>
+            <ShopName>{truncateText(name, 15)}</ShopName>
             <ReservationTime>{reservationTime}</ReservationTime>
         </Title>
         <InfoText className='address'>{address}</InfoText>

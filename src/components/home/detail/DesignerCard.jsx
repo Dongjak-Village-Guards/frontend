@@ -3,9 +3,9 @@
  */
 
 import styled from 'styled-components';
-import designerImage from '../../../assets/images/designer.png';
 import useStore from '../../../hooks/store/useStore';
 import ReservationButton from '../../common/ReservationButton';
+import { getDesignerImage, truncateText } from '../../../utils/uiUtils';
 
 /**
  * DesignerCard 컴포넌트
@@ -31,9 +31,9 @@ const DesignerCard = ({ designer, onSelect }) => {
   return (
     <Card>
         <Div>
-            <DesignerImage src={designerImage} alt='임시 디자이너 이미지' />
+            <DesignerImage src={getDesignerImage(designer.image)} alt={`${designer.name} 이미지`} />
             <Detail>
-                <DesignerName>{designer.name}</DesignerName>
+                <DesignerName>{truncateText(designer.name, 10)}</DesignerName>
                 <DiscountText>
                     <StyledSpan>최대 할인율</StyledSpan> {maxDiscountRate}%
                 </DiscountText>
