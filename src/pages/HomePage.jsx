@@ -48,6 +48,7 @@ export default function HomePage() {
     setCurrentPage,
     setFromHomePage,
     fetchStores,
+    fetchFilterOptions,
   } = useStore();
 
   /** 사용자 주소 */
@@ -57,16 +58,16 @@ export default function HomePage() {
   useEffect(() => {
     const initializePage = async () => {
       setLoading(true);
-      // 초기 시간 설정 (새로고침 시에만 실행)
       updateCurrentTime();
-      // Zustand 스토어에서 데이터 로딩
-      await fetchStores();
-      // 0.1초 지연으로 렌더링 시간 시뮬레이션
+      await Promise.all([
+        fetchStores(),
+        fetchFilterOptions()
+      ]);
       await new Promise(res => setTimeout(res, 100));
       setLoading(false);
     };
     initializePage();
-  }, [updateCurrentTime]);
+  }, [updateCurrentTime, fetchStores, fetchFilterOptions]);
 
   /**
    * 정렬 변경

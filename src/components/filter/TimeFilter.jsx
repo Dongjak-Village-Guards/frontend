@@ -1,4 +1,3 @@
-import React from 'react';
 import styled from 'styled-components';
 
 // 현재 시간의 다음 정각을 계산하는 함수

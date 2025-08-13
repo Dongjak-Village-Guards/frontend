@@ -1,40 +1,29 @@
-import React from 'react';
 import styled from 'styled-components';
-import { CATEGORY_OPTIONS } from '../../apis/mock/mockShopList';
 
-const CategoryFilter = ({ selectedCategories = [], onCategoryChange, onClose }) => {
+const CategoryFilter = ({ options = [], selectedCategories = [], onCategoryChange, onClose }) => {
   const handleCategoryClick = (categoryValue) => {
     if (categoryValue === 'none') {
-      // 선택안함 클릭 시 모든 선택 해제하고 바텀시트 닫기
       onCategoryChange([]);
-      // onClose는 HomePage에서 로딩 애니메이션과 함께 처리됨
     } else {
-      // 기존 선택된 업종들에서 토글
       const newCategories = selectedCategories.includes(categoryValue)
         ? selectedCategories.filter(cat => cat !== categoryValue)
         : [...selectedCategories, categoryValue];
-      
       onCategoryChange(newCategories);
     }
   };
 
   return (
     <CategoryList>
-      {CATEGORY_OPTIONS.map((category) => (
+      {options.map((category) => (
         <CategoryItem
           key={category.value}
           onClick={() => handleCategoryClick(category.value)}
           $selected={selectedCategories.includes(category.value)}
-          aria-label={`업종 ${category.label} 선택`}
         >
           {category.label}
         </CategoryItem>
       ))}
-      <CategoryItem
-        onClick={() => handleCategoryClick('none')}
-        $selected={false}
-        aria-label="선택안함"
-      >
+      <CategoryItem onClick={() => handleCategoryClick('none')} $selected={false}>
         선택안함
       </CategoryItem>
     </CategoryList>

@@ -1,26 +1,17 @@
-import React from "react";
 import styled from "styled-components";
 
-const FilterBar = ({ activeFilter, onFilterChange, sortOptions, onSortChange }) => {
+const FilterBar = ({ activeFilter, onFilterChange, sortOptions = [], onSortChange }) => {
   return (
     <FilterRow>
-      <FilterTab 
-        active={activeFilter === 'time'} 
-        onClick={() => onFilterChange('time')}
-      >
+      <FilterTab active={activeFilter === 'time'} onClick={() => onFilterChange('time')}>
         시간순==
       </FilterTab>
-
-      <FilterTab 
-        active={activeFilter === 'category'} 
-        onClick={() => onFilterChange('category')}
-      >
+      <FilterTab active={activeFilter === 'category'} onClick={() => onFilterChange('category')}>
         업종
       </FilterTab>
-
       <FilterSelect onChange={(e) => onSortChange(e.target.value)}>
-        {sortOptions.map((option, index) => (
-          <option key={index} value={option.value}>
+        {sortOptions.map((option) => (
+          <option key={option.value} value={option.value}>
             {option.label}
           </option>
         ))}
@@ -28,6 +19,8 @@ const FilterBar = ({ activeFilter, onFilterChange, sortOptions, onSortChange }) 
     </FilterRow>
   );
 };
+
+export default FilterBar;
 
 
 //const FilterRow = styled.div`
@@ -91,5 +84,3 @@ const FilterSelect = styled.select`
   font-size: 14px;
   cursor: pointer;
 `;
-
-export default FilterBar; 
