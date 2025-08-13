@@ -47,6 +47,7 @@ export default function HomePage() {
     setFilters,
     setCurrentPage,
     setFromHomePage,
+    fetchStores,
   } = useStore();
 
   /** 사용자 주소 */
@@ -57,8 +58,9 @@ export default function HomePage() {
     const initializePage = async () => {
       setLoading(true);
       // 초기 시간 설정 (새로고침 시에만 실행)
-      console.log('updateCurrentTime 호출');
       updateCurrentTime();
+      // Zustand 스토어에서 데이터 로딩
+      await fetchStores();
       // 0.1초 지연으로 렌더링 시간 시뮬레이션
       await new Promise(res => setTimeout(res, 100));
       setLoading(false);

@@ -6,6 +6,7 @@
 
 import { create } from 'zustand';
 import { STORES_DATA } from '../../apis/mock/mockShopList';
+import { getStores } from '../../apis/storeAPI';
 
 const useStore = create((set, get) => ({
   // ===== 인증 상태 관리 =====
@@ -56,8 +57,7 @@ const useStore = create((set, get) => ({
   },
 
   // ===== 가게 데이터 상태 관리 =====
-  /** mockShopList.js에서 가져온 가게 목록 데이터 */
-  stores: STORES_DATA,
+  stores: [], // 초기값은 빈 배열로 변경
 
   // ===== 예약 상태 관리 =====
   isReserving: false,
@@ -133,6 +133,14 @@ const useStore = create((set, get) => ({
   resetFilters: () => set({
     filters: { categories: [], availableAt: null }
   }),
+
+  /**
+   * 가게 데이터 초기 로딩
+   */
+  fetchStores: async () => {
+    const stores = await getStores();
+    set({ stores });
+  },
   
   /**
    * 가게 좋아요 토글
@@ -194,8 +202,6 @@ const useStore = create((set, get) => ({
    */
   getSortedStores: () => {
     const { stores, sortOption, filters } = get();
-    const sortedStores = [...stores];
-    console.log('getSortedStores 호출, 현재 store 상태:', get());
     let filteredStores = [...stores];
     
     // 1) 업종 필터 적용
@@ -205,7 +211,6 @@ const useStore = create((set, get) => ({
       // filteredStores = filteredStores.filter(store => 
       //   filters.categories.includes(store.category)
       // );
-      console.log('업종 필터 적용됨:', filters.categories);
     }
 
     // 2) 시간 필터 적용 (데모 데이터에는 시간 정보가 없어 필터는 no-op)
@@ -216,29 +221,29 @@ const useStore = create((set, get) => ({
     switch (sortOption) {
       // 최대 할인율 기준 내림차순 정렬 (높은 할인율이 먼저)
       case 'discount':
-        return sortedStores.sort((a, b) => {
-          const aMaxDiscount = a.hasDesigners
-            ? Math.max(...a.designers.flatMap(d => d.menus.map(m => m.discountRate))) // 디자이너가 있으면 모든 디자이너의 메뉴에서 최대 할인율 추출
-            : Math.max(...a.menus.map(m => m.discountRate));  // 디자이너가 없으면 가게의 메뉴에서 최대 할인율 추출
-          const bMaxDiscount = b.hasDesigners
-            ? Math.max(...b.designers.flatMap(d => d.menus.map(m => m.discountRate))) // // 디자이너가 있으면 모든 디자이너의 메뉴에서 최대 할인율 추출
-            : Math.max(...b.menus.map(m => m.discountRate));  // 디자이너가 없으면 가게의 메뉴에서 최대 할인율 추출
-          return bMaxDiscount - aMaxDiscount; // 내림차순 정렬 (b가 a보다 크면 앞으로)
+        return filteredStores.sort((a, b) => {
+          const aMax = a.hasDesigners
+            ? Math.max(...a.designers.flatMap(d => d.menus.map(m => m.discountRate)))
+            : Math.max(...a.menus.map(m => m.discountRate));
+          const bMax = b.hasDesigners
+            ? Math.max(...b.designers.flatMap(d => d.menus.map(m => m.discountRate)))
+            : Math.max(...b.menus.map(m => m.discountRate));
+          return bMax - aMax;
         });
       // 할인 가격 기준 오름차순 정렬 (낮은 가격이 먼저)
       case 'price':
-        return sortedStores.sort((a, b) => {
-          const aMinPrice = a.hasDesigners
+        return filteredStores.sort((a, b) => {
+          const aMin = a.hasDesigners
             ? Math.min(...a.designers.flatMap(d => d.menus.map(m => m.discountPrice)))
             : Math.min(...a.menus.map(m => m.discountPrice));
-          const bMinPrice = b.hasDesigners
+          const bMin = b.hasDesigners
             ? Math.min(...b.designers.flatMap(d => d.menus.map(m => m.discountPrice)))
             : Math.min(...b.menus.map(m => m.discountPrice));
-          return aMinPrice - bMinPrice;
+          return aMin - bMin;
         });
       // 거리 기준 오름차순 정렬 (가까운 가게가 먼저)
       case 'distance':
-        return sortedStores.sort((a, b) => a.distance - b.distance);
+        return filteredStores.sort((a, b) => a.distance - b.distance);
       default:
         return filteredStores;
     }
