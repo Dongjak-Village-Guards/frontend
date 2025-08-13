@@ -21,7 +21,6 @@ export default DesignerInfo;
 const DesignerInfoContainer = styled.div`
     padding: 16px 32px;
     background: #fff;
-    font-family: Pretendard;
     display: flex;
     justify-content: space-between;
     align-items: center;

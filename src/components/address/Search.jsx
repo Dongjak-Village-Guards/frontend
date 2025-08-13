@@ -104,7 +104,6 @@ const SearchBar = styled.div`
     margin-left: 16px;
     border: none;
     outline: none;
-    font-family: Pretendard;
     font-size: 12px;
     font-style: normal;
     font-weight: 400;
@@ -125,7 +124,6 @@ const NoResult = styled.div`
   position: relative;
   top: 108px;
   color: #000;
-  font-family: Pretendard;
   font-size: 20px;
   font-style: normal;
   font-weight: 400;
@@ -149,7 +147,6 @@ const ResultItem = styled.li`
 
   color: #000;
   font-variant-numeric: lining-nums tabular-nums;
-  font-family: Pretendard;
   font-size: 12px;
   font-style: normal;
   font-weight: 400;

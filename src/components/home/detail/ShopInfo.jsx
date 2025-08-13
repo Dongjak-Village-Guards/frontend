@@ -34,7 +34,6 @@ export default ShopInfo;
 const InfoContainer = styled.div`
     padding: 16px 22px;
     background: #fff;
-    font-family: Pretendard;
 `;
 
 const Title = styled.div`

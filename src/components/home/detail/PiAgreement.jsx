@@ -27,7 +27,6 @@ export default PiAgreement;
 
 const AgreementContainer = styled.div`
   background: #fff;
-  font-family: Pretendard;
   display: flex;
   flex-direction: column;
   justify-content: center;

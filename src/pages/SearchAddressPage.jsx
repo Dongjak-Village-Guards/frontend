@@ -81,7 +81,6 @@ const TextContainer = styled.div`
 
   .title {
     color: #282828;
-    font-family: 'Pretendard-Regular', Helvetica;
     font-size: 20px;
     font-weight: 400;
     letter-spacing: 0;
@@ -91,7 +90,6 @@ const TextContainer = styled.div`
 
   .paragraph {
     color: #737373;
-    font-family: 'Pretendard-Regular', Helvetica;
     font-size: 16px;
     font-weight: 400;
     letter-spacing: 0;
