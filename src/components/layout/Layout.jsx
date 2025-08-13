@@ -1,10 +1,17 @@
+/**
+ * Layout 컴포넌트
+ * 전체 페이지 프레임을 구성하며, 하단 NavBar와 바텀시트 포털을 포함
+ * 로그인/주소검색/상세 페이지에서는 NavBar를 숨김
+ */
+
 import { forwardRef } from "react";
 import styled from 'styled-components';
 import NavBar from '../nav/BottomNavBar';
 
 const Layout = forwardRef(({ children, currentPage = "home", onPageChange }, contentAreaRef) => {
-  // 로그인/주소검색/상세 페이지에서는 NavBar 숨김
-  const showNavBar = !['login', 'search-address', 'shop-detail'].includes(currentPage);
+  // NavBar를 숨길 페이지 목록
+  const pagesWithoutNav = ['login', 'search-address', 'shop-detail'];
+  const showNavBar = !pagesWithoutNav.includes(currentPage);
 
   return (
     <Container>
@@ -12,8 +19,10 @@ const Layout = forwardRef(({ children, currentPage = "home", onPageChange }, con
         <ContentArea ref={contentAreaRef} className="content-area">
           {children}
         </ContentArea>
+
+        {/* 하단 네비게이션 바 */}
         {showNavBar && <NavBar current={currentPage} onSelect={onPageChange} />}
-        
+
         {/* 바텀시트 포털 마운트 지점 */}
         <PortalRoot id="bottom-sheet-portal" />
       </PhoneFrame>
@@ -32,16 +41,15 @@ const Container = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px; /* 데스크톱에서만 패딩 */
+  padding: 10px;
 
-  /* 모바일에서는 전체 화면 */
   @media (max-width: 768px) {
     padding: 0;
     background: #fff;
   }
 `;
 
-// 핸드폰 프레임: 반응형으로 수정
+// 핸드폰 프레임
 const PhoneFrame = styled.div`
   width: 100%;
   max-width: 360px;
@@ -53,7 +61,6 @@ const PhoneFrame = styled.div`
   flex-direction: column;
   overflow: hidden;
 
-  /* 모바일에서는 프레임 제거하고 전체 화면 */
   @media (max-width: 768px) {
     max-width: 100%;
     height: 100vh;
@@ -63,42 +70,36 @@ const PhoneFrame = styled.div`
   }
 `;
 
-// 콘텐츠 영역: 반응형으로 수정
+// 콘텐츠 영역
 const ContentArea = styled.div`
   flex: 1;
   overflow-y: auto;
-  padding-bottom: 80px; /* 데스크톱에서 NavBar 높이만큼 */
+  padding-bottom: 80px;
 
-  /* 모바일에서는 safe-area 고려 */
   @media (max-width: 768px) {
     padding-bottom: calc(80px + env(safe-area-inset-bottom));
   }
 
-  /* 반응형 웹 수정: 모바일에서 스크롤 최적화 */
   -webkit-overflow-scrolling: touch;
-  
-  /* sticky 포지션이 제대로 작동하도록 설정 */
   position: relative;
-  
-  /* 스크롤바 스타일링 */
+
   &::-webkit-scrollbar {
     width: 4px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: #ddd;
     border-radius: 2px;
   }
-  
+
   &::-webkit-scrollbar-thumb:hover {
     background: #ccc;
   }
-  
-  /* 반응형 웹 수정: 모바일에서 스크롤바 숨김 */
+
   @media (max-width: 768px) {
     &::-webkit-scrollbar {
       width: 0;
@@ -106,10 +107,10 @@ const ContentArea = styled.div`
   }
 `;
 
-// 바텀시트 포털 마운트 지점 (Layout 내부 전역 레이어)
+// 바텀시트 포털 마운트 지점
 const PortalRoot = styled.div`
   position: absolute;
   inset: 0;
-  z-index: 30; /* NavBar(20)보다 높게 */
-  pointer-events: none; /* 시트가 없을 때 이벤트 차단 */
+  z-index: 30;
+  pointer-events: none;
 `;
