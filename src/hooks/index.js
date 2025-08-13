@@ -1,2 +1,2 @@
-// Hooks barrel export
-export * from './store'; 
+export * from './store';
+export { default as useUserInfo } from './user/useUserInfo';
