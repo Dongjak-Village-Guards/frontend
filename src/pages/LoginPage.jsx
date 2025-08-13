@@ -75,7 +75,6 @@ const FirstTitle = styled.div`
 
   .main-title {
     color: #282828;
-    font-family: "Pretendard-Bold", Helvetica;
     font-size: 20px;
     font-weight: 700;
     line-height: 14px;
@@ -94,7 +93,6 @@ const SecondTitle = styled.div`
 
   .sub-title {
     color: #000000;
-    font-family: "Pretendard-Medium", Helvetica;
     font-size: 16px;
     font-weight: 500;
     line-height: 20px;
@@ -123,7 +121,6 @@ const BubbleBox = styled.div`
     position: absolute;
     top: 9px;
     color: #da2538;
-    font-family: "Pretendard-Medium", Helvetica;
     font-size: 16px;
     font-weight: 600;
     white-space: nowrap;

@@ -35,7 +35,6 @@ const AddressContainer = styled.div`
 
 const AddressText = styled.div`
   color: #000000;
-  font-family: "Pretendard-Bold", Helvetica;
   font-size: 22px;
   font-weight: 700;
   letter-spacing: 0;
