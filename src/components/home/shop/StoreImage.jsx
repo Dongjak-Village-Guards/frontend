@@ -4,12 +4,7 @@
  */
 
 import styled from "styled-components";
-import chickenImage from "../../../assets/images/chicken.png";
-import pizzaImage from "../../../assets/images/pizza.png";
-import saladImage from "../../../assets/images/salad.png";
-import steakImage from "../../../assets/images/steak.png";
-import koreanImage from "../../../assets/images/korean.png";
-import hairImage from "../../../assets/images/hair.png";
+import { getStoreImage } from "../../../utils/storeUtils";
 
 /**
  * StoreCard 컴포넌트
@@ -18,18 +13,7 @@ import hairImage from "../../../assets/images/hair.png";
  * @param {string} store.name - 가게 이름 (alt 텍스트용)
  */
 const StoreCard = ({ store }) => {
-  // 가게 ID에 따라 이미지 매핑 (임시)
-  const imageMap = {
-    1: chickenImage,
-    2: pizzaImage,
-    3: saladImage,
-    4: steakImage,
-    5: koreanImage,
-    6: hairImage,
-    7: hairImage,
-  };
-
-  const imageSrc = imageMap[store.id] || '/assets/images/placeholder.png';
+  const imageSrc = getStoreImage(store.id);
 
   return (
     <CardImageContainer>
@@ -46,6 +30,7 @@ const StoreCard = ({ store }) => {
     </CardImageContainer>
   );
 };
+
 export default StoreCard;
 
 // ===== Styled Components ===== //

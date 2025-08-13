@@ -9,6 +9,7 @@ import CardText from "./CardText";
 import DiscountBadge from "./DiscountBadge";
 import LikeButton from "../shop/LikeButton";
 import StoreCard from "./StoreImage";
+import { getFeaturedMenu } from "../../../utils/storeUtils";
 
 /**
  * Card 컴포넌트
@@ -25,18 +26,14 @@ import StoreCard from "./StoreImage";
 
 const Card = ({ store, onClick }) => {
   const { id, isLiked } = store;
-  // 최대 할인율 계산 (디자이너 유무에 따라 다르게 처리)
-  const discountRate = store.hasDesigners
-    ? Math.max(...store.designers.flatMap(designer => designer.menus.map(menu => menu.discountRate)))
-    : Math.max(...store.menus.map(menu => menu.discountRate));
+  const featuredMenu = getFeaturedMenu(store);
 
   return (
     <CardContainer onClick={onClick}>
       <CardHeader>
-        <DiscountBadge discountRate={discountRate} />
+        <DiscountBadge discountRate={featuredMenu.discountRate} />
         <StoreCard store={store} />
       </CardHeader>
-
       <CardFooter>
         <CardText store={store} />
         <LikeButton storeId={id} isLiked={isLiked} />
@@ -44,6 +41,7 @@ const Card = ({ store, onClick }) => {
     </CardContainer>
   );
 };
+
 export default Card;
 
 // ===== Styled Components ===== //

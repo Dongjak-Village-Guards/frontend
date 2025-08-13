@@ -4,6 +4,7 @@
  */
 
 import styled from "styled-components";
+import { getFeaturedMenu } from "../../../utils/storeUtils";
 
 /**
  * CardText 컴포넌트
@@ -19,29 +20,7 @@ import styled from "styled-components";
 
 const CardText = ({ store }) => {
   const { name, distance, walkTime } = store;
-  
-  // 최대 할인율 메뉴 선택
-  const featuredMenu = (() => {
-    // 디자이너가 있는 경우
-    if (store.hasDesigners && store.designers?.length > 0) {
-      const allMenus = store.designers.flatMap(designer => designer.menus || []);
-      if (allMenus.length === 0) {
-        return { discountRate: 0, originalPrice: 0, discountPrice: 0, name: '메뉴 없음' };
-      }
-      return allMenus.reduce(
-        (prev, curr) => (prev.discountRate > curr.discountRate ? prev : curr),
-        { discountRate: 0, originalPrice: 0, discountPrice: 0, name: '메뉴 없음' }
-      );
-    }
-    // 디자이너가 없는 경우
-    if (!store.menus || store.menus.length === 0) {
-      return { discountRate: 0, originalPrice: 0, discountPrice: 0, name: '메뉴 없음' };
-    }
-    return store.menus.reduce(
-      (prev, curr) => (prev.discountRate > curr.discountRate ? prev : curr),
-      { discountRate: 0, originalPrice: 0, discountPrice: 0, name: '메뉴 없음' }
-    );
-  })();
+  const featuredMenu = getFeaturedMenu(store);
 
   return (
     <StoreInfo>
@@ -67,6 +46,7 @@ const CardText = ({ store }) => {
     </StoreInfo>
   );
 };
+
 export default CardText;
 
 // ===== Styled Components ===== //
