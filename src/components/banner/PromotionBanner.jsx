@@ -1,4 +1,3 @@
-import React from "react";
 import styled from "styled-components";
 
 const PromotionBanner = ({ banner }) => {
@@ -8,7 +7,8 @@ const PromotionBanner = ({ banner }) => {
     <BannerWrapper onClick={onClick}>
       <BannerImage src={image} alt="프로모션 배너" />
       <BannerSub>{subtitle}</BannerSub>
-      <BannerText dangerouslySetInnerHTML={{ __html: title }} />
+      {/* HTML 태그가 포함된 텍스트를 안전하게 렌더링 */}
+      <BannerText dangerouslySetInnerHTML={{ __html: sanitizeHtml(title) }} />
     </BannerWrapper>
   );
 };
