@@ -11,3 +11,7 @@ export const getSortOptions = async () => {
 export const getCategoryOptions = async () => {
   return Promise.resolve(CATEGORY_OPTIONS);
 };
+
+export const getStoreById = (stores, id) => {
+  return stores.find(store => store.id === parseInt(id));
+};
