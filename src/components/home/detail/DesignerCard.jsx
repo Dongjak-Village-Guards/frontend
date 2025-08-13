@@ -2,10 +2,10 @@
  * 디자이너 정보를 표시하는 카드 컴포넌트
  */
 
-import React from 'react'
 import styled from 'styled-components';
-import designerImage from '../../assets/images/designer.png';
-import useStore from '../../hooks/store/useStore';
+import designerImage from '../../../assets/images/designer.png';
+import useStore from '../../../hooks/store/useStore';
+import ReservationButton from '../../common/ReservationButton';
 
 /**
  * DesignerCard 컴포넌트
@@ -16,7 +16,7 @@ import useStore from '../../hooks/store/useStore';
  */
 
 const DesignerCard = ({ designer, onSelect }) => {
-    const { startReservation, selectDesigner } = useStore();
+    const { startReservation } = useStore();
 
     // 최대 할인율 계산
     const maxDiscountRate = Math.max(...designer.menus.map(menu => menu.discountRate));
@@ -39,12 +39,16 @@ const DesignerCard = ({ designer, onSelect }) => {
                 </DiscountText>
             </Detail>
         </Div>
-        <SelectButton onClick={handleReserve}>예약하기</SelectButton>
+        <ButtonContainer>
+            <ReservationButton onClick={handleReserve} disabled={designer.isReserved}>
+                {designer.isReserved ? "예약마감" : "예약하기"}
+            </ReservationButton>
+        </ButtonContainer>
     </Card>
   );
 };
 
-export default DesignerCard
+export default DesignerCard;
 
 // ===== Styled Components ===== //
 
@@ -80,7 +84,7 @@ const Detail = styled.div`
     display: flex;
     flex-direction: column;
     gap: 4px;
-`
+`;
 
 /* 디자이너 이름 */
 const DesignerName = styled.h3`
@@ -106,18 +110,11 @@ const StyledSpan = styled.span`
     font-size: 14px;
     line-height: 14px;
     font-weight: 500;
-`
+`;
 
-/* 선택 버튼 (예약마감 시 비활성화) */
-const SelectButton = styled.button`
-    background: ${props => (props.disabled ? "#737373" : "#da2538")};
-    color: #fff;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 10px;
-    font-family: Pretendard;
-    font-size: 14px;
-    font-weight: 400;
-    cursor: ${props => (props.disabled ? "not-allowed" : "pointer")};
-    margin-right: 16px;
+const ButtonContainer = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-right: 16px;
 `;

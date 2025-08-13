@@ -3,12 +3,11 @@
  * 선택된 메뉴와 가게 정보, 개인정보 제3자 동의 체크박스를 표시
  */
 
-import React from 'react';
 import styled from 'styled-components';
 import useStore from '../hooks/store/useStore';
-import ShopInfo from '../components/shop/ShopInfo';
-import MenuCard from '../components/shop/MenuCard';
-import PiAgreement from '../components/shop/PiAgreement';
+import ShopInfo from '../components/home/detail/ShopInfo';
+import MenuCard from '../components/home/detail/MenuCard';
+import PiAgreement from '../components/home/detail/PiAgreement';
 import { ReactComponent as ArrowButton } from '../assets/images/piArrow.svg';
 import Line from '../components/common/Line';
 
@@ -92,7 +91,6 @@ export default ReservationPage;
 const ReservationContainer = styled.div`
   padding: 0px 16px;
   background: #fff;
-  font-family: Pretendard;
   display: flex;
   flex-direction: column;
 `;
@@ -144,7 +142,6 @@ const ReserveButton = styled.button`
   height: 56px;
   padding: 8px 12px;
   border-radius: 10px;
-  font-family: Pretendard;
   font-size: 14px;
   font-weight: 400;
   cursor: ${props => props.disabled ? "not-allowed" : "pointer"};
@@ -160,7 +157,6 @@ const CloseButton = styled.button`
   height: 56px;
   padding: 8px 12px;
   border-radius: 10px;
-  font-family: Pretendard;
   font-size: 14px;
   font-weight: 400;
   cursor: pointer;
@@ -170,4 +166,4 @@ const CloseButton = styled.button`
 
 const MenuCardDiv = styled.div`
   padding: 16px 16px 4px 16px ;
-`
+`;

@@ -1,9 +1,13 @@
-import React from 'react'
-import { FiChevronLeft } from 'react-icons/fi'
+/**
+ * 주소 검색 페이지
+ * 로그인 다음 or 홈 화면에서 주소 변경할 때 사용
+ */
+
 import Search from '../components/address/Search'
 import styled from 'styled-components'
 import useStore from '../hooks/store/useStore'
 import useUserInfo from '../hooks/user/useUserInfo'
+import TopNavBar from '../components/nav/TopNavBar'
 
 const SearchAddressPage = () => {
   const { setCurrentPage, fromHomePage } = useStore();
@@ -13,20 +17,17 @@ const SearchAddressPage = () => {
   console.log('SearchAddressPage - fromHomePage:', fromHomePage);
 
   const handleBackClick = () => {
-    console.log('뒤로가기 버튼 클릭됨');
     setCurrentPage('home');
   };
 
   return (
     <AddressWrapper>
-      {/* 뒤로가기 토글 - HomePage에서 접근했을 때만 표시 */}
       {fromHomePage && (
-        <BackButton onClick={handleBackClick}>
-          <FiChevronLeft size={20} />
-          <span>주소 선택</span>
-        </BackButton>
+        <TopNavBar
+          title="주소 선택"
+          onBack={handleBackClick}
+        />
       )}
-      
       <AddressContainer>
         <AddressFrame>
           <TextContainer>
@@ -39,8 +40,8 @@ const SearchAddressPage = () => {
         </AddressFrame>
       </AddressContainer>
     </AddressWrapper>
-  )
-}
+  );
+};
 
 export default SearchAddressPage;
 
@@ -50,52 +51,30 @@ const AddressWrapper = styled.div`
   flex-direction: row;
   justify-content: center;
   width: 100%;
-  height: 100%; // Layout에 맞출려고 수정
+  height: 100%;
   position: relative;
-`
-
-const BackButton = styled.button`
-  position: absolute;
-  top: 12px;
-  left: 16px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  z-index: 100;
-  display: flex;
-  justify-content: center;
-  font-size: 16px;
-  vertical-align: ;
-  align-items: flex-end;
-  color: #000000;
-  transition: color 0.2s ease;
-
-  &:hover {
-    opacity: 0.7;
-    color: #DA2538;
-  }
-`
+`;
 
 const AddressContainer = styled.div`
   position: relative;
   background-color: #ffffff;
-  width: 360px;
-  height: 720px;
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-`
+`;
 
 const AddressFrame = styled.div`
   position: relative;
   top: 128px;
-  width: 328px;
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 0 16px;
-`
+`;
 
 const TextContainer = styled.div`
   width: 100%;
@@ -119,8 +98,8 @@ const TextContainer = styled.div`
     line-height: normal;
     margin: 0 0 16px 0;
   }
-`
+`;
 
 const SearchContainer = styled.div`
   width: 100%;
-`
+`;

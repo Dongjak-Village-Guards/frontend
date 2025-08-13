@@ -1,7 +1,7 @@
 /**
  * 다른 메뉴 목록을 표시하는 컴포넌트
  */
-import React from 'react'
+
 import MenuCard from './MenuCard'
 import styled from 'styled-components'
 
@@ -23,10 +23,10 @@ const MenuList = ({ menus, onReserve }) => {
             <NoMenus>다른 메뉴가 없습니다.</NoMenus>
         )}
     </ListContainer>
-  )
-}
+  );
+};
 
-export default MenuList
+export default MenuList;
 
 // ===== Styled Components ===== //
 

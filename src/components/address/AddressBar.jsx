@@ -1,4 +1,3 @@
-import React from "react";
 import styled from "styled-components";
 import { AiOutlineCaretDown } from "react-icons/ai";
 
@@ -13,7 +12,10 @@ const AddressBar = ({ address, onAddressClick }) => {
   );
 };
 
+export default AddressBar;
+
 // ===== Styled Components ===== //
+
 const AddressContainer = styled.div`
   display: flex;
   align-items: center;
@@ -53,5 +55,3 @@ const SelectArrow = styled.div`
   font-size: 19px;
   color: #666;
 `;
-
-export default AddressBar; 

@@ -1,10 +1,11 @@
 /**
  * 메인 페이지(HomePage) 컴포넌트
- * 주소 표시, 배너, 필터, 가게 목록을 포함
- * 배너의 최대 할인율은 STORES_DATA의 menus에서 동적으로 계산
- * 가게 카드 클릭 시 상세 페이지(/shop/:id)로 이동
+ * 주소 표시, 배너, 필터, 가게 목록 표시
+ * 정렬, 시간, 업종 필터 적용 가능
  * SORT_OPTIONS를 사용하여 모든 정렬 옵션 표시
+ * 가게 카드 클릭 시 상세 페이지(/shop/:id)로 이동
  */
+
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { FiChevronDown } from "react-icons/fi";
@@ -17,34 +18,24 @@ import TimeFilter from "../components/filter/TimeFilter";
 import Spinner from "../components/common/Spinner";
 import useStore from "../hooks/store/useStore";
 import useUserInfo from "../hooks/user/useUserInfo";
-import Card from "../components/shop/Card";
+import Card from "../components/home/shop/Card";
 import bannerImage from "../assets/images/bannerImage.png";
-import { type } from "@testing-library/user-event/dist/type";
 import { useNavigate } from "react-router-dom";
-import { STORES_DATA } from "../apis/mock/mockShopList";
 
 export default function HomePage() {
   const navigate = useNavigate();
-  /* 토글 상태 관리 */
+  /** @state 토글 상태 */
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [isTimeSheetOpen, setIsTimeSheetOpen] = useState(false);
   const [isCategorySheetOpen, setIsCategorySheetOpen] = useState(false);
-  
-  /* 로딩 상태 관리 */
+
+  /** @state 로딩 상태 */
   const [isLoading, setIsLoading] = useState(false);
   
-  // 디버깅: setIsLoading 래퍼 함수 (콜백 사용)
-  const setLoadingWithLog = (loading) => {
-    console.log('setIsLoading 호출됨:', loading);
-    setIsLoading(loading);
-  };
+  // 로딩 상태 변경
+  const setLoading = (loading) => setIsLoading(loading);
   
-  // 디버깅: isLoading 상태 변화 추적
-  useEffect(() => {
-    console.log('isLoading 상태 변화됨:', isLoading);
-  }, [isLoading]);
-  
-  /* Zustand 스토어에서 필요한 상태와 액션 가져오기 */
+  /* Zustand 상태 */
   const { 
     currentAddress, 
     currentTime, 
@@ -58,35 +49,26 @@ export default function HomePage() {
     setFromHomePage,
   } = useStore();
 
-  /* 사용자 정보에서 등록된 주소 가져오기 */
+  /** 사용자 주소 */
   const { userAddress } = useUserInfo();
 
-  /* 컴포넌트 마운트 시 초기 로딩 처리 */
+  /** 초기 로딩 처리 */
   useEffect(() => {
-    console.log('useEffect 실행됨 - 초기 로딩 시작');
     const initializePage = async () => {
-      console.log('initializePage 함수 시작');
-      setLoadingWithLog(true);
-      
+      setLoading(true);
       // 초기 시간 설정 (새로고침 시에만 실행)
       console.log('updateCurrentTime 호출');
       updateCurrentTime();
-      
       // 0.1초 지연으로 렌더링 시간 시뮬레이션
-      console.log('0.1초 지연 시작');
-      await new Promise(resolve => setTimeout(resolve, 100));
-      console.log('0.1초 지연 완료');
-      
-      setLoadingWithLog(false);
-      console.log('initializePage 함수 완료');
+      await new Promise(res => setTimeout(res, 100));
+      setLoading(false);
     };
-
     initializePage();
   }, [updateCurrentTime]);
 
   /**
-   * 정렬 옵션 변경 핸들러
-   * @param {string} option - 정렬 옵션
+   * 정렬 변경
+   * @param {string} option - 'discount' | 'price'
    */
   const handleSortChange = (option) => {
     setSortOption(option);
@@ -100,13 +82,9 @@ export default function HomePage() {
     }
   };
 
-  /**
-   * 주소 설정 페이지로 이동 핸들러
-   */
+  /** 주소 클릭 시 */
   const handleAddressClick = () => {
-    console.log('주소 아이콘 클릭됨');
     if (!isLoading) {
-      console.log('주소 설정 페이지로 이동');
       setCurrentPage('search-address');
       setFromHomePage(true); // 주소 설정 페이지로 이동할 때 fromHomePage 플래그를 true로 설정
     } else {
@@ -115,84 +93,62 @@ export default function HomePage() {
   };
 
   /**
-   * 업종 필터 변경 핸들러
+   * 업종 변경
    * @param {Array} categories - 선택된 업종 배열
    */
   const handleCategoryChange = (categories) => {
-    console.log('업종 선택됨:', categories);
     setFilters({ categories });
-    
     // 업종 필터 변경 시 로딩 처리
-    setLoadingWithLog(true);
-    setTimeout(async () => {
-      console.log('업종필터 로딩 시작');
-      await new Promise(resolve => setTimeout(resolve, 300));
-      console.log('업종필터 로딩 완료');
-      setLoadingWithLog(false);
-      
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
       // 업종이 모두 해제되었을 때(선택안함 클릭 시) 바텀시트 닫기
-      if (categories.length === 0) {
-        setIsCategorySheetOpen(false);
-      }
+      if (!categories.length) setIsCategorySheetOpen(false);
     }, 300);
   };
 
   /**
-   * 가게 카드 클릭 시 상세 페이지로 이동
+   * 매장 클릭
    * @param {number} storeId - 가게 ID
    */
-  const handleCardClick = (storeId) => {
-    console.log(`shop/${storeId}로 이동`);    
-    navigate(`/shop/${storeId}`);
-  };
+  const handleCardClick = (storeId) => navigate(`/shop/${storeId}`);
 
-  // 정렬된 가게 목록 가져오기
-  const sortedStores = getSortedStores();
-
-  // 최대 할인율 계산
-  const maxDiscount = Math.max(
-    ...STORES_DATA.flatMap(store =>
-      store.hasDesigners
-        ? store.designers.flatMap(designer => designer.menus.map(menu => menu.discountRate))
-        : store.menus.map(menu => menu.discountRate)
-    )
-  );
-
-  // 표시할 주소 결정 (등록된 주소가 있으면 사용, 없으면 기본 주소)
+  /** 주소 표시
+   * 등록된 주소가 있으면 사용, 없으면 기본 주소
+   * 8글자까지 표시
+   */
   const displayAddress = userAddress ? userAddress.roadAddr : currentAddress;
-
-  // 주소 표시 텍스트 생성 (8글자 초과 시 "..." 표시)
   const getAddressDisplayText = () => {
     return displayAddress.length > 8 ? `${displayAddress.slice(0, 8)}...` : displayAddress;
   };
 
-  // 현재 시간의 다음 정각을 계산하는 함수
+  /** 다음 정각 계산 */
   const getNearestHour = (currentTime) => {
     const [currentHour, currentMinute] = String(currentTime).split(':').map(Number);
-    
     // 현재가 정각이면 다음 시간, 아니면 다음 정각
     const nextHour = currentMinute === 0 ? (currentHour + 1) % 24 : (currentHour + 1) % 24;
-    
     return `${String(nextHour).padStart(2, '0')}:00`;
   };
 
-  // 업종 필터 라벨 생성
+  /** 업종 라벨 */
   const getCategoryLabel = () => {
     if (filters.categories.length === 0) return '업종';
     if (filters.categories.length === 1) {
       const categoryMap = { hair: '미용실', nail: '네일샵', pilates: '필라테스' };
       return categoryMap[filters.categories[0]] || '업종';
     }
-    // 2개 이상 선택 시: "첫번째업종 외 N종" 형태
+    // 2개 이상 선택 시: "첫번째 업종 외 N종" 형태
     const categoryMap = { hair: '미용실', nail: '네일샵', pilates: '필라테스' };
     const firstCategory = categoryMap[filters.categories[0]] || '업종';
     const remainingCount = filters.categories.length - 1;
     return `${firstCategory} 외 ${remainingCount}종`;
   };
+  // 정렬된 가게 목록 가져오기
+  const sortedStores = getSortedStores();
 
   return (
     <HomeContainer>
-      {/* 상단 주소 선택 바 (Layout 내부에서 고정) */}
+      {/* 상단 주소 */}
       <AddressBar>
         <AddressText>
           <AddressTextContent>{getAddressDisplayText()}</AddressTextContent>
@@ -202,14 +158,16 @@ export default function HomePage() {
         </AddressText>
       </AddressBar>
 
-      {/* 프로모션 배너 */}
+      {/* 배너 */}
       <BannerWrapper>
         <BannerImage src={bannerImage} alt="배너 이미지" />
-        <BannerSub>꾸미기 딱 좋은 날♥</BannerSub>
-        <BannerText>
-          우리동네 네일샵<br />
-          최대 50% 할인!
-        </BannerText>
+        <BannerTextContainer>
+          <BannerSubTitle>꾸미기 딱 좋은 날 ♥</BannerSubTitle>
+          <BannerTitle>
+            우리동네 네일샵<br />
+            최대 50% 할인!
+          </BannerTitle>
+        </BannerTextContainer>
       </BannerWrapper>
 
       {/* 필터/정렬 영역 (배너 아래에 위치, 스크롤 시 주소바 바로 아래에 고정) */}
@@ -220,7 +178,7 @@ export default function HomePage() {
           onClick={() => !isLoading && setIsTimeSheetOpen(true)}
         />
 
-        <CategoryToggle 
+        <CategoryToggle
           label={getCategoryLabel()}
           active={filters.categories.length > 0}
           onClick={() => !isLoading && setIsCategorySheetOpen(true)} 
@@ -265,11 +223,11 @@ export default function HomePage() {
             // 0.3초 후 바텀시트 닫힘, 2초 로딩 (테스트용)
             setTimeout(async () => {
               console.log('setTimeout 콜백 실행 - 로딩 시작');
-              setLoadingWithLog(true);
+              setLoading(true);
               console.log('0.3초 로딩 시작');
               await new Promise(resolve => setTimeout(resolve, 300));
               console.log('0.3초 로딩 완료');
-              setLoadingWithLog(false);
+              setLoading(false);
               console.log('시간필터 로딩 완료');
             }, 300);
           }}
@@ -284,12 +242,12 @@ export default function HomePage() {
         onClose={() => {
           console.log('업종 바텀시트 닫기');
           // 업종 바텀시트 닫기 시 로딩 처리
-          setLoadingWithLog(true);
+          setLoading(true);
           setTimeout(async () => {
             console.log('업종 바텀시트 로딩 시작');
             await new Promise(resolve => setTimeout(resolve, 300));
             console.log('업종 바텀시트 로딩 완료');
-            setLoadingWithLog(false);
+            setLoading(false);
         }, 300);
         setIsCategorySheetOpen(false);
         }}
@@ -333,7 +291,6 @@ const HomeContainer = styled.div`
   padding: 0 clamp(8px, 4vw, 16px);
   width: 100%;
   max-width: 100%;
-  /* sticky 포지션이 작동하도록 overflow 제거 */
 `;
 
 /* 상단 주소 바(Layout 내부에서 상단에 고정되어 스크롤에 영향을 받지 않음) */
@@ -344,9 +301,7 @@ const AddressBar = styled.div`
   z-index: 20;
   display: flex;
   align-items: center;
-  padding: clamp(16px, 4vh, 32px) 0 clamp(8px, 2vh, 16px) 0; // 주소바 하단 padding 변경요구 반영
-  gap: 6px;
-//  justify-content: flex-start;
+  padding: 44px 0 16px 0;
   background: #fff;
   width: 100%;
   
@@ -360,20 +315,16 @@ const AddressBar = styled.div`
 /* 주소 텍스트 */
 const AddressText = styled.div`
   overflow: hidden;
-  color: var(--, #000);
+  color: #000;
   text-overflow: ellipsis;
-  font-family: Pretendard;
-  // font-size: clamp(16px, 5vw, 22px); // iOS 폰트 자동 확대 방지 수정 -> 해결 안 됨
   font-style: normal;
   font-weight: 700;
   line-height: normal;
   display: flex;
   align-items: center;
-//  justify-content: flex-start;
   gap: clamp(2px, 2vw, 4px);
   padding: 4px 8px;
   border-radius: 8px;
-//  width: 100%;
 `;
 
 /* 주소 텍스트 내용 */
@@ -397,19 +348,16 @@ const AddressIcon = styled.span`
 
   &:hover {
     transform: rotate(180deg);
-    //background-color: #f8f8f8;
   }
 `;
 
 /* 배너 광고 영역(주소바 아래에 위치) */
 const BannerWrapper = styled.div`
-//  margin: clamp(8px, 2vh, 16px) 0 0 0;
-  border-radius: clamp(8px, 2vw, 10px);
+  border-radius: 10px;
   flex-shrink: 0;
   overflow: hidden;
   position: relative;
   background-color: #000000a9;
-  font-family: Pretendard;
 `;
 
 /* 배너 이미지 */
@@ -421,26 +369,31 @@ const BannerImage = styled.img`
   display: block;
 `;
 
-/* 배너 이미지 위에 Overlay되는 텍스트 */
-const BannerText = styled.div`
+/* 배너 글씨 컨테이너 */
+const BannerTextContainer = styled.div`
+  display: flex;
+  flex-direction: column;
   position: absolute;
-  left: 0; right: 3px; bottom: 5px;
+  right: 6px; bottom: 6px;
+`;
+
+/* 배너 이미지 위에 Overlay되는 텍스트 */
+const BannerTitle = styled.div`
   color: #fff;
-  font-size: clamp(18px, 5vw, 22px);
+  font-size: clamp(18px, 6.5vw, 22px);
   font-weight: 700;
   line-height: normal;
   text-align: right;
 `;
 
-/* 배너 서브 텍스트 배너 상단에 표시되는 작은 텍스트(폰트 적용 X) */
-const BannerSub = styled.div`
-  position: absolute;
-  right: 3px; bottom: 58px;
+/* 배너 서브 텍스트 배너 상단에 표시되는 작은 텍스트 */
+const BannerSubTitle = styled.div`
   color: #FFB1B9;
-  font-size: clamp(10px, 3vw, 12px);
+  font-size: clamp(10px, 3.5vw, 12px);
   font-style: normal;
   font-weight: 700;
   line-height: normal;
+  align-self: flex-end;
 `;
 
 /* 필터 라인 영역
@@ -448,11 +401,10 @@ const BannerSub = styled.div`
 const FilterRow = styled.div`
   position: -webkit-sticky;
   position: sticky;
-  top: clamp(40px, 10vh, 4rem); // 약간의 편법
+  top: 90px;
   z-index: 15;
   //  margin: 0px 0px clamp(8px, 2vh, 16px) 0px; // 필터바 padding 변경요구 반영
   padding: clamp(8px, 2vh, 16px) 0; // 약간의 편법
-
   display: flex;
   align-items: center;
   gap: clamp(6px, 2vw, 10px);
@@ -473,9 +425,8 @@ const SortToggleContainer = styled.div`
 
 /* 정렬 토글 버튼(할인율순/가격순 정렬 옵션) */
 const SortToggle = styled.button`
-  font-size: clamp(12px, 3.5vw, 14px);
+  font-size: 14px;
   color: #000;
-  font-family: Pretendard;
   cursor: pointer;
   border: none;
   background: none;
@@ -503,7 +454,6 @@ const SortDropdown = styled.div`
 const SortOption = styled.div`
   padding: clamp(6px, 2vw, 8px) clamp(8px, 3vw, 12px);
   font-size: clamp(12px, 3.5vw, 14px);
-  font-family: Pretendard;
   color: #000;
   cursor: pointer;
   transition: background-color 0.2s ease;
@@ -540,17 +490,5 @@ const LoadingContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-//  border: 3px solid red; /* 디버깅용 테두리 */
   min-height: 200px; /* 최소 높이 보장 */
-  
-  /* 디버깅용 스타일 강화 */
-//  &::before {
-//    content: 'LoadingContainer 영역';
-//    position: absolute;
-//    top: 10px;
-//    left: 10px;
-//    color: red;
-//    font-size: 12px;
-//    font-weight: bold;
-//  }
 `;

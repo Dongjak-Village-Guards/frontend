@@ -61,7 +61,7 @@ const Search = () => {
         />
         <SearchIcon className='search-icon' onClick={handleSearch} />
       </SearchBar>
-
+      
       {loading && hasSearched && <Spinner />}
       {!loading && !error && hasSearched && results.length === 0 && <NoResult>검색 결과가 없어요</NoResult>}
 
@@ -73,18 +73,19 @@ const Search = () => {
         ))}
       </ResultContainer>
     </SearchWrapper>
-  )
-}
+  );
+};
 
-export default Search
+export default Search;
 
 // ===== Styled Components ===== //
+
 const SearchWrapper = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-`
+`;
 
 const SearchBar = styled.div`
   display: flex;
@@ -92,7 +93,6 @@ const SearchBar = styled.div`
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  max-width: 328px;
   height: 48px;
   border-radius: 16px;
   border: 1px solid #737373;
@@ -119,20 +119,7 @@ const SearchBar = styled.div`
     margin-right: 16px;
     cursor: pointer;
   }
-`
-/*
-const LoadingSpinner = styled.div`
-  position: relative;
-  top: 108px;
-  color: #000;
-  font-family: Pretendard;
-  font-size: 20px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: normal;
-  text-align: center;
-`
-*/
+`;
 
 const NoResult = styled.div`
   position: relative;
@@ -144,15 +131,14 @@ const NoResult = styled.div`
   font-weight: 400;
   line-height: normal;
   text-align: center;
-`
+`;
 
 const ResultContainer = styled.ul`
   width: 100%;
-  max-width: 328px;
   list-style: none;
   padding: 0;
   margin: 0;
-`
+`;
 
 const ResultItem = styled.li`
   display: flex;
@@ -177,4 +163,4 @@ const ResultItem = styled.li`
 
   user-select: none;
   cursor: pointer;
-`
+`;

@@ -1,7 +1,7 @@
 /**
  * 개인정보 제3자 제공 동의서 컴포넌트
  */
-import React from 'react';
+
 import styled from 'styled-components';
 
 const PiAgreement = () => {

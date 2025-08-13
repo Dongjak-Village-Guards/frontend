@@ -4,6 +4,7 @@
  * Zustand 스토어를 사용하여 전역 상태를 관리
  * 현재 페이지에 따라 컴포넌트 렌더링
  */
+
 import React, { useEffect } from 'react';
 import HomePage from './HomePage';
 import FavoritePage from './FavoritePage';
@@ -77,4 +78,4 @@ const MainPageApp = () => {
   );
 };
 
-export default MainPageApp; 
+export default MainPageApp;

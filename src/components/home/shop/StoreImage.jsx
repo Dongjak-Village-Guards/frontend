@@ -1,14 +1,15 @@
 /**
  * 가게 사진 정보를 표시하는 컴포넌트
- * 메인 이미지를 담당함.
+ * 메인 이미지를 담당함
  */
+
 import styled from "styled-components";
-import chickenImage from "../../assets/images/chicken.png";
-import pizzaImage from "../../assets/images/pizza.png";
-import saladImage from "../../assets/images/salad.png";
-import steakImage from "../../assets/images/steak.png";
-import koreanImage from "../../assets/images/korean.png";
-import hairImage from "../../assets/images/hair.png";
+import chickenImage from "../../../assets/images/chicken.png";
+import pizzaImage from "../../../assets/images/pizza.png";
+import saladImage from "../../../assets/images/salad.png";
+import steakImage from "../../../assets/images/steak.png";
+import koreanImage from "../../../assets/images/korean.png";
+import hairImage from "../../../assets/images/hair.png";
 
 /**
  * StoreCard 컴포넌트
@@ -38,7 +39,7 @@ const StoreCard = ({ store }) => {
           alt={`${store.name} 메인 이미지`}
           onError={(e) => {
             console.warn(`이미지 로드 실패: ${store.id}, using fallback`);
-            e.target.src = '../../assets/images/placeholder.png';  // 이미지 로드 실패 시 기본 치킨 이미지로 대체
+            e.target.src = '../../assets/images/placeholder.png';
           }}
         />
       </ImageGroup>
@@ -56,8 +57,7 @@ const CardImageContainer = styled.div`
   align-items: center;
   justify-content: center;
   width: 100%;
-  /* 반응형 웹 수정: 고정 높이 대신 반응형 높이 사용 */
-  height: clamp(120px, 35vh, 148px); // 딱히 드라마틱한 변화는 없음
+  height: clamp(120px, 35vh, 148px);
   flex-shrink: 0;
 `;
 
@@ -68,8 +68,6 @@ const ImageGroup = styled.div`
   align-items: flex-end;
   justify-content: space-between;
   gap: 8px;
-  /* 반응형 웹 수정: 전체 이미지 그룹의 최대 너비 제한 */
-//  max-width: clamp(230px, 75vw, 320px);
   
   /* 반응형 웹 수정: 모바일에서 간격 조정 */
   @media (max-width: 480px) {
@@ -78,7 +76,6 @@ const ImageGroup = styled.div`
 
   width: 100%;
   height: 100%;
-  //  border: 1px solid red; // Test용
 `;
 
 /* 메인 카드 이미지

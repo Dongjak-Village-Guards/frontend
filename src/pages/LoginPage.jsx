@@ -1,4 +1,7 @@
-import React from 'react';
+/**
+ * 로그인 페이지
+ */
+
 import { ReactComponent as Logo } from '../assets/images/logo.svg';
 import { ReactComponent as Bubble } from '../assets/images/bubble.svg';
 import Google from '../components/login/Google';
@@ -32,10 +35,10 @@ const Login = () => {
         </GoogleButton>
       </Container>
     </LoginWrapper>
-  )
-}
+  );
+};
 
-export default Login
+export default Login;
 
 const LoginWrapper = styled.div`
   background-color: #ffffff;
@@ -43,8 +46,8 @@ const LoginWrapper = styled.div`
   flex-direction: row;
   justify-content: center;
   width: 100%;
-  height: 100%; // Layout크기에 맞출려고 수정
-`
+  height: 100%;
+`;
 
 const Container = styled.div`
   position: relative;
@@ -59,7 +62,7 @@ const Container = styled.div`
     top: 188px;
     left: 128px;
   }
-`
+`;
 
 const FirstTitle = styled.div`
   position: absolute;
@@ -79,7 +82,7 @@ const FirstTitle = styled.div`
     white-space: nowrap;
     margin-top: -1px;
   }
-`
+`;
 
 const SecondTitle = styled.div`
   position: absolute;
@@ -99,7 +102,7 @@ const SecondTitle = styled.div`
     white-space: nowrap;
     margin-top: -1px;
   }
-`
+`;
 
 const BubbleBox = styled.div`
   position: relative;
@@ -126,7 +129,7 @@ const BubbleBox = styled.div`
     white-space: nowrap;
     z-index: 1;
   }
-`
+`;
 
 const GoogleButton = styled.div`
   position: absolute;
@@ -138,4 +141,4 @@ const GoogleButton = styled.div`
   .google-component {
     left: 26px;
   }
-`
+`;
