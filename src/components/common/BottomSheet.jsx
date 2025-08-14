@@ -2,7 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import styled from 'styled-components';
 
-const BottomSheet = ({ open, title, onClose, children }) => {
+const BottomSheet = ({ 
+  open, 
+  title, 
+  onClose, 
+  children, 
+  headerPadding = "12px 16px",
+  bodyPadding = "12px 16px 16px 16px",
+  headerVariant = "default", // default, noHeaderPadding
+  bodyVariant = "default", // default, noBodyPadding
+  sheetHeight = "default", // default, mainPageSize
+}) => {
   const [portalRoot, setPortalRoot] = useState(null);
 
   useEffect(() => {
@@ -40,8 +50,14 @@ const BottomSheet = ({ open, title, onClose, children }) => {
   return createPortal(
     <>
       <Backdrop onClick={handleBackdropClick} />
-      <Sheet role="dialog" aria-modal="true">
-        <SheetHeader>
+      <Sheet role="dialog" aria-modal="true" $sheetHeight={sheetHeight}>
+        <SheetHeader $headerPadding={headerPadding} $variant={headerVariant}>
+          {/* 
+            Transient props ($ 접두사):
+            - DOM에 전달되지 않고 styled-components 내부 CSS 엔진에서만 사용
+            - React 경고를 방지하고 성능상 이점 제공
+            - 스타일 계산 목적으로만 사용됨
+          */}
           <SheetTitle>{title}</SheetTitle>
           <CloseButton 
             type="button" 
@@ -52,7 +68,15 @@ const BottomSheet = ({ open, title, onClose, children }) => {
             </svg>
           </CloseButton>
         </SheetHeader>
-        <SheetBody>{children}</SheetBody>
+        <SheetBody $bodyPadding={bodyPadding} $bodyVariant={bodyVariant}>
+          {/* 
+            Transient props ($ 접두사):
+            - DOM에 전달되지 않고 styled-components 내부 CSS 엔진에서만 사용
+            - React 경고를 방지하고 성능상 이점 제공
+            - 스타일 계산 목적으로만 사용됨
+          */}
+          {children}
+        </SheetBody>
       </Sheet>
     </>,
     portalRoot
@@ -79,10 +103,18 @@ const Sheet = styled.section`
   border-top-right-radius: 16px;
   box-shadow: 0 -8px 24px rgba(0,0,0,0.12);
   z-index: 32; /* Backdrop(31)보다 높게 */
-  max-height: 51.5vh; // 눈바디
   display: flex;
   flex-direction: column;
   animation: slideUp 160ms ease-out;
+//  max-height: 51.5vh; // 눈바디
+
+  height: ${props => {
+    switch(props.$sheetHeight) {
+      case "mainPageSize": return "51.5vh";
+      case "schedulePageSize": return "29.8vh";
+      default: return "51.5vh"; // 디폴트 사이즈 : mainPageSize
+    }
+  }};
   
   /* 모바일 safe-area 고려 */
   padding-bottom: env(safe-area-inset-bottom);
@@ -94,13 +126,19 @@ const Sheet = styled.section`
     from { transform: translateY(8%); opacity: 0.8; }
     to { transform: translateY(0); opacity: 1; }
   }
+//  padding: 0 16px; // 임시
 `;
 
 const SheetHeader = styled.header`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
+  padding: ${props => {
+    if (props.$variant === "noHeaderPadding") {
+      return "12px 16px 0 16px";
+    }
+    return props.$headerPadding;
+  }};
   position: relative;
   z-index: 9998;
   pointer-events: auto;
@@ -124,6 +162,11 @@ const CloseButton = styled.button`
 
 const SheetBody = styled.div`
   padding: 12px 16px 16px 16px;
+  padding: ${props => {
+    if (props.$bodyVariant === "noBodyPadding") {
+      return "0 16px 16px 16px";
+    }
+    return props.$bodyPadding;
+  }};
   overflow-y: auto;
 `;
-
