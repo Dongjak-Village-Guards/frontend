@@ -2,8 +2,13 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { FiChevronRight } from 'react-icons/fi';
 import ReservationButton from '../components/common/ReservationButton';
+import BottomSheet from '../components/common/BottomSheet';
 
 const SchedulePage = () => {
+  // 예약 취소 확인을 위한 상태
+  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
+
   // 예약 데이터 (실제로는 API에서 가져올 데이터)
   const [appointments, setAppointments] = useState([
     {
@@ -32,9 +37,29 @@ const SchedulePage = () => {
     }
   ]);
 
-  // 예약 취소 핸들러
-  const handleCancelReservation = (appointmentId) => {
-    setAppointments(prev => prev.filter(app => app.id !== appointmentId));
+  // 예약 취소 확인 바텀시트 열기
+  const handleCancelClick = (appointmentId) => {
+    setSelectedAppointmentId(appointmentId);
+    setCancelConfirmOpen(true);
+  };
+
+  // 예약 취소 확인 바텀시트 닫기
+  const handleCancelConfirmClose = () => {
+    setCancelConfirmOpen(false);
+    setSelectedAppointmentId(null);
+  };
+
+  // 예약 취소 실행
+  const handleConfirmCancel = () => {
+    if (selectedAppointmentId) {
+      setAppointments(prev => prev.filter(app => app.id !== selectedAppointmentId));
+    }
+    handleCancelConfirmClose();
+  };
+
+  // 예약 유지 (바텀시트 닫기)
+  const handleKeepReservation = () => {
+    handleCancelConfirmClose();
   };
 
   return (
@@ -67,16 +92,9 @@ const SchedulePage = () => {
                   </AppointmentDetails>
                 </CardContent>
                 <ReservationButton 
-                    style={{
-                        backgroundColor: '#fff',
-                        border: '1px solid #CCCCCC',
-                        color: '#000000',
-                    }}
-                    onClick={() => handleCancelReservation(appointment.id)}
+                    variant="secondary"
+                    onClick={() => handleCancelClick(appointment.id)}
                     >예약 취소</ReservationButton>
-                {/*<CancelButton onClick={() => handleCancelReservation(appointment.id)}>
-                  예약 취소
-                </CancelButton>*/}
               </AppointmentCard>
             ))}
           </AppointmentList>
@@ -87,6 +105,44 @@ const SchedulePage = () => {
           </EmptyState>
         )}
       </ContentContainer>
+
+      {/* 예약 취소 확인 바텀시트 */}
+      <BottomSheet
+        open={cancelConfirmOpen}
+        title="예약을 취소하시겠어요?"
+        onClose={handleCancelConfirmClose}
+        sheetHeight="schedulePageSize"
+        headerVariant="noHeaderPadding"
+        bodyVariant="noBodyPadding"
+      >
+        <Divider />
+        <CancelConfirmContent>
+          <ButtonGroup>
+            <ReservationButton
+              variant="secondary"
+              style={{
+                flex: 1,
+                marginRight: '8px',
+                height: '54px',
+              }}
+              onClick={handleKeepReservation}
+            >
+              예약 유지
+            </ReservationButton>
+            <ReservationButton
+              variant="danger"
+              style={{
+                flex: 1,
+                marginLeft: '8px',
+                height: '54px',
+              }}
+              onClick={handleConfirmCancel}
+            >
+              예약 취소
+            </ReservationButton>
+          </ButtonGroup>
+        </CancelConfirmContent>
+      </BottomSheet>
     </PageContainer>
   );
 };
@@ -256,4 +312,22 @@ const EmptyText = styled.div`
 const EmptySubText = styled.div`
   font-size: 14px;
   color: #999;
+`;
+
+const CancelConfirmContent = styled.div`
+  padding: 16px 0;
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  gap: 0;
+  width: 100%;
+//  height: 100%;
+  margin-top: 8px; // 임시
+`;
+
+const Divider = styled.div`
+  width: 100%;
+  border-bottom: 1px solid #CCCCCC;
+  padding-top: 0px;
 `;
