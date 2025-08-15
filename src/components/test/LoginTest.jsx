@@ -26,7 +26,7 @@ const LoginTest = () => {
 
       // 3. 백서버로 idToken 전송
       console.log('백서버로 idToken 전송 시작...');
-      const response = await fetch('https://buynow.n-e.kr/v1/accounts/login', {
+      const response = await fetch('https://buynow.n-e.kr/accounts/login/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -127,7 +127,7 @@ const LoginTest = () => {
       <InfoContainer>
         <InfoTitle>테스트 정보</InfoTitle>
         <InfoItem>• Google 로그인 후 Firebase idToken 획득</InfoItem>
-        <InfoItem>• 백서버 엔드포인트: https://buynow.n-e.kr/v1/accounts/login</InfoItem>
+        <InfoItem>• 백서버 엔드포인트: https://buynow.n-e.kr/accounts/login</InfoItem>
         <InfoItem>• 요청 방식: POST</InfoItem>
         <InfoItem>• Content-Type: application/json</InfoItem>
         <InfoItem>• 브라우저 콘솔에서 상세 로그 확인 가능</InfoItem>
