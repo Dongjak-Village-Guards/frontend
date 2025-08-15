@@ -11,6 +11,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import MainPageApp from './pages/MainPageApp';
 import useUserInfo from './hooks/user/useUserInfo';
 import ShopDetailPage from './pages/ShopDetailPage';
+import LoginTest from './components/test/LoginTest';
 import GlobalStyle from './styles/GlobalStyle';
 
 function App() {
@@ -45,6 +46,8 @@ function App() {
             <Route path="/" element={<MainPageApp />} />
             { /* 가게 상세 페이지: 디자이너 유무에 따라 동적 렌더링 */}
             <Route path="/shop/:id" element={<ShopDetailPage />} />
+            {/* 백서버 로그인 테스트 페이지 */}
+            <Route path="/test" element={<LoginTest />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Router>
