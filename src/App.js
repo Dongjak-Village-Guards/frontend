@@ -12,6 +12,7 @@ import MainPageApp from './pages/MainPageApp';
 import useUserInfo from './hooks/user/useUserInfo';
 import ShopDetailPage from './pages/ShopDetailPage';
 import LoginTest from './components/test/LoginTest';
+import StoreTest from './components/test/StoreTest';
 import GlobalStyle from './styles/GlobalStyle';
 
 function App() {
@@ -48,6 +49,8 @@ function App() {
             <Route path="/shop/:id" element={<ShopDetailPage />} />
             {/* 백서버 로그인 테스트 페이지 */}
             <Route path="/test" element={<LoginTest />} />
+            {/* 가게 API 테스트 페이지 */}
+            <Route path="/store-test" element={<StoreTest />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Router>
