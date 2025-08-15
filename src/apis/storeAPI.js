@@ -1,5 +1,5 @@
 // 가게 관련 API 함수들
-const API_BASE_URL = 'http://localhost:3001'; // json-server 포트
+const API_BASE_URL = 'https://buynow.n-e.kr'; // TODO: 실제 백엔드 서버 URL로 변경 필요
 
 /**
  * 가게 목록 조회
