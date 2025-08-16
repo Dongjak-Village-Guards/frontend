@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchStores, fetchStoreById, fetchStoresByCategory } from '../../apis/storeAPI';
+import { fetchStores } from '../../apis/storeAPI';
 import styled from 'styled-components';
 
 const StoreTest = () => {
@@ -14,7 +14,9 @@ const StoreTest = () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchStores();
+      // 현재 시간을 기준으로 API 호출
+      const currentHour = new Date().getHours();
+      const data = await fetchStores(currentHour);
       setStores(data);
       setSelectedStore(null);
     } catch (err) {
@@ -24,13 +26,18 @@ const StoreTest = () => {
     }
   };
 
-  // 가게 상세 조회
+  // 가게 상세 조회 (현재 API에는 상세 조회 기능이 없으므로 주석 처리)
   const handleFetchStoreById = async (storeId) => {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchStoreById(storeId);
-      setSelectedStore(data);
+      // 현재 백엔드 API에는 상세 조회 기능이 없으므로 임시로 목록에서 찾기
+      const store = stores.find(s => s.id === storeId);
+      if (store) {
+        setSelectedStore(store);
+      } else {
+        setError('가게를 찾을 수 없습니다.');
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -43,7 +50,9 @@ const StoreTest = () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchStoresByCategory(category);
+      // 현재 시간과 카테고리를 기준으로 API 호출
+      const currentHour = new Date().getHours();
+      const data = await fetchStores(currentHour, category);
       setStores(data);
       setSelectedStore(null);
       setSelectedCategory(category);
@@ -63,12 +72,12 @@ const StoreTest = () => {
 
   return (
     <TestContainer>
-      <TestTitle>가게 API 테스트</TestTitle>
+      <TestTitle>가게 API 테스트 (백엔드 연동)</TestTitle>
       
       {/* 테스트 버튼들 */}
       <ButtonGroup>
         <TestButton onClick={handleFetchStores} disabled={loading}>
-          {loading ? '로딩 중...' : '전체 가게 목록 조회'}
+          {loading ? '로딩 중...' : '현재 시간 기준 가게 목록 조회'}
         </TestButton>
         
         <CategoryGroup>
@@ -98,14 +107,14 @@ const StoreTest = () => {
         <StoreList>
           <h3>가게 목록 ({stores.length}개)</h3>
                      {stores.map(store => (
-             <StoreItem key={store.store_id}>
+             <StoreItem key={store.id}>
               <StoreInfo>
-                <StoreName>{store.store_name}</StoreName>
-                <StoreCategory>{store.store_category}</StoreCategory>
-                <StoreAddress>{store.store_address}</StoreAddress>
+                <StoreName>{store.name}</StoreName>
+                <StoreCategory>{store.menu}</StoreCategory>
+                <StoreAddress>거리: {store.distance}m, 도보: {store.walkTime}분</StoreAddress>
               </StoreInfo>
                              <StoreActions>
-                 <DetailButton onClick={() => handleFetchStoreById(store.store_id)}>
+                 <DetailButton onClick={() => handleFetchStoreById(store.id)}>
                    상세보기
                  </DetailButton>
                </StoreActions>
@@ -119,19 +128,19 @@ const StoreTest = () => {
         <StoreDetail>
           <h3>가게 상세 정보</h3>
           <DetailCard>
-            <DetailImage src={selectedStore.store_image_url} alt={selectedStore.store_name} />
+            <DetailImage src={selectedStore.store_image_url || "https://via.placeholder.com/200x150"} alt={selectedStore.name} />
             <DetailContent>
-              <DetailName>{selectedStore.store_name}</DetailName>
-              <DetailCategory>카테고리: {selectedStore.store_category}</DetailCategory>
-              <DetailOwner>운영자 ID: {selectedStore.store_owner_id}</DetailOwner>
-              <DetailAddress>주소: {selectedStore.store_address}</DetailAddress>
-              <DetailDescription>{selectedStore.store_description}</DetailDescription>
+              <DetailName>{selectedStore.name}</DetailName>
+              <DetailCategory>메뉴: {selectedStore.menu}</DetailCategory>
+              <DetailOwner>거리: {selectedStore.distance}m</DetailOwner>
+              <DetailAddress>도보 시간: {selectedStore.walkTime}분</DetailAddress>
+              <DetailDescription>좋아요: {selectedStore.isLiked ? '❤️' : '🤍'}</DetailDescription>
               <DetailStatus>
-                상태: {selectedStore.is_active ? '🟢 활성화' : '🔴 비활성화'}
+                할인율: {selectedStore.menus?.[0]?.discountRate || 0}%
               </DetailStatus>
               <DetailDates>
-                <div>생성일: {new Date(selectedStore.created_at).toLocaleDateString()}</div>
-                <div>수정일: {new Date(selectedStore.updated_at).toLocaleDateString()}</div>
+                <div>정가: {selectedStore.menus?.[0]?.originalPrice?.toLocaleString() || 0}원</div>
+                <div>할인가: {selectedStore.menus?.[0]?.discountPrice?.toLocaleString() || 0}원</div>
               </DetailDates>
             </DetailContent>
           </DetailCard>

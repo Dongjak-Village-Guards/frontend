@@ -1,20 +1,26 @@
 import React from 'react';
 import styled from 'styled-components';
-import { CATEGORY_OPTIONS } from '../../apis/mock/mockShopList';
 
-const CategoryFilter = ({ selectedCategories = [], onCategoryChange, onClose }) => {
+// 업종 목록 데이터 (백엔드 API에 맞게 업데이트)
+export const CATEGORY_OPTIONS = [
+  { value: "스포츠시설", label: "스포츠시설" },
+  { value: "스터디카페", label: "스터디카페" },
+  { value: "미용실", label: "미용실" },
+  { value: "PT/필라테스", label: "PT/필라테스" },
+  { value: "사진 스튜디오", label: "사진 스튜디오" }
+];
+
+const CategoryFilter = ({ selectedCategory = null, onCategorySelect, onClose }) => {
   const handleCategoryClick = (categoryValue) => {
     if (categoryValue === 'none') {
-      // 선택안함 클릭 시 모든 선택 해제하고 바텀시트 닫기
-      onCategoryChange([]);
-      // onClose는 HomePage에서 로딩 애니메이션과 함께 처리됨
+      // 선택안함 클릭 시 선택 해제하고 바텀시트 닫기
+      onCategorySelect(null);
+      onClose();
     } else {
-      // 기존 선택된 업종들에서 토글
-      const newCategories = selectedCategories.includes(categoryValue)
-        ? selectedCategories.filter(cat => cat !== categoryValue)
-        : [...selectedCategories, categoryValue];
-      
-      onCategoryChange(newCategories);
+      // 이미 선택된 카테고리를 다시 클릭하면 선택 해제, 아니면 새로 선택
+      const newCategory = selectedCategory === categoryValue ? null : categoryValue;
+      onCategorySelect(newCategory);
+      onClose();
     }
   };
 
@@ -24,7 +30,7 @@ const CategoryFilter = ({ selectedCategories = [], onCategoryChange, onClose }) 
         <CategoryItem
           key={category.value}
           onClick={() => handleCategoryClick(category.value)}
-          $selected={selectedCategories.includes(category.value)}
+          $selected={selectedCategory === category.value}
           aria-label={`업종 ${category.label} 선택`}
         >
           {category.label}

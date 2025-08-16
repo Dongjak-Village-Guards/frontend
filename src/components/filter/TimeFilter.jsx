@@ -29,9 +29,16 @@ const generateTimeOptions = (currentTime) => {
 
 const TimeFilter = ({ currentTime, selectedTime, onTimeSelect, onClose }) => {
   const handleTimeClick = (time) => {
-    console.log('시간 선택됨:', time);
     onTimeSelect(time);
     onClose();
+  };
+
+  // 선택된 시간을 표시 형식으로 변환 (25~36 → 01:00~12:00)
+  const getDisplayTime = (time) => {
+    if (!time) return '';
+    const [hour, minute] = time.split(':').map(Number);
+    const displayHour = hour % 24; // 25~36을 1~12로 변환
+    return `${String(displayHour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
   };
 
   return (
@@ -40,7 +47,7 @@ const TimeFilter = ({ currentTime, selectedTime, onTimeSelect, onClose }) => {
         <TimeItem
           key={time}
           onClick={() => handleTimeClick(time)}
-          $selected={selectedTime === time}
+          $selected={getDisplayTime(selectedTime) === time}
           aria-label={`시간 ${time} 선택`}
         >
           {time}

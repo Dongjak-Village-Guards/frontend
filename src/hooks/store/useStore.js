@@ -1,11 +1,11 @@
 /**
  * Zustand 스토어
  * 홈 화면의 가게 목록 정렬, 시간, 페이지 상태를 관리
- * STORES_DATA를 사용하여 discount와 price 정렬은 menus의 discountPrice 기준
+ * 백엔드 API를 사용하여 가게 목록을 가져오고 정렬
  */
 
 import { create } from 'zustand';
-import { STORES_DATA } from '../../apis/mock/mockShopList';
+import { fetchStores } from '../../apis/storeAPI';
 
 const useStore = create((set, get) => ({
   // ===== 인증 상태 관리 =====
@@ -47,8 +47,15 @@ const useStore = create((set, get) => ({
   filters: {
     // 선택된 업종 목록 (예: ['nail', 'hair'])
     categories: [],
-    // 표시할 시간(가용 시간 기준). 형식: 'HH:MM' 또는 null
-    availableAt: null,
+    // 표시할 시간(가용 시간 기준). 형식: 'HH:MM' (필수값)
+    availableAt: (() => {
+      const now = new Date();
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+      // 현재가 정각이면 다음 시간, 아니면 다음 정각
+      const nextHour = currentMinute === 0 ? (currentHour + 1) % 24 : (currentHour + 1) % 24;
+      return `${String(nextHour).padStart(2, '0')}:00`;
+    })(),
     // 추후 확장: 거리, 평점, 최소 할인율 등
     // distanceKm: null,
     // ratingMin: null,
@@ -56,8 +63,9 @@ const useStore = create((set, get) => ({
   },
 
   // ===== 가게 데이터 상태 관리 =====
-  /** mockShopList.js에서 가져온 가게 목록 데이터 */
-  stores: STORES_DATA,
+  /** 백엔드 API에서 가져온 가게 목록 데이터 */
+  stores: [],
+  loading: false,
 
   // ===== 예약 상태 관리 =====
   isReserving: false,
@@ -112,7 +120,36 @@ const useStore = create((set, get) => ({
       hour12: false 
     });
     console.log('updateCurrentTime 호출됨, 새 currentTime:', newTime);
+    
+    // currentTime만 업데이트, availableAt은 사용자가 직접 선택한 값 유지
     set({ currentTime: newTime });
+  },
+  
+  /**
+   * 초기 시간 설정 (앱 시작 시 한 번만 호출)
+   */
+  initializeTime: () => {
+    const newTime = new Date().toLocaleTimeString('ko-KR', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: false 
+    });
+    
+    // 초기 availableAt 설정 (다음 정각 기준)
+    const currentHour = new Date().getHours();
+    const currentMinute = new Date().getMinutes();
+    const nextHour = currentMinute === 0 ? (currentHour + 1) % 24 : (currentHour + 1) % 24;
+    const initialAvailableAt = `${String(nextHour).padStart(2, '0')}:00`;
+    
+    console.log('initializeTime 호출됨, 초기 시간:', newTime, '초기 availableAt:', initialAvailableAt);
+    
+    set({ 
+      currentTime: newTime,
+      filters: {
+        ...get().filters,
+        availableAt: initialAvailableAt
+      }
+    });
   },
   
   /**
@@ -125,14 +162,45 @@ const useStore = create((set, get) => ({
    * 상세 필터 기준 일부 업데이트
    * @param {Partial<typeof filters>} partial - 변경할 필드만 전달
    */
-  setFilters: (partial) => set((state) => ({
-    filters: { ...state.filters, ...partial }
-  })),
+  setFilters: (partial) => {
+    const newState = set((state) => ({
+      filters: { ...state.filters, ...partial }
+    }));
+    console.log('setFilters 호출됨, 새로운 filters:', { ...get().filters, ...partial });
+    return newState;
+  },
   
   /** 필터 초기화 */
-  resetFilters: () => set({
-    filters: { categories: [], availableAt: null }
-  }),
+  resetFilters: () => {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    const nextHour = currentMinute === 0 ? (currentHour + 1) % 24 : (currentHour + 1) % 24;
+    const defaultAvailableAt = `${String(nextHour).padStart(2, '0')}:00`;
+    
+    set({
+      filters: { categories: [], availableAt: defaultAvailableAt }
+    });
+  },
+  
+  /**
+   * 백엔드 API에서 가게 목록 가져오기
+   * @param {number} time - 시간 필터 (0~36)
+   * @param {string} category - 업종 필터 (선택)
+   */
+  fetchStores: async (time = null, category = null) => {
+    set({ loading: true });
+    try {
+      const stores = await fetchStores(time, category);
+      set({ stores, loading: false });
+      console.log('가게 목록 가져오기 성공:', stores.length, '개');
+    } catch (error) {
+      console.error('가게 목록 가져오기 실패:', error);
+      set({ loading: false });
+      // 에러 발생 시 빈 배열로 설정
+      set({ stores: [] });
+    }
+  },
   
   /**
    * 가게 좋아요 토글
@@ -202,21 +270,24 @@ const useStore = create((set, get) => ({
     if (filters.categories.length > 0) {
       // 현재 mock 데이터에는 업종 정보가 없으므로 임시로 모든 가게를 표시
       // 추후 store 객체에 category 필드가 추가되면 아래 주석을 해제
-      // filteredStores = filteredStores.filter(store => 
-      //   filters.categories.includes(store.category)
-      // );
+    //   filteredStores = filteredStores.filter(store => 
+    //     filters.categories.includes(store.category)
+    //   );
       console.log('업종 필터 적용됨:', filters.categories);
+      console.log('filteredStores:', filteredStores);
     }
 
-    // 2) 시간 필터 적용 (데모 데이터에는 시간 정보가 없어 필터는 no-op)
-    // 추후 store 객체에 시간 메타가 추가되면 여기서 필터링
-    // if (filters.availableAt) { ... }
+    // 2) 시간 필터 적용 - 백서버에서 이미 필터링된 결과를 받아오므로 클라이언트에서 추가 필터링 불필요
+    if (filters.availableAt) {
+      console.log('시간 필터 적용됨 (백서버에서 필터링):', filters.availableAt);
+    }
 
     // 3) 정렬 적용
+    const storesToSort = [...filteredStores];
     switch (sortOption) {
       // 최대 할인율 기준 내림차순 정렬 (높은 할인율이 먼저)
       case 'discount':
-        return sortedStores.sort((a, b) => {
+        return storesToSort.sort((a, b) => {
           const aMaxDiscount = a.hasDesigners
             ? Math.max(...a.designers.flatMap(d => d.menus.map(m => m.discountRate))) // 디자이너가 있으면 모든 디자이너의 메뉴에서 최대 할인율 추출
             : Math.max(...a.menus.map(m => m.discountRate));  // 디자이너가 없으면 가게의 메뉴에서 최대 할인율 추출
@@ -227,7 +298,7 @@ const useStore = create((set, get) => ({
         });
       // 할인 가격 기준 오름차순 정렬 (낮은 가격이 먼저)
       case 'price':
-        return sortedStores.sort((a, b) => {
+        return storesToSort.sort((a, b) => {
           const aMinPrice = a.hasDesigners
             ? Math.min(...a.designers.flatMap(d => d.menus.map(m => m.discountPrice)))
             : Math.min(...a.menus.map(m => m.discountPrice));
@@ -238,7 +309,7 @@ const useStore = create((set, get) => ({
         });
       // 거리 기준 오름차순 정렬 (가까운 가게가 먼저)
       case 'distance':
-        return sortedStores.sort((a, b) => a.distance - b.distance);
+        return storesToSort.sort((a, b) => a.distance - b.distance);
       default:
         return filteredStores;
     }
