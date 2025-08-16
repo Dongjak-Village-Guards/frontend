@@ -21,7 +21,7 @@ const BottomSheet = ({
   }, []);
 
   // 디버깅: props 확인
-  console.log('BottomSheet props:', { open, title, onClose: typeof onClose, children: !!children });
+//  console.log('BottomSheet props:', { open, title, onClose: typeof onClose, children: !!children });
 
   if (!open || !portalRoot) return null;
 
