@@ -13,7 +13,7 @@ import { AiFillCaretDown } from "react-icons/ai";
 import BottomSheet from "../components/common/BottomSheet";
 import TimeToggle from "../components/filter/TimeToggle";
 import CategoryToggle from "../components/filter/CategoryToggle";
-import CategoryFilter from "../components/filter/CategoryFilter";
+import CategoryFilter, { CATEGORY_OPTIONS } from "../components/filter/CategoryFilter";
 import TimeFilter from "../components/filter/TimeFilter";
 import Spinner from "../components/common/Spinner";
 import useStore from "../hooks/store/useStore";
@@ -47,6 +47,8 @@ export default function HomePage() {
     setFilters,
     setCurrentPage,
     setFromHomePage,
+    fetchStores,
+    loading,
   } = useStore();
 
   /** 사용자 주소 */
@@ -59,12 +61,22 @@ export default function HomePage() {
       // 초기 시간 설정 (새로고침 시에만 실행)
       console.log('updateCurrentTime 호출');
       updateCurrentTime();
+      
+      // 백엔드 API에서 가게 목록 가져오기 (현재 설정된 필터들 사용)
+      try {
+        const timeParam = filters.availableAt ? parseInt(filters.availableAt.split(':')[0]) : null;
+        const categoryParam = filters.categories.length > 0 ? filters.categories[0] : null;
+        await fetchStores(timeParam, categoryParam);
+      } catch (error) {
+        console.error('초기 가게 목록 로딩 실패:', error);
+      }
+      
       // 0.1초 지연으로 렌더링 시간 시뮬레이션
       await new Promise(res => setTimeout(res, 100));
       setLoading(false);
     };
     initializePage();
-  }, [updateCurrentTime]);
+  }, [updateCurrentTime, fetchStores, filters.availableAt, filters.categories]);
 
   /**
    * 정렬 변경
@@ -93,17 +105,25 @@ export default function HomePage() {
   };
 
   /**
-   * 업종 변경
-   * @param {Array} categories - 선택된 업종 배열
+   * 업종 변경 (하나만 선택)
+   * @param {string|null} category - 선택된 업종 (단일 값)
    */
-  const handleCategoryChange = (categories) => {
-    setFilters({ categories });
-    // 업종 필터 변경 시 로딩 처리
+  const handleCategorySelect = async (category) => {
+    console.log('handleCategorySelect 호출됨, category:', category);
+    setFilters({ categories: category ? [category] : [] });
+    
+    // 카테고리 필터 적용 시 API 재호출 (현재 설정된 시간 필터도 함께 사용)
+    const timeParam = filters.availableAt ? parseInt(filters.availableAt.split(':')[0]) : null;
+    try {
+      await fetchStores(timeParam, category);
+    } catch (error) {
+      console.error('카테고리 필터 적용 실패:', error);
+    }
+    
+    // 로딩 처리 (시간 필터와 동일한 방식)
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      // 업종이 모두 해제되었을 때(선택안함 클릭 시) 바텀시트 닫기
-      if (!categories.length) setIsCategorySheetOpen(false);
     }, 300);
   };
 
@@ -132,16 +152,16 @@ export default function HomePage() {
 
   /** 업종 라벨 */
   const getCategoryLabel = () => {
+    console.log('getCategoryLabel 호출됨, filters.categories:', filters.categories);
     if (filters.categories.length === 0) return '업종';
-    if (filters.categories.length === 1) {
-      const categoryMap = { hair: '미용실', nail: '네일샵', pilates: '필라테스' };
-      return categoryMap[filters.categories[0]] || '업종';
-    }
-    // 2개 이상 선택 시: "첫번째 업종 외 N종" 형태
-    const categoryMap = { hair: '미용실', nail: '네일샵', pilates: '필라테스' };
-    const firstCategory = categoryMap[filters.categories[0]] || '업종';
-    const remainingCount = filters.categories.length - 1;
-    return `${firstCategory} 외 ${remainingCount}종`;
+    
+    // CATEGORY_OPTIONS에서 해당 카테고리의 label 찾기
+    const selectedCategory = filters.categories[0];
+    const categoryOption = CATEGORY_OPTIONS.find(option => option.value === selectedCategory);
+    const label = categoryOption ? categoryOption.label : '업종';
+    
+    console.log('선택된 카테고리 라벨:', label);
+    return label;
   };
   // 정렬된 가게 목록 가져오기
   const sortedStores = getSortedStores();
@@ -214,10 +234,20 @@ export default function HomePage() {
         <TimeFilter
           currentTime={currentTime}
           selectedTime={filters.availableAt}
-          onTimeSelect={(time) => {
+          onTimeSelect={async (time) => {
             console.log('시간 선택됨:', time);
-            // 시간 선택 시 로딩 처리
             setFilters({ availableAt: time });
+            
+            // 시간을 API time 파라미터로 변환 (HH:MM → 0~36)
+            const timeParam = parseInt(time.split(':')[0]);
+            
+            try {
+              // 현재 설정된 카테고리 필터도 함께 사용
+              const categoryParam = filters.categories.length > 0 ? filters.categories[0] : null;
+              await fetchStores(timeParam, categoryParam);
+            } catch (error) {
+              console.error('시간 필터 적용 실패:', error);
+            }
             
             console.log('setTimeout 설정 - 0.3초 후 로딩 시작');
             // 0.3초 후 바텀시트 닫힘, 2초 로딩 (테스트용)
@@ -239,29 +269,18 @@ export default function HomePage() {
       <BottomSheet
         open={isCategorySheetOpen}
         title="업종"
-        onClose={() => {
-          console.log('업종 바텀시트 닫기');
-          // 업종 바텀시트 닫기 시 로딩 처리
-          setLoading(true);
-          setTimeout(async () => {
-            console.log('업종 바텀시트 로딩 시작');
-            await new Promise(resolve => setTimeout(resolve, 300));
-            console.log('업종 바텀시트 로딩 완료');
-            setLoading(false);
-        }, 300);
-        setIsCategorySheetOpen(false);
-        }}
+        onClose={() => setIsCategorySheetOpen(false)}
       >
         <CategoryFilter
-          selectedCategories={filters.categories}
-          onCategoryChange={handleCategoryChange}
+          selectedCategory={filters.categories.length > 0 ? filters.categories[0] : null}
+          onCategorySelect={handleCategorySelect}
           onClose={() => setIsCategorySheetOpen(false)}
         />
       </BottomSheet>
 
       {/* 매장 리스트 */}
       <StoreList>
-        {isLoading ? (
+        {isLoading || loading ? (
           <LoadingContainer>
                 <Spinner />
           </LoadingContainer>
