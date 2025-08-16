@@ -29,6 +29,7 @@ const FavoritePage = () => {
   useEffect(() => {
     const initializePage = async () => {
       setIsLoading(true);
+      console.log("FavoritePage 렌더링함 updateurrenteTime호출됨",updateCurrentTime);
       updateCurrentTime();
       
       // 0.1초 지연으로 렌더링 시간 시뮬레이션
