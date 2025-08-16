@@ -20,6 +20,7 @@ import saladImage from "../assets/images/salad.png";
 import steakImage from "../assets/images/steak.png";
 import koreanImage from "../assets/images/korean.png";
 import hairImage from "../assets/images/hair.png";
+import placeholderImage from "../assets/images/placeholder.svg";
 import DesignerInfo from '../components/home/detail/DesignerInfo';
 import ReservationPage from './ReservationPage';
 import Layout from '../components/layout/Layout';
@@ -56,7 +57,7 @@ const ShopDetailPage = () => {
         7: hairImage,
     };
 
-    const imageSrc = shop.image || imageMap[shop.id] || "/assets/images/placeholder.png";
+    const imageSrc = shop.image || imageMap[shop.id] || placeholderImage;
 
     // 대표 메뉴 선택 (최대 할인율 기준)
     const getFeaturedMenu = () => {
