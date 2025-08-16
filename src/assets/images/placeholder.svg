@@ -1,0 +1,8 @@
+<svg width="328" height="148" viewBox="0 0 328 148" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="328" height="148" fill="#F5F5F5"/>
+  <rect x="0.5" y="0.5" width="327" height="147" stroke="#E0E0E0" stroke-dasharray="2 2"/>
+  <circle cx="164" cy="74" r="20" fill="#E0E0E0"/>
+  <path d="M164 60C168.418 60 172 63.582 172 68C172 72.418 168.418 76 164 76C159.582 76 156 72.418 156 68C156 63.582 159.582 60 164 60ZM164 62C160.686 62 158 64.686 158 68C158 71.314 160.686 74 164 74C167.314 74 170 71.314 170 68C170 64.686 167.314 62 164 62Z" fill="#BDBDBD"/>
+  <path d="M164 64C165.105 64 166 64.895 166 66C166 67.105 165.105 68 164 68C162.895 68 162 67.105 162 66C162 64.895 162.895 64 164 64Z" fill="#BDBDBD"/>
+  <text x="164" y="100" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#9E9E9E">이미지 없음</text>
+</svg> 
