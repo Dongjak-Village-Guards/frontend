@@ -21,17 +21,20 @@ const MainPageApp = () => {
   const { currentPage, setCurrentPage } = useStore();
   
   // 사용자 정보에서 인증 상태와 주소 확인
-  const { authUser, userAddress } = useUserInfo();
+  const { authUser, userAddress, accessToken } = useUserInfo();
 
   // 주소가 없으면 주소 검색 페이지로 설정
   useEffect(() => {
+    
     if (!userAddress && currentPage !== "search-address" && currentPage !== "login") {
       setCurrentPage("search-address");
     }
   }, [userAddress, currentPage, setCurrentPage]);
 
   // 로그인하지 않았으면 로그인 페이지로 설정
-  if (!authUser && currentPage !== "login") {
+  console.log(authUser);
+  console.log(accessToken);
+  if (!accessToken && currentPage !== "login") {
     return (
       <Layout currentPage="login" onPageChange={setCurrentPage}>
         <LoginPage />
