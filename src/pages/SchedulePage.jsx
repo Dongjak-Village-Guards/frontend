@@ -4,6 +4,7 @@ import { FiChevronRight } from 'react-icons/fi';
 import ReservationButton from '../components/common/ReservationButton';
 import BottomSheet from '../components/common/BottomSheet';
 import useStore from '../hooks/store/useStore';
+import appStorage from '../storage/AppStorage';
 
 const SchedulePage = () => {
   const { currentPage } = useStore();
@@ -48,16 +49,11 @@ const SchedulePage = () => {
   useEffect(() => {
     if (currentPage === 'history') {
       // 예약 완료 데이터가 있다면 바텀시트 표시
-      const completedReservation = localStorage.getItem('completedReservation');
+      const completedReservation = appStorage.get('completedReservation');
       if (completedReservation) {
-        try {
-          const data = JSON.parse(completedReservation);
-          setReservationData(data);
-          setReservationCompleteOpen(true);
-          localStorage.removeItem('completedReservation'); // 사용 후 제거
-        } catch (error) {
-          console.error('예약 완료 데이터 파싱 실패:', error);
-        }
+        setReservationData(completedReservation);
+        setReservationCompleteOpen(true);
+        appStorage.remove('completedReservation'); // 사용 후 제거
       }
     }
   }, [currentPage]);
