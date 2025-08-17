@@ -1,14 +1,55 @@
 // 가게 관련 API 함수들
-const REST_API_BASE_URL = 'https://buynow.n-e.kr'; // TODO: 실제 백엔드 서버 URL로 변경 필요
+const REST_API_BASE_URL = 'https://buynow.n-e.kr';
 
 /**
- * 현재 시간을 API time 파라미터로 변환 (0~36)
- * @returns {number} time 파라미터 값
+ * 시간 파라미터를 API 형식으로 변환
+ * @param {string|number|null} time - 시간 (HH:MM 형식 문자열, 숫자, 또는 null)
+ * @returns {number} API time 파라미터 (0~23)
  */
-const getCurrentTimeParam = () => {
-  const now = new Date();
-  const hour = now.getHours();
-  return hour; // 0~23 범위
+const convertTimeToParam = (time) => {
+  if (time === null) {
+    return new Date().getHours();
+  }
+  
+  if (typeof time === 'string') {
+    // 백엔드 요청 ( time 0~36으로 반환, 다음날(24~36) ) 
+    if(parseInt(new Date().getHours()) > 12 & parseInt(time.split(':')[0]) / 12 < 1) return (parseInt(time.split(':')[0]) + 24);
+
+    return parseInt(time.split(':')[0]);
+  }
+  
+  return time;
+};
+
+/**
+ * API URL 구성
+ * @param {number} timeParam - 시간 파라미터
+ * @param {string|null} category - 카테고리 파라미터
+ * @returns {string} 완성된 API URL
+ */
+const buildUrl = (timeParam, category = null) => {
+  let url = `${REST_API_BASE_URL}/v1/stores/?time=${timeParam}`;
+  if (category) {
+    url += `&store_category=${category}`;
+  }
+  return url;
+};
+
+/**
+ * API 요청 헤더 구성
+ * @param {string|null} accessToken - 액세스 토큰
+ * @returns {Object} 요청 헤더 객체
+ */
+const buildHeaders = (accessToken = null) => {
+  const headers = {
+    'Content-Type': 'application/json',
+  };
+  
+  if (accessToken) {
+    headers['Authorization'] = `Bearer ${accessToken}`;
+  }
+  
+  return headers;
 };
 
 /**
@@ -43,42 +84,42 @@ const transformApiData = (apiData) => {
 
 /**
  * 가게 목록 조회
- * @param {string} time - 시간 필터 (HH:MM 형식)
- * @param {string} category - 업종 필터 (선택)
+ * @param {string|number|null} time - 시간 필터 (HH:MM 형식, 숫자, 또는 null)
+ * @param {string|null} category - 업종 필터 (선택)
+ * @param {string|null} accessToken - 액세스 토큰
  * @returns {Promise<Array>} 가게 목록
  */
-export const fetchStores = async (time, category = null) => {
+export const fetchStoresFromAPI = async (time, category = null, accessToken = null) => {
   try {
     console.log('가게 목록 조회 시작...');
-    console.log(time);
+    console.log('time:', time);
+    console.log('category:', category);
+    console.log('accessToken:', accessToken ? `${accessToken.substring(0, 20)}...` : 'null');
     
-    // time 파라미터를 0~36 정수로 변환
-    let timeParam;
-    if (time !== null) {
-      // time이 문자열(HH:MM)인 경우와 숫자인 경우 모두 처리
-      if (typeof time === 'string') {
-        const [hour, minute] = time.split(':').map(Number);
-        timeParam = hour; // 0~23 범위
-      } else {
-        // time이 이미 숫자인 경우
-        timeParam = time;
-      }
-    } else {
-      timeParam = getCurrentTimeParam();
-    }
+    // 시간 파라미터 변환
+    const timeParam = convertTimeToParam(time);
+    console.log('백엔드에 전송된 timeParam', timeParam);
     
     // URL 구성
-    let url = `${REST_API_BASE_URL}/v1/stores/?time=${timeParam}`;
-    if (category) {
-      url += `&store_category=${category}`;
-    }
-    
+    const url = buildUrl(timeParam, category);
     console.log('API 호출 URL:', url);
     
-    const response = await fetch(url);
+    // 헤더 구성
+    const headers = buildHeaders(accessToken);
+    console.log('요청 헤더:', headers);
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: headers,
+    });
+    
+    console.log('response status:', response.status);
+    console.log('response ok:', response.ok);
     
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorData = await response.json().catch(() => ({}));
+      console.error('API 응답 에러:', errorData);
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
     
     const stores = await response.json();
@@ -191,6 +232,125 @@ export const fetchStoresByOwner = async (ownerId) => {
     return stores;
   } catch (error) {
     console.error('운영자별 가게 조회 실패:', error);
+    throw error;
+  }
+}; 
+
+/**
+ * 사용자 찜 목록 조회
+ * @param {number} time - 시간 필터 (0~23)
+ * @param {string} category - 업종 필터 (선택)
+ * @param {string} accessToken - 액세스 토큰
+ * @returns {Promise<Array>} 찜한 가게 목록
+ */
+export const fetchUserLikes = async (time, category = null, accessToken) => {
+  try {
+    console.log('사용자 찜 목록 조회 시작...');
+    
+    // URL 구성
+    let url = `${REST_API_BASE_URL}/v1/reservations/userlikes/?time=${time}`;
+    if (category) {
+      url += `&store_category=${category}`;
+    }
+    
+    console.log('찜 조회 API 호출 URL:', url);
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    }
+    
+    const likes = await response.json();
+    console.log('사용자 찜 목록 조회 성공:', likes.length, '개');
+    
+    return likes;
+  } catch (error) {
+    console.error('사용자 찜 목록 조회 실패:', error);
+    throw error;
+  }
+};
+
+/**
+ * 찜 생성
+ * @param {number} storeId - 가게 ID
+ * @param {string} accessToken - 액세스 토큰
+ * @returns {Promise<Object>} 생성된 찜 정보
+ */
+export const createLike = async (storeId, accessToken) => {
+  try {
+    console.log(`찜 생성 시작... (가게 ID: ${storeId})`);
+    
+    const response = await fetch(`${REST_API_BASE_URL}/v1/reservations/userlikes/`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        store_id: storeId,
+      }),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    }
+    
+    const like = await response.json();
+    console.log('찜 생성 성공:', like.like_id);
+    
+    return like;
+  } catch (error) {
+    console.error('찜 생성 실패:', error);
+    throw error;
+  }
+};
+
+/**
+ * 찜 삭제
+ * @param {number} likeId - 찜 ID
+ * @param {string} accessToken - 액세스 토큰
+ * @returns {Promise<void>}
+ */
+export const deleteLike = async (likeId, accessToken) => {
+  try {
+    console.log(`찜 삭제 시작... (찜 ID: ${likeId})`);
+    console.log('전달받은 accessToken:', accessToken ? `${accessToken.substring(0, 20)}...` : 'null');
+    
+    const response = await fetch(`${REST_API_BASE_URL}/v1/reservations/userlikes/`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        like_id: likeId,
+      }),
+    });
+    
+    console.log('삭제 요청 헤더:', {
+      'Authorization': `Bearer ${accessToken ? accessToken.substring(0, 20) + '...' : 'null'}`,
+      'Content-Type': 'application/json',
+    });
+    console.log('삭제 요청 body:', { like_id: likeId });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('삭제 응답 에러:', errorData);
+      throw new Error(errorData.message || errorData.error || `HTTP error! status: ${response.status}`);
+    }
+    
+    console.log('찜 삭제 성공');
+  } catch (error) {
+    console.error('찜 삭제 실패:', error);
     throw error;
   }
 }; 
