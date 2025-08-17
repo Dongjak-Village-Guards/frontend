@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchStores } from '../../apis/storeAPI';
+import { fetchStoresFromAPI } from '../../apis/storeAPI';
 import styled from 'styled-components';
 
 const StoreTest = () => {
@@ -16,7 +16,7 @@ const StoreTest = () => {
     try {
       // 현재 시간을 기준으로 API 호출
       const currentHour = new Date().getHours();
-      const data = await fetchStores(currentHour);
+      const data = await fetchStoresFromAPI(currentHour);
       setStores(data);
       setSelectedStore(null);
     } catch (err) {
@@ -52,7 +52,7 @@ const StoreTest = () => {
     try {
       // 현재 시간과 카테고리를 기준으로 API 호출
       const currentHour = new Date().getHours();
-      const data = await fetchStores(currentHour, category);
+      const data = await fetchStoresFromAPI(currentHour, category);
       setStores(data);
       setSelectedStore(null);
       setSelectedCategory(category);

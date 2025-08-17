@@ -26,7 +26,7 @@ const LoginTest = () => {
 
       // 3. 백서버로 idToken 전송
       console.log('백서버로 idToken 전송 시작...');
-      const response = await fetch('https://buynow.n-e.kr/accounts/login/', {
+      const response = await fetch('https://buynow.n-e.kr/v1/accounts/login/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
