@@ -13,6 +13,7 @@ import Card from '../components/home/shop/Card';
 import Spinner from '../components/common/Spinner';
 import TimeToggle from '../components/filter/TimeToggle';
 import CategoryToggle from '../components/filter/CategoryToggle';
+import { getNearestHour } from '../components/filter/TimeFilter';
 
 const FavoritePage = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -29,7 +30,7 @@ const FavoritePage = () => {
   useEffect(() => {
     const initializePage = async () => {
       setIsLoading(true);
-      console.log("FavoritePage 렌더링함 updateurrenteTime호출됨",updateCurrentTime);
+      console.log("FavoritePage 렌더링함 updateCurrentTime호출됨",updateCurrentTime);
       updateCurrentTime();
       
       // 0.1초 지연으로 렌더링 시간 시뮬레이션
@@ -42,13 +43,6 @@ const FavoritePage = () => {
 
   // 찜한 가게만 필터링
   const favoriteStores = stores.filter(store => store.isLiked);
-
-  // 현재 시간의 다음 정각을 계산하는 함수
-  const getNearestHour = (currentTime) => {
-    const [currentHour, currentMinute] = String(currentTime).split(':').map(Number);
-    const nextHour = currentMinute === 0 ? (currentHour + 1) % 24 : (currentHour + 1) % 24;
-    return `${String(nextHour).padStart(2, '0')}:00`;
-  };
 
   // 업종 필터 라벨 생성
   const getCategoryLabel = () => {

@@ -14,7 +14,7 @@ import BottomSheet from "../components/common/BottomSheet";
 import TimeToggle from "../components/filter/TimeToggle";
 import CategoryToggle from "../components/filter/CategoryToggle";
 import CategoryFilter, { CATEGORY_OPTIONS } from "../components/filter/CategoryFilter";
-import TimeFilter from "../components/filter/TimeFilter";
+import TimeFilter, { getNearestHour } from "../components/filter/TimeFilter";
 import Spinner from "../components/common/Spinner";
 import useStore from "../hooks/store/useStore";
 import useUserInfo from "../hooks/user/useUserInfo";
@@ -48,11 +48,12 @@ export default function HomePage() {
     setCurrentPage,
     setFromHomePage,
     fetchStores,
+    fetchUserLikes,
     loading,
   } = useStore();
 
   /** 사용자 주소 */
-  const { userAddress } = useUserInfo();
+  const { userAddress, accessToken } = useUserInfo();
 
   /** 초기 로딩 처리 */
   useEffect(() => {
@@ -67,6 +68,11 @@ export default function HomePage() {
         const timeParam = filters.availableAt ? parseInt(filters.availableAt.split(':')[0]) : null;
         const categoryParam = filters.categories.length > 0 ? filters.categories[0] : null;
         await fetchStores(timeParam, categoryParam);
+        
+        // 로그인된 사용자인 경우에만 찜 목록 가져오기
+        if (accessToken) {
+          await fetchUserLikes();
+        }
       } catch (error) {
         console.error('초기 가게 목록 로딩 실패:', error);
       }
@@ -76,7 +82,7 @@ export default function HomePage() {
       setLoading(false);
     };
     initializePage();
-  }, [updateCurrentTime, fetchStores, filters.availableAt, filters.categories]);
+  }, [updateCurrentTime, fetchStores, fetchUserLikes, filters.availableAt, filters.categories, accessToken]);
 
   /**
    * 정렬 변경
@@ -140,14 +146,6 @@ export default function HomePage() {
   const displayAddress = userAddress ? userAddress.roadAddr : currentAddress;
   const getAddressDisplayText = () => {
     return displayAddress.length > 8 ? `${displayAddress.slice(0, 8)}...` : displayAddress;
-  };
-
-  /** 다음 정각 계산 */
-  const getNearestHour = (currentTime) => {
-    const [currentHour, currentMinute] = String(currentTime).split(':').map(Number);
-    // 현재가 정각이면 다음 시간, 아니면 다음 정각
-    const nextHour = currentMinute === 0 ? (currentHour + 1) % 24 : (currentHour + 1) % 24;
-    return `${String(nextHour).padStart(2, '0')}:00`;
   };
 
   /** 업종 라벨 */
