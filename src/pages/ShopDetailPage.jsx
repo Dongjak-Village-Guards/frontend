@@ -261,7 +261,7 @@ const ShopDetailPage = () => {
                     <ReservationPage shop={storeData} />
                 ) : (
                     <>
-                    {/* Space가 1개이거나 Space 상세 화면일 때만 이미지 표시 */}
+                    {/* Space가 1개이거나(메뉴목록) Space space 화면일 때(디자이너목록)만 이미지 표시 */}
                     {spaceCount === 1 || (spaceCount >= 2 && !selectedSpaceId) ? (
                         <ShopImage 
                             src={getImageSrc(storeData?.store_image_url || storeData?.space_image_url)} 

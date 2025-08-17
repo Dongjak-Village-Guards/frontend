@@ -4,6 +4,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import useStore from '../hooks/store/useStore';
 import useUserInfo from '../hooks/user/useUserInfo';
@@ -14,8 +15,11 @@ import { ReactComponent as ArrowButton } from '../assets/images/piArrow.svg';
 import Line from '../components/common/Line';
 import Spinner from '../components/common/Spinner';
 import { fetchMenuItemDetails, createReservation } from '../apis/storeAPI';
+import appStorage from '../storage/AppStorage';
 
 const ReservationPage = ({ shop }) => {
+  const navigate = useNavigate();
+  
   const { 
     selectedMenu, 
     selectedDesigner, 
@@ -80,17 +84,19 @@ const ReservationPage = ({ shop }) => {
       console.log('예약 생성 시작', { itemId: menuData.item_id });
       
       const reservationResult = await createReservation(menuData.item_id, accessToken);
-      
       console.log('예약 생성 성공:', reservationResult);
       
-      // 예약 완료 데이터를 localStorage에 저장 (SchedulePage에서 바텀시트로 표시)
-      localStorage.setItem('completedReservation', JSON.stringify(reservationResult));
+      // 예약 완료 데이터를 AppStorage에 저장 (SchedulePage에서 바텀시트로 표시)
+      appStorage.set('completedReservation', reservationResult);
+      
+      // 예약 상태 초기화
+    //  cancelReservation();
       
       // 예약 완료 후 SchedulePage로 이동 (바텀시트로 알림)
       setCurrentPage('history');
       
-      // 예약 상태 초기화
-      cancelReservation();
+      // 한 단계 뒤로가기 (상세페이지로)
+      navigate(-1);
       
     } catch (error) {
       console.error('예약 생성 실패:', error);
