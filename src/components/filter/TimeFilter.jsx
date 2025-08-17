@@ -43,7 +43,7 @@ const TimeFilter = ({ currentTime, selectedTime, onTimeSelect, onClose }) => {
 
   return (
     <TimeList>
-      {generateTimeOptions(getNearestHour(currentTime)).map((time) => (
+      {generateTimeOptions(currentTime).map((time) => (
         <TimeItem
           key={time}
           onClick={() => handleTimeClick(time)}
