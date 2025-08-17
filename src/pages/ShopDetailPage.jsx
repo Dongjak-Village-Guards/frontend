@@ -262,7 +262,7 @@ const ShopDetailPage = () => {
                 ) : (
                     <>
                     {/* Space가 1개이거나 Space 상세 화면일 때만 이미지 표시 */}
-                    {spaceCount === 1 || (spaceCount >= 2 && selectedSpaceId) ? (
+                    {spaceCount === 1 || (spaceCount >= 2 && !selectedSpaceId) ? (
                         <ShopImage 
                             src={getImageSrc(storeData?.store_image_url || storeData?.space_image_url)} 
                             alt={storeData?.store_name || storeData?.space_name} 
