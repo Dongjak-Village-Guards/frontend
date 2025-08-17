@@ -3,11 +3,19 @@
  * 와이어프레임에 따라 두 가지 case를 처리:
  * 1. hasDesigners=true: 디자이너 목록 표시 후, 디자이너 선택 시 메뉴 표시
  * 2. hasDesigners=false: 바로 메뉴 표시
- * mockShopList.js의 STORES_DATA에서 데이터 동적 로드
- * 예약 페이지 및 개인정보 동의서 표시 추가
+ * 
+ * ===== 백서버 연동 상태 =====
+ * ✅ 연동됨: 가게 목록 데이터 (stores), 찜 상태 (isLiked), 기본 정보 (이름, 주소, 거리)
+ * ❌ Mock 사용: 가게 이미지, 예약 시간 표시, 디자이너 전문 분야
+ * 
+ * ===== 적용 필요 사항 =====
+ * 1. 시간 필터: currentTime → filters.userSelectedTime 사용
+ * 2. 이미지: 백서버에서 이미지 URL 제공 필요
+ * 3. 예약 시간: 실제 예약 가능 시간과 연동 필요
  */
 
 import { useNavigate, useParams } from 'react-router-dom';
+import { useEffect } from 'react';
 import useStore from '../hooks/store/useStore';
 import MenuCard from '../components/home/detail/MenuCard';
 import ShopInfo from '../components/home/detail/ShopInfo';
@@ -25,6 +33,7 @@ import DesignerInfo from '../components/home/detail/DesignerInfo';
 import ReservationPage from './ReservationPage';
 import Layout from '../components/layout/Layout';
 import TopNavBar from '../components/nav/TopNavBar';
+import { getNearestHour } from '../components/filter/TimeFilter';
 
 const ShopDetailPage = () => {
     const navigate = useNavigate();
@@ -32,21 +41,44 @@ const ShopDetailPage = () => {
     const { 
         stores,
         currentTime,
+        time,
         isReserving,
         selectedDesigner,
         showPiAgreement,
+        selectedStore,
+        storeSpaces,
+        spaceLoading,
         selectDesigner,
         startReservation,
         cancelReservation,
-        togglePiAgreement
+        togglePiAgreement,
+        fetchStoreDetail,
+        selectSpace
     } = useStore();
 
-    /* STORES_DATA에서 직접 데이터를 찾으면 Zustand stores 상태와 별개로 mock 데이터를 읽는 거라
-    홈 화면과의 좋아요 상태가 공유되지 않음. 따라서 STORES_DATA 대신 useStore에서 상태를 불러와야 함
-    이렇게 하면 toggleLike 실행 시 상태가 전역으로 바뀌어서 홈 화면과 상세페이지 양쪽에 동일하게 반영됨 */
-    const shop = stores.find(store => store.id === parseInt(id)) || stores[0];
+    // useEffect로 가게 상세 정보 로드
+    useEffect(() => {
+        const loadStoreDetail = async () => {
+            try {
+                const store_id = parseInt(id);
+                const timeParam = time ? parseInt(time.split(':')[0]) : new Date().getHours();
+                await fetchStoreDetail(store_id, timeParam);
+            } catch (error) {
+                console.error('가게 상세 정보 로드 실패:', error);
+                // 에러 발생 시 홈으로 이동
+                //navigate('/');
+            }
+        };
 
-    // 가게 ID에 따라 이미지 매핑 (임시)
+        if (id) {
+            loadStoreDetail();
+        }
+    }, [id, time, fetchStoreDetail, navigate]);
+
+    // 가게 데이터 결정 (selectedStore가 있으면 사용, 없으면 기존 stores에서 찾기)
+    const shop = selectedStore || stores.find(store => store.id === parseInt(id)) || stores[0];
+
+    // ✅ 임시 이미지 매핑 사용 (백서버에 이미지 필드가 없어서)
     const imageMap = {
         1: chickenImage,
         2: pizzaImage,
@@ -57,27 +89,34 @@ const ShopDetailPage = () => {
         7: hairImage,
     };
 
-    const imageSrc = shop.image || imageMap[shop.id] || placeholderImage;
+    // shop이 undefined일 수 있으므로 안전하게 처리
+    const imageSrc = shop?.store_image_url || (shop ? imageMap[shop.id] : null) || placeholderImage;
 
-    // 대표 메뉴 선택 (최대 할인율 기준)
+    // ✅ 백서버 연동됨: 가게/디자이너 메뉴 데이터 사용
     const getFeaturedMenu = () => {
-        if (shop.hasDesigners && selectedDesigner) {
-            return selectedDesigner.menus.reduce((prev, curr) => 
-            prev.discountRate > curr.discountRate ? prev : curr
+        if (!shop) return null;
+        
+        if (shop?.hasDesigners && selectedDesigner) {
+            return selectedDesigner.menus?.reduce((prev, curr) => 
+            prev.discount_rate > curr.discount_rate ? prev : curr
             );
         }
-        return shop.menus.reduce((prev, curr) =>
-        prev.discountRate > curr.discountRate ? prev : curr
+        return shop.menus?.reduce((prev, curr) =>
+        prev.discount_rate > curr.discount_rate ? prev : curr
         );
     };
 
-    // 나머지 메뉴 목록
+    // ✅ 백서버 연동됨: 가게/디자이너 메뉴 데이터 사용
     const getOtherMenus = () => {
+        if (!shop) return [];
+        
         const featured = getFeaturedMenu();
-        if (shop.hasDesigners && selectedDesigner) {
-            return selectedDesigner.menus.filter(menu => menu.id !== featured.id);
+        if (!featured) return [];
+        
+        if (shop?.hasDesigners && selectedDesigner) {
+            return selectedDesigner.menus?.filter(menu => menu.menu_id !== featured.menu_id) || [];
         }
-        return shop.menus.filter(menu => menu.id !== featured.id);
+        return shop.menus?.filter(menu => menu.menu_id !== featured.menu_id) || [];
     };
 
     // 뒤로 가기 처리
@@ -86,7 +125,7 @@ const ShopDetailPage = () => {
             togglePiAgreement(); // 동의서 숨김
         } else if (isReserving) {
             cancelReservation(); // 예약 상태 초기화
-        } else if (shop.hasDesigners && selectedDesigner) {
+        } else if (shop?.hasDesigners && selectedDesigner) {
             cancelReservation(); // 디자이너 선택 해제
         } else {
             navigate('/');
@@ -98,21 +137,17 @@ const ShopDetailPage = () => {
         startReservation(menu, selectedDesigner);
     };
 
-    // 디자이너 선택
+    // Space 선택 (기존 디자이너 선택 로직과 동일하게 사용)
     const handleSelectDesigner = (designer) => {
-        selectDesigner(designer);
+        selectSpace(designer);
     };
 
-    // 대표 메뉴 이름 (전문 분야로 사용)
-    const specialty = selectedDesigner?.menus?.reduce((prev, curr) =>
-    prev.discountRate > curr.discountRate ? prev : curr
-    )?.name || 'N/A';
-
-    const shopName = selectedDesigner ? `${shop.name} / ${selectedDesigner.name}` : shop.name;
+    const shopName = selectedDesigner ? `${shop?.store_name || '가게명'} / ${selectedDesigner.space_name}` : (shop?.store_name || '가게명');
 
   return (
     <Layout currentPage="shop-detail">
         <PageContainer>
+            {/* ✅ 백서버 연동됨: 찜 상태 (isLiked) */}
             <TopNavBar
                 onBack={handleBack}
                 title={
@@ -121,8 +156,8 @@ const ShopDetailPage = () => {
                 shopName
                 }
                 showLike={!isReserving && !showPiAgreement}
-                storeId={shop.id}
-                isLiked={shop.isLiked}
+                storeId={shop?.store_id}
+                isLiked={shop?.is_liked}
             />
     
             {/* 콘텐츠 영역 */}
@@ -131,36 +166,40 @@ const ShopDetailPage = () => {
                     <ReservationPage shop={shop} />
                 ) : (
                     <>
-                    {!shop.hasDesigners || !selectedDesigner ? (
+                    {!shop?.hasDesigners || !selectedDesigner ? (
                         <ShopImage 
                             src={imageSrc} 
-                            alt={shop.name} 
+                            alt={shop?.store_name}
+                            onError={(e) => {
+                                e.target.src = placeholderImage;
+                            }}
                         />
                     ) : null}
-                    {!shop.hasDesigners || !selectedDesigner ? (
+                    {!shop?.hasDesigners || !selectedDesigner ? (
                         <ShopInfo
-                            name={shop.name}
-                            address={shop.address}
-                            distance={`${shop.distance}m`}
-                            reservationTime={`${currentTime} 예약`}
+                            name={shop?.store_name}
+                            address={shop?.store_address}
+                            distance={`${shop?.distance}m`}
+                            reservationTime={`${time || getNearestHour(currentTime)} 예약`}
                         />
                     ) : (
                         <DesignerInfo
-                            name={selectedDesigner.name}
-                            specialty={`${specialty} 전문`}
-                            reservationTime={`${currentTime} 방문`}
+                            name={selectedDesigner.space_name}
+                            specialty={`${selectedDesigner.max_discount_rate}% 할인 전문`}
+                            reservationTime={`${time || getNearestHour(currentTime)} 방문`}
                         />
                     )}
-                    {shop.hasDesigners ? (
+                    {shop?.hasDesigners ? (
                         !selectedDesigner ? (
                             <>
                                 <Line />
                                 <DesignerSection>
-                                    {shop.designers.map(designer => (
+                                    {/* Space 목록을 DesignerCard로 표시 */}
+                                    {storeSpaces.map(space => (
                                         <DesignerCard
-                                            key={designer.id}
-                                            designer={designer}
-                                            onSelect={() => handleSelectDesigner(designer)}
+                                            key={space.id}
+                                            designer={space}
+                                            onSelect={() => handleSelectDesigner(space)}
                                         />
                                     ))}
                                 </DesignerSection>
@@ -170,6 +209,7 @@ const ShopDetailPage = () => {
                                 <Line />
                                 <MenuSection>
                                     <SectionTitle>가장 할인율이 큰 대표 메뉴!</SectionTitle>
+                                    {/* ✅ 백서버 연동됨: 메뉴 데이터 */}
                                     <MenuCard
                                         menu={getFeaturedMenu()}
                                         onReserve={() => handleReserve(getFeaturedMenu())}
@@ -178,8 +218,24 @@ const ShopDetailPage = () => {
                                 <Line />
                                 <MenuSection>
                                     <SectionTitle>다른 할인 메뉴</SectionTitle>
+                                    {/* ✅ 백서버 연동됨: 메뉴 데이터 */}
                                     <MenuList menus={getOtherMenus()} onReserve={handleReserve} />
                                 </MenuSection>
+                                {/* Space 목록 추가 */}
+                                {storeSpaces.length > 0 && (
+                                    <>
+                                        <Line />
+                                        <DesignerSection>
+                                            {storeSpaces.map(space => (
+                                                <DesignerCard
+                                                    key={space.id}
+                                                    designer={space}
+                                                    onSelect={() => handleSelectDesigner(space)}
+                                                />
+                                            ))}
+                                        </DesignerSection>
+                                    </>
+                                )}
                             </>
                         )
                     ) : (
@@ -187,6 +243,7 @@ const ShopDetailPage = () => {
                             <Line />
                             <MenuSection>
                                 <SectionTitle>가장 할인율이 큰 대표 메뉴!</SectionTitle>
+                                {/* ✅ 백서버 연동됨: 메뉴 데이터 */}
                                 <MenuCard
                                     menu={getFeaturedMenu()}
                                     onReserve={() => handleReserve(getFeaturedMenu())}
@@ -195,8 +252,24 @@ const ShopDetailPage = () => {
                             <Line />
                             <MenuSection>
                                 <SectionTitle>다른 할인 메뉴</SectionTitle>
+                                {/* ✅ 백서버 연동됨: 메뉴 데이터 */}
                                 <MenuList menus={getOtherMenus()} onReserve={handleReserve} />
                             </MenuSection>
+                            {/* Space 목록 추가 */}
+                            {storeSpaces.length > 0 && (
+                                <>
+                                    <Line />
+                                    <DesignerSection>
+                                        {storeSpaces.map(space => (
+                                            <DesignerCard
+                                                key={space.id}
+                                                designer={space}
+                                                onSelect={() => handleSelectDesigner(space)}
+                                            />
+                                        ))}
+                                    </DesignerSection>
+                                </>
+                            )}
                         </>
                     )}
                     </>
@@ -262,3 +335,4 @@ const Line = styled.div`
     background: #e2e4e9;
     margin: 0px 16px;
 `;
+

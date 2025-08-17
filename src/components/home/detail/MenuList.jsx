@@ -17,7 +17,7 @@ const MenuList = ({ menus, onReserve }) => {
     <ListContainer>
         {menuList.length > 0 ? (
             menuList.map(menu => (
-                <MenuCard key={menu.id} menu={menu} onReserve={() => onReserve(menu)} />
+                <MenuCard key={menu.menu_id} menu={menu} onReserve={() => onReserve(menu)} />
             ))
         ) : (
             <NoMenus>다른 메뉴가 없습니다.</NoMenus>

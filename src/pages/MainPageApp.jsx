@@ -15,13 +15,26 @@ import LoginPage from './LoginPage';
 import Layout from '../components/layout/Layout';
 import useStore from '../hooks/store/useStore';
 import useUserInfo from '../hooks/user/useUserInfo';
+import { getNearestHour } from '../components/filter/TimeFilter';
 
 const MainPageApp = () => {
   // Zustand 스토어에서 페이지 관련 상태와 액션 가져오기
-  const { currentPage, setCurrentPage } = useStore();
+  const { currentPage, setCurrentPage, time, setTime } = useStore();
   
   // 사용자 정보에서 인증 상태와 주소 확인
   const { authUser, userAddress, accessToken } = useUserInfo();
+
+  // time 초기화 체크 및 설정
+  const checkAndSetTime = () => {
+    if (!time) {
+      const initialTime = getNearestHour(new Date().toLocaleTimeString('ko-KR', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: false 
+      }));
+      setTime(initialTime);
+    }
+  };
 
   // 주소가 없으면 주소 검색 페이지로 설정
   useEffect(() => {
@@ -30,6 +43,11 @@ const MainPageApp = () => {
       setCurrentPage("search-address");
     }
   }, [userAddress, currentPage, setCurrentPage]);
+
+  // time 초기화 체크
+  useEffect(() => {
+    checkAndSetTime();
+  }, [time, setTime]);
 
   // 로그인하지 않았으면 로그인 페이지로 설정
   console.log(authUser);

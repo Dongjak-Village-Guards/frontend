@@ -5,7 +5,7 @@
  */
 
 import { create } from 'zustand';
-import { fetchStoresFromAPI, fetchUserLikes, createLike, deleteLike } from '../../apis/storeAPI';
+import { fetchStoresFromAPI, fetchUserLikes, createLike, deleteLike, fetchStoreSpaces, fetchStoreSpacesList, fetchStoreMenus, fetchSpaceDetails } from '../../apis/storeAPI';
 import appStorage from '../../storage/AppStorage';
 import useUserInfo from '../user/useUserInfo';
 
@@ -33,13 +33,6 @@ const useStore = create((set, get) => ({
     hour12: false 
   }),
   
-  // 디버깅: 초기 currentTime 값 확인
-  // console.log('useStore 초기 currentTime:', new Date().toLocaleTimeString('ko-KR', { 
-  //   hour: '2-digit', 
-  //   minute: '2-digit',
-  //   hour12: false 
-  // })),
-  
   // ===== 정렬 옵션 상태 관리 =====
   /** 현재 정렬 옵션 ('discount' | 'price') */
   sortOption: 'discount',
@@ -49,10 +42,12 @@ const useStore = create((set, get) => ({
   filters: {
     // 선택된 업종 목록 (예: ['nail', 'hair'])
     categories: appStorage.get('filters_categories') || [],
-    // 사용자가 선택한 시간 (null = 선택 안함, 로그인 시 초기화)
-    userSelectedTime: appStorage.get('filters_userSelectedTime') || null,
   },
 
+  // ===== 시간 상태 관리 =====
+  /** 표시될 시간 (AppStorage에서 관리, null = 초기값) */
+  time: appStorage.get('time') || null,
+  
   // ===== 가게 데이터 상태 관리 =====
   /** 백엔드 API에서 가져온 가게 목록 데이터 */
   stores: [],
@@ -68,6 +63,14 @@ const useStore = create((set, get) => ({
   isReserving: false,
   selectedMenu: null,
   selectedDesigner: null,
+
+  // ===== 가게 상세 상태 관리 =====
+  /** 현재 선택된 가게 정보 */
+  selectedStore: null,
+  /** 가게의 Space 목록 */
+  storeSpaces: [],
+  /** Space 로딩 상태 */
+  spaceLoading: false,
 
   // ===== 개인정보 동의서 상태 관리 =====
   showPiAgreement: false,
@@ -114,6 +117,15 @@ const useStore = create((set, get) => ({
   },
   
   /**
+   * 시간 설정 (AppStorage에 저장)
+   * @param {string} newTime - 새로운 시간 (HH:MM 형식)
+   */
+  setTime: (newTime) => {
+    appStorage.set('time', newTime);
+    set({ time: newTime });
+  },
+  
+  /**
    * 현재 시간 업데이트 (1분마다 자동 호출)
    */
   updateCurrentTime: () => {
@@ -124,7 +136,7 @@ const useStore = create((set, get) => ({
     });
     console.log('updateCurrentTime 호출됨, 새 currentTime:', newTime);
     
-    // currentTime만 업데이트, availableAt은 사용자가 직접 선택한 값 유지
+    // currentTime만 업데이트, time은 사용자가 직접 선택한 값 유지
     set({ currentTime: newTime });
   },
   
@@ -138,30 +150,11 @@ const useStore = create((set, get) => ({
       hour12: false 
     });
     
-    // userSelectedTime이 null일 때만 기본값 설정 (사용자가 선택한 값이 있으면 유지)
-    const currentFilters = get().filters;
-    if (currentFilters.userSelectedTime === null) {
-      const currentHour = new Date().getHours();
-      const currentMinute = new Date().getMinutes();
-      const nextHour = currentMinute === 0 ? (currentHour + 1) % 24 : (currentHour + 1) % 24;
-      const initialAvailableAt = `${String(nextHour).padStart(2, '0')}:00`;
-      
-      console.log('initializeTime 호출됨, 초기 시간:', newTime, '초기 userSelectedTime:', initialAvailableAt);
-      
-      set({ 
-        currentTime: newTime,
-        filters: {
-          ...currentFilters,
-          userSelectedTime: initialAvailableAt
-        }
-      });
-    } else {
-      console.log('initializeTime 호출됨, 초기 시간:', newTime, '기존 userSelectedTime 유지:', currentFilters.userSelectedTime);
-      
-      set({ 
-        currentTime: newTime
-      });
-    }
+    console.log('initializeTime 호출됨, 초기 시간:', newTime);
+    
+    set({ 
+      currentTime: newTime
+    });
   },
   
   /**
@@ -178,9 +171,6 @@ const useStore = create((set, get) => ({
     const newFilters = { ...get().filters, ...partial };
     
     // 필터 값 변경 시 appStorage에 저장
-    if (partial.userSelectedTime !== undefined) {
-      appStorage.set('filters_userSelectedTime', partial.userSelectedTime);
-    }
     if (partial.categories !== undefined) {
       appStorage.set('filters_categories', partial.categories);
     }
@@ -191,18 +181,11 @@ const useStore = create((set, get) => ({
   
   /** 필터 초기화 */
   resetFilters: () => {
-    const now = new Date();
-    const currentHour = now.getHours();
-    const currentMinute = now.getMinutes();
-    const nextHour = currentMinute === 0 ? (currentHour + 1) % 24 : (currentHour + 1) % 24;
-    const defaultAvailableAt = `${String(nextHour).padStart(2, '0')}:00`;
-    
     // appStorage에서 필터 값 제거
-    appStorage.remove('filters_userSelectedTime');
     appStorage.remove('filters_categories');
     
     set({
-      filters: { categories: [], userSelectedTime: null }
+      filters: { categories: [] }
     });
   },
   
@@ -318,8 +301,8 @@ const useStore = create((set, get) => ({
       if (isCurrentlyLiked) {
         // 이미 찜한 상태면 삭제
         // 먼저 찜 목록을 조회하여 해당 store_id의 like_id 찾기
-        const timeParam = filters.userSelectedTime ? 
-          parseInt(filters.userSelectedTime.split(':')[0]) : 
+        const timeParam = get().time ? 
+          parseInt(get().time.split(':')[0]) : 
           new Date().getHours();
         const categoryParam = filters.categories.length > 0 ? filters.categories[0] : null;
         
@@ -344,7 +327,7 @@ const useStore = create((set, get) => ({
         }));
       } else {
         // 아직 찜하지 않은 상태면 생성
-        const newLike = await createLike(storeId, tokenToUse);
+        const newLike = await createLike(parseInt(storeId), tokenToUse);
         console.log(`가게 ${storeId} 찜 생성 성공:`, newLike.like_id);
         
         // likedStoreIds에 추가
@@ -400,8 +383,8 @@ const useStore = create((set, get) => ({
 
     try {
       // time 파라미터 변환
-      const timeParam = filters.userSelectedTime ? 
-        parseInt(filters.userSelectedTime.split(':')[0]) : 
+      const timeParam = get().time ? 
+        parseInt(get().time.split(':')[0]) : 
         new Date().getHours();
       
       // category 파라미터 (첫 번째 카테고리 사용)
@@ -467,6 +450,112 @@ const useStore = create((set, get) => ({
     showPiAgreement: !state.showPiAgreement,
   })),
   setAgreed: (agreed) => set({ isAgreed: agreed }),
+
+  /**
+   * 가게 상세 정보 및 Space 정보 로드
+   * @param {number} store_id - 가게 ID
+   * @param {number} time - 시간 파라미터
+   */
+  fetchStoreDetail: async (store_id, time) => {
+    set({ spaceLoading: true });
+    try {
+      // accessToken 가져오기
+      const { accessToken, isTokenValid, refreshTokens } = useUserInfo.getState();
+      
+      // 토큰이 있으면 유효성 확인 및 갱신
+      if (accessToken && !isTokenValid()) {
+        console.log('토큰이 만료되었습니다. 토큰 갱신을 시도합니다.');
+        const refreshSuccess = await refreshTokens();
+        if (!refreshSuccess) {
+          console.error('토큰 갱신에 실패했습니다.');
+        } else {
+          console.log('토큰 갱신 성공');
+        }
+      }
+      
+      // 갱신된 토큰 가져오기
+      const { accessToken: currentToken } = useUserInfo.getState();
+      
+      // 1단계: Space 개수 확인
+      const spaceInfo = await fetchStoreSpaces(store_id, time, currentToken);
+      console.log('Space 개수 확인:', spaceInfo);
+      
+      if (spaceInfo.count === 0) {
+        throw new Error('해당 가게에 등록된 Space가 없습니다.');
+      }
+      
+      if (spaceInfo.count === 1) {
+        // Space가 1개인 경우 - Store 메뉴 API 호출
+        const storeDetail = await fetchStoreMenus(store_id, time, currentToken);
+        set({ 
+          selectedStore: storeDetail,
+          storeSpaces: [],
+          spaceLoading: false 
+        });
+      } else {
+        // Space가 2개 이상인 경우 - Space 목록 조회
+        const storeDetail = await fetchStoreSpacesList(store_id, time, currentToken);
+        set({ 
+          selectedStore: storeDetail,
+          storeSpaces: storeDetail.designers,
+          spaceLoading: false 
+        });
+      }
+    } catch (error) {
+      console.error('가게 상세 정보 로드 실패:', error);
+      set({ spaceLoading: false });
+      throw error;
+    }
+  },
+
+  /**
+   * Space 선택
+   * @param {Object} space - 선택할 Space 정보
+   */
+  selectSpace: (space) => set({ selectedDesigner: space }),
+
+  /**
+   * Space 선택 후 메뉴 로드
+   * @param {number} space_id - Space ID
+   * @param {number} time - 시간 파라미터
+   */
+  fetchSpaceMenus: async (space_id, time) => {
+    set({ spaceLoading: true });
+    try {
+      // accessToken 가져오기
+      const { accessToken, isTokenValid, refreshTokens } = useUserInfo.getState();
+      
+      // 토큰이 있으면 유효성 확인 및 갱신
+      if (accessToken && !isTokenValid()) {
+        console.log('토큰이 만료되었습니다. 토큰 갱신을 시도합니다.');
+        const refreshSuccess = await refreshTokens();
+        if (!refreshSuccess) {
+          console.error('토큰 갱신에 실패했습니다.');
+        } else {
+          console.log('토큰 갱신 성공');
+        }
+      }
+      
+      // 갱신된 토큰 가져오기
+      const { accessToken: currentToken } = useUserInfo.getState();
+      
+      // Space 메뉴 조회
+      const spaceDetail = await fetchSpaceDetails(space_id, time, currentToken);
+      
+      // selectedDesigner에 메뉴 정보 추가
+      set((state) => ({
+        selectedDesigner: {
+          ...state.selectedDesigner,
+          menus: spaceDetail.menus
+        },
+        spaceLoading: false
+      }));
+    } catch (error) {
+      console.error('Space 메뉴 로드 실패:', error);
+      set({ spaceLoading: false });
+      throw error;
+    }
+  },
   
   // ===== Getter 함수들 ===== //
   
@@ -491,8 +580,8 @@ const useStore = create((set, get) => ({
     }
 
     // 2) 시간 필터 적용 - 백서버에서 이미 필터링된 결과를 받아오므로 클라이언트에서 추가 필터링 불필요
-    if (filters.userSelectedTime) {
-      console.log('시간 필터 적용됨 (백서버에서 필터링):', filters.userSelectedTime);
+    if (get().time) {
+      console.log('시간 필터 적용됨 (백서버에서 필터링):', get().time);
     }
 
     // 3) 정렬 적용
@@ -502,11 +591,11 @@ const useStore = create((set, get) => ({
       case 'discount':
         return storesToSort.sort((a, b) => {
           const aMaxDiscount = a.hasDesigners
-            ? Math.max(...a.designers.flatMap(d => d.menus.map(m => m.discountRate))) // 디자이너가 있으면 모든 디자이너의 메뉴에서 최대 할인율 추출
-            : Math.max(...a.menus.map(m => m.discountRate));  // 디자이너가 없으면 가게의 메뉴에서 최대 할인율 추출
+            ? Math.max(...a.designers.flatMap(d => d.menus.map(m => m.discount_rate))) // 디자이너가 있으면 모든 디자이너의 메뉴에서 최대 할인율 추출
+            : Math.max(...a.menus.map(m => m.discount_rate));  // 디자이너가 없으면 가게의 메뉴에서 최대 할인율 추출
           const bMaxDiscount = b.hasDesigners
-            ? Math.max(...b.designers.flatMap(d => d.menus.map(m => m.discountRate))) // // 디자이너가 있으면 모든 디자이너의 메뉴에서 최대 할인율 추출
-            : Math.max(...b.menus.map(m => m.discountRate));  // 디자이너가 없으면 가게의 메뉴에서 최대 할인율 추출
+            ? Math.max(...b.designers.flatMap(d => d.menus.map(m => m.discount_rate))) // // 디자이너가 있으면 모든 디자이너의 메뉴에서 최대 할인율 추출
+            : Math.max(...b.menus.map(m => m.discount_rate));  // 디자이너가 없으면 가게의 메뉴에서 최대 할인율 추출
           
           // 할인율이 다르면 할인율 기준으로 정렬
           if (aMaxDiscount !== bMaxDiscount) {
@@ -520,11 +609,11 @@ const useStore = create((set, get) => ({
       case 'price':
         return storesToSort.sort((a, b) => {
           const aMinPrice = a.hasDesigners
-            ? Math.min(...a.designers.flatMap(d => d.menus.map(m => m.discountPrice)))
-            : Math.min(...a.menus.map(m => m.discountPrice));
+            ? Math.min(...a.designers.flatMap(d => d.menus.map(m => m.discounted_price)))
+            : Math.min(...a.menus.map(m => m.discounted_price));
           const bMinPrice = b.hasDesigners
-            ? Math.min(...b.designers.flatMap(d => d.menus.map(m => m.discountPrice)))
-            : Math.min(...b.menus.map(m => m.discountPrice));
+            ? Math.min(...b.designers.flatMap(d => d.menus.map(m => m.discounted_price)))
+            : Math.min(...b.menus.map(m => m.discounted_price));
           
           // 가격이 다르면 가격 기준으로 정렬
           if (aMinPrice !== bMinPrice) {

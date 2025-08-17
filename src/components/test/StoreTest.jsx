@@ -32,7 +32,7 @@ const StoreTest = () => {
     setError(null);
     try {
       // 현재 백엔드 API에는 상세 조회 기능이 없으므로 임시로 목록에서 찾기
-      const store = stores.find(s => s.id === storeId);
+      const store = stores.find(s => s.store_id === storeId);
       if (store) {
         setSelectedStore(store);
       } else {
@@ -107,14 +107,14 @@ const StoreTest = () => {
         <StoreList>
           <h3>가게 목록 ({stores.length}개)</h3>
                      {stores.map(store => (
-             <StoreItem key={store.id}>
+             <StoreItem key={store.store_id}>
               <StoreInfo>
-                <StoreName>{store.name}</StoreName>
+                <StoreName>{store.store_name}</StoreName>
                 <StoreCategory>{store.menu}</StoreCategory>
                 <StoreAddress>거리: {store.distance}m, 도보: {store.walkTime}분</StoreAddress>
               </StoreInfo>
                              <StoreActions>
-                 <DetailButton onClick={() => handleFetchStoreById(store.id)}>
+                 <DetailButton onClick={() => handleFetchStoreById(store.store_id)}>
                    상세보기
                  </DetailButton>
                </StoreActions>
@@ -128,19 +128,19 @@ const StoreTest = () => {
         <StoreDetail>
           <h3>가게 상세 정보</h3>
           <DetailCard>
-            <DetailImage src={selectedStore.store_image_url || "https://via.placeholder.com/200x150"} alt={selectedStore.name} />
+            <DetailImage src={selectedStore.store_image_url || "https://via.placeholder.com/200x150"} alt={selectedStore.store_name} />
             <DetailContent>
-              <DetailName>{selectedStore.name}</DetailName>
+              <DetailName>{selectedStore.store_name}</DetailName>
               <DetailCategory>메뉴: {selectedStore.menu}</DetailCategory>
               <DetailOwner>거리: {selectedStore.distance}m</DetailOwner>
               <DetailAddress>도보 시간: {selectedStore.walkTime}분</DetailAddress>
               <DetailDescription>좋아요: {selectedStore.isLiked ? '❤️' : '🤍'}</DetailDescription>
               <DetailStatus>
-                할인율: {selectedStore.menus?.[0]?.discountRate || 0}%
+                할인율: {selectedStore.menus?.[0]?.discount_rate || 0}%
               </DetailStatus>
               <DetailDates>
-                <div>정가: {selectedStore.menus?.[0]?.originalPrice?.toLocaleString() || 0}원</div>
-                <div>할인가: {selectedStore.menus?.[0]?.discountPrice?.toLocaleString() || 0}원</div>
+                <div>정가: {selectedStore.menus?.[0]?.menu_price?.toLocaleString() || 0}원</div>
+                <div>할인가: {selectedStore.menus?.[0]?.discounted_price?.toLocaleString() || 0}원</div>
               </DetailDates>
             </DetailContent>
           </DetailCard>

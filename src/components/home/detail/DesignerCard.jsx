@@ -10,7 +10,7 @@ import ReservationButton from '../../common/ReservationButton';
 /**
  * DesignerCard 컴포넌트
  * @param {Object} designer - 디자이너 정보 객체
- * @param {string} designer.name - 디자이너 이름
+ * @param {string} designer.space_name - 디자이너 이름 (Space의 경우 space_name)
  * @param {Object[]} designer.menus - 디자이너 메뉴 목록
  * @param {Function} onSelect - 디자이너 선택 시 호출
  */
@@ -19,7 +19,7 @@ const DesignerCard = ({ designer, onSelect }) => {
     const { startReservation } = useStore();
 
     // 최대 할인율 계산
-    const maxDiscountRate = Math.max(...designer.menus.map(menu => menu.discountRate));
+    const maxDiscountRate = Math.max(...designer.menus.map(menu => menu.discount_rate));
 
     const handleReserve = (e) => {
         e.stopPropagation();
@@ -31,17 +31,19 @@ const DesignerCard = ({ designer, onSelect }) => {
   return (
     <Card>
         <Div>
-            <DesignerImage src={designerImage} alt='임시 디자이너 이미지' />
+            <DesignerImage src={designer.space_image_url || designerImage} alt='디자이너 이미지' onError={(e) => {
+                e.target.src = designerImage;
+            }} />
             <Detail>
-                <DesignerName>{designer.name}</DesignerName>
+                <DesignerName>{designer.space_name}</DesignerName>
                 <DiscountText>
                     <StyledSpan>최대 할인율</StyledSpan> {maxDiscountRate}%
                 </DiscountText>
             </Detail>
         </Div>
         <ButtonContainer>
-            <ReservationButton onClick={handleReserve} disabled={designer.isReserved}>
-                {designer.isReserved ? "예약마감" : "예약하기"}
+            <ReservationButton onClick={handleReserve} disabled={!designer.is_possible}>
+                {!designer.is_possible ? "예약마감" : "예약하기"}
             </ReservationButton>
         </ButtonContainer>
     </Card>

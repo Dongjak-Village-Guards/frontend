@@ -13,8 +13,8 @@ import StoreCard from "./StoreImage";
 /**
  * Card 컴포넌트
  * @param {Object} store - 가게 정보 객체
- * @param {number} store.id - 가게 ID
- * @param {string} store.name - 가게 이름
+ * @param {number} store.store_id - 가게 ID
+ * @param {string} store.store_name - 가게 이름
  * @param {string} store.menu - 최대 할인율 메뉴 이름
  * @param {number} store.distance - 거리 (미터)
  * @param {number} store.walkTime - 도보 시간 (분)
@@ -27,8 +27,8 @@ const Card = ({ store, onClick }) => {
   const { id, isLiked } = store;
   // 최대 할인율 계산 (디자이너 유무에 따라 다르게 처리)
   const discountRate = store.hasDesigners
-    ? Math.max(...store.designers.flatMap(designer => designer.menus.map(menu => menu.discountRate)))
-    : Math.max(...store.menus.map(menu => menu.discountRate));
+    ? Math.max(...store.designers.flatMap(designer => designer.menus.map(menu => menu.discount_rate)))
+    : Math.max(...store.menus.map(menu => menu.discount_rate));
 
   return (
     <CardContainer onClick={onClick}>

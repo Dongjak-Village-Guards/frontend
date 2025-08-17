@@ -32,7 +32,7 @@ const ReservationPage = ({ shop }) => {
   };
 
   // 가게 이름 (/ 디자이너)
-  const shopName = selectedDesigner ? `${shop.name} / ${selectedDesigner.name}` : shop.name;
+      const shopName = selectedDesigner ? `${shop.store_name} / ${selectedDesigner.space_name}` : shop.store_name;
 
   return (
     <ReservationContainer>
