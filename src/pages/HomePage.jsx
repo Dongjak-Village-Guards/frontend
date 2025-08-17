@@ -47,7 +47,7 @@ export default function HomePage() {
     setFilters,
     setCurrentPage,
     setFromHomePage,
-    fetchStores,
+    fetchStores, // Zustand 스토어 액션 (API 함수 아님)
     fetchUserLikes,
     loading,
   } = useStore();
@@ -65,9 +65,7 @@ export default function HomePage() {
       
       // 백엔드 API에서 가게 목록 가져오기 (현재 설정된 필터들 사용)
       try {
-        const timeParam = filters.availableAt ? parseInt(filters.availableAt.split(':')[0]) : null;
-        const categoryParam = filters.categories.length > 0 ? filters.categories[0] : null;
-        await fetchStores(timeParam, categoryParam);
+        await fetchStores(filters.userSelectedTime, filters.categories.length > 0 ? filters.categories[0] : null);
         
         // 로그인된 사용자인 경우에만 찜 목록 가져오기
         if (accessToken) {
@@ -82,7 +80,7 @@ export default function HomePage() {
       setLoading(false);
     };
     initializePage();
-  }, [updateCurrentTime, fetchStores, fetchUserLikes, filters.availableAt, filters.categories, accessToken]);
+  }, [updateCurrentTime, fetchStores, fetchUserLikes, filters.userSelectedTime, filters.categories, accessToken]);
 
   /**
    * 정렬 변경
@@ -119,9 +117,8 @@ export default function HomePage() {
     setFilters({ categories: category ? [category] : [] });
     
     // 카테고리 필터 적용 시 API 재호출 (현재 설정된 시간 필터도 함께 사용)
-    const timeParam = filters.availableAt ? parseInt(filters.availableAt.split(':')[0]) : null;
     try {
-      await fetchStores(timeParam, category);
+      await fetchStores(filters.userSelectedTime, category);
     } catch (error) {
       console.error('카테고리 필터 적용 실패:', error);
     }
@@ -191,8 +188,7 @@ export default function HomePage() {
       {/* 필터/정렬 영역 (배너 아래에 위치, 스크롤 시 주소바 바로 아래에 고정) */}
       <FilterRow>
         <TimeToggle
-          label={filters.availableAt || getNearestHour(currentTime)}
-          active={!!filters.availableAt}
+          label={filters.userSelectedTime || getNearestHour(currentTime)}
           onClick={() => !isLoading && setIsTimeSheetOpen(true)}
         />
 
@@ -231,18 +227,14 @@ export default function HomePage() {
       >
         <TimeFilter
           currentTime={currentTime}
-          selectedTime={filters.availableAt}
+          selectedTime={filters.userSelectedTime}
           onTimeSelect={async (time) => {
             console.log('시간 선택됨:', time);
-            setFilters({ availableAt: time });
-            
-            // 시간을 API time 파라미터로 변환 (HH:MM → 0~36)
-            const timeParam = parseInt(time.split(':')[0]);
+            setFilters({ userSelectedTime: time });
             
             try {
               // 현재 설정된 카테고리 필터도 함께 사용
-              const categoryParam = filters.categories.length > 0 ? filters.categories[0] : null;
-              await fetchStores(timeParam, categoryParam);
+              await fetchStores(time, filters.categories.length > 0 ? filters.categories[0] : null);
             } catch (error) {
               console.error('시간 필터 적용 실패:', error);
             }
