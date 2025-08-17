@@ -474,4 +474,76 @@ export const fetchSpaceDetails = async (spaceId, time, accessToken) => {
     console.error('Space 상세 조회 실패:', error);
     throw error;
   }
+};
+
+// ===== ReservationPage 관련 API 함수들 =====
+
+/**
+ * 특정 Menu 단일 조회 (예약화면용)
+ * @param {number} itemId - 아이템 ID
+ * @param {string} accessToken - 액세스 토큰
+ * @returns {Promise<Object>} 메뉴 상세 정보
+ */
+export const fetchMenuItemDetails = async (itemId, accessToken) => {
+  try {
+    console.log(`메뉴 상세 조회 시작... (Item ID: ${itemId})`);
+    
+    const response = await fetch(`${REST_API_BASE_URL}/v1/stores/items/${itemId}/`, {
+      method: 'GET',
+      headers: buildHeaders(accessToken),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const error = new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      error.status = response.status;
+      throw error;
+    }
+    
+    const data = await response.json();
+    console.log('메뉴 상세 조회 성공:', data);
+    
+    return data;
+  } catch (error) {
+    console.error('메뉴 상세 조회 실패:', error);
+    throw error;
+  }
+};
+
+/**
+ * 예약 생성
+ * @param {number} itemId - 아이템 ID
+ * @param {string} accessToken - 액세스 토큰
+ * @returns {Promise<Object>} 예약 생성 결과
+ */
+export const createReservation = async (itemId, accessToken) => {
+  try {
+    console.log(`예약 생성 시작... (Item ID: ${itemId})`);
+    
+    const response = await fetch(`${REST_API_BASE_URL}/v1/reservations/`, {
+      method: 'POST',
+      headers: {
+        ...buildHeaders(accessToken),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        item_id: itemId,
+      }),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const error = new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      error.status = response.status;
+      throw error;
+    }
+    
+    const data = await response.json();
+    console.log('예약 생성 성공:', data);
+    
+    return data;
+  } catch (error) {
+    console.error('예약 생성 실패:', error);
+    throw error;
+  }
 }; 

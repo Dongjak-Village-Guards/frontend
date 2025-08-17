@@ -3,22 +3,109 @@
  * 선택된 메뉴와 가게 정보, 개인정보 제3자 동의 체크박스를 표시
  */
 
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import useStore from '../hooks/store/useStore';
+import useUserInfo from '../hooks/user/useUserInfo';
 import ShopInfo from '../components/home/detail/ShopInfo';
 import MenuCard from '../components/home/detail/MenuCard';
 import PiAgreement from '../components/home/detail/PiAgreement';
 import { ReactComponent as ArrowButton } from '../assets/images/piArrow.svg';
 import Line from '../components/common/Line';
+import Spinner from '../components/common/Spinner';
+import { fetchMenuItemDetails, createReservation } from '../apis/storeAPI';
 
 const ReservationPage = ({ shop }) => {
-  const { selectedMenu, selectedDesigner, currentTime, cancelReservation, togglePiAgreement, showPiAgreement, isAgreed, setAgreed } = useStore();
+  const { 
+    selectedMenu, 
+    selectedDesigner, 
+    currentTime, 
+    cancelReservation, 
+    togglePiAgreement, 
+    showPiAgreement, 
+    isAgreed, 
+    setAgreed,
+    setCurrentPage
+  } = useStore();
 
-  // 예약 확인 핸들러 (임시)
-  const handleConfirm = () => {
-    if (!isAgreed) return;
-    alert('예약이 완료되었습니다!');
-    cancelReservation();
+  const { accessToken } = useUserInfo();
+
+  // 상태 관리
+  const [menuData, setMenuData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [reserving, setReserving] = useState(false);
+
+  // 메뉴 상세 데이터 로드
+  useEffect(() => {
+    const loadMenuData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        if (!selectedMenu || !selectedMenu.item_id) {
+          throw new Error('메뉴 정보가 없습니다.');
+        }
+
+        console.log('ReservationPage: 메뉴 상세 데이터 로드 시작', { itemId: selectedMenu.item_id });
+        
+        const data = await fetchMenuItemDetails(selectedMenu.item_id, accessToken);
+        setMenuData(data);
+        
+      } catch (error) {
+        console.error('ReservationPage: 메뉴 상세 데이터 로드 실패', error);
+        setError(error);
+        
+        // 401 에러 시 로그인 페이지로 이동
+        if (error.status === 401) {
+          setCurrentPage('login');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (selectedMenu && accessToken) {
+      loadMenuData();
+    }
+  }, [selectedMenu, accessToken, setCurrentPage]);
+
+  // 예약 확인 핸들러
+  const handleConfirm = async () => {
+    if (!isAgreed || !menuData) return;
+    
+    try {
+      setReserving(true);
+      
+      console.log('예약 생성 시작', { itemId: menuData.item_id });
+      
+      const reservationResult = await createReservation(menuData.item_id, accessToken);
+      
+      console.log('예약 생성 성공:', reservationResult);
+      
+      // 예약 완료 데이터를 localStorage에 저장 (SchedulePage에서 바텀시트로 표시)
+      localStorage.setItem('completedReservation', JSON.stringify(reservationResult));
+      
+      // 예약 완료 후 SchedulePage로 이동 (바텀시트로 알림)
+      setCurrentPage('history');
+      
+      // 예약 상태 초기화
+      cancelReservation();
+      
+    } catch (error) {
+      console.error('예약 생성 실패:', error);
+      
+      // 에러 처리
+      if (error.status === 401) {
+        setCurrentPage('login');
+      } else if (error.status === 404) {
+        alert('해당 메뉴를 찾을 수 없습니다.');
+      } else {
+        alert('예약 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+      }
+    } finally {
+      setReserving(false);
+    }
   };
 
   // 체크박스 변경 핸들러
@@ -32,7 +119,36 @@ const ReservationPage = ({ shop }) => {
   };
 
   // 가게 이름 (/ 디자이너)
-  const shopName = selectedDesigner ? `${shop.name} / ${selectedDesigner.name}` : shop.name;
+  const getShopName = () => {
+    if (menuData) {
+      return menuData.store_name;
+    }
+    return selectedDesigner ? `${shop?.name} / ${selectedDesigner.name}` : shop?.name;
+  };
+
+  // 로딩 중이거나 에러 상태 처리
+  if (loading) {
+    return (
+      <ReservationContainer>
+        <LoadingContainer>
+          <Spinner />
+        </LoadingContainer>
+      </ReservationContainer>
+    );
+  }
+
+  if (error) {
+    return (
+      <ReservationContainer>
+        <ErrorContainer>
+          <ErrorText>
+            {error.status === 404 ? '해당 메뉴를 찾을 수 없습니다.' : '데이터를 불러오는데 실패했습니다.'}
+          </ErrorText>
+          <BackButton onClick={cancelReservation}>뒤로가기</BackButton>
+        </ErrorContainer>
+      </ReservationContainer>
+    );
+  }
 
   return (
     <ReservationContainer>
@@ -47,16 +163,22 @@ const ReservationPage = ({ shop }) => {
           <SectionTitle>아래 내용이 맞는지 꼼꼼히 확인해주세요</SectionTitle>
           <Line />
           <ShopInfo
-            name={shopName}
-            address={shop.address}
-            distance={`${shop.distance}m`}
-            reservationTime={`${currentTime} 예약`}
+            name={getShopName()}
+            address={menuData?.store_address || shop?.address}
+            distance={`${menuData?.distance || shop?.distance}m`}
+            reservationTime={`${menuData?.selected_time || currentTime} 예약`}
           />
           <Line />
-          {selectedMenu && (
+          {menuData && (
             <MenuCardDiv>
                 <MenuCard
-                  menu={selectedMenu}
+                  menu={{
+                    name: menuData.menu_name,
+                    discountRate: menuData.discount_rate,
+                    originalPrice: menuData.menu_price,
+                    discountPrice: menuData.discounted_price,
+                    isReserved: false
+                  }}
                   onReserve={() => {}}
                   hideButton={true} // 버튼 숨김
                 />
@@ -75,8 +197,11 @@ const ReservationPage = ({ shop }) => {
             </ArrowIcon>
           </CheckboxContainer>
           <Line />
-          <ReserveButton disabled={!isAgreed} onClick={handleConfirm}>
-            예약하기
+          <ReserveButton 
+            disabled={!isAgreed || reserving} 
+            onClick={handleConfirm}
+          >
+            {reserving ? '예약 중...' : '예약하기'}
           </ReserveButton>
         </>
       )}
@@ -166,4 +291,38 @@ const CloseButton = styled.button`
 
 const MenuCardDiv = styled.div`
   padding: 16px 16px 4px 16px ;
+`;
+
+const LoadingContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+`;
+
+const ErrorContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  text-align: center;
+`;
+
+const ErrorText = styled.div`
+  font-size: 16px;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 16px;
+`;
+
+const BackButton = styled.button`
+  background: #DA2538;
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
 `;
