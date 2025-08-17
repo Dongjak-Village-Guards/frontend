@@ -50,6 +50,8 @@ export default function HomePage() {
     fetchStores, // Zustand 스토어 액션 (API 함수 아님)
     fetchUserLikes,
     loading,
+    time,
+    setTime,
   } = useStore();
 
   /** 사용자 주소 */
@@ -65,7 +67,7 @@ export default function HomePage() {
       
       // 백엔드 API에서 가게 목록 가져오기 (현재 설정된 필터들 사용)
       try {
-        await fetchStores(filters.userSelectedTime, filters.categories.length > 0 ? filters.categories[0] : null);
+        await fetchStores(time, filters.categories.length > 0 ? filters.categories[0] : null);
         
         // 로그인된 사용자인 경우에만 찜 목록 가져오기
         if (accessToken) {
@@ -80,7 +82,7 @@ export default function HomePage() {
       setLoading(false);
     };
     initializePage();
-  }, [updateCurrentTime, fetchStores, fetchUserLikes, filters.userSelectedTime, filters.categories, accessToken]);
+  }, [updateCurrentTime, fetchStores, fetchUserLikes, time, filters.categories, accessToken]);
 
   /**
    * 정렬 변경
@@ -118,7 +120,7 @@ export default function HomePage() {
     
     // 카테고리 필터 적용 시 API 재호출 (현재 설정된 시간 필터도 함께 사용)
     try {
-      await fetchStores(filters.userSelectedTime, category);
+      await fetchStores(time, category);
     } catch (error) {
       console.error('카테고리 필터 적용 실패:', error);
     }
@@ -188,7 +190,7 @@ export default function HomePage() {
       {/* 필터/정렬 영역 (배너 아래에 위치, 스크롤 시 주소바 바로 아래에 고정) */}
       <FilterRow>
         <TimeToggle
-          label={filters.userSelectedTime || getNearestHour(currentTime)}
+          label={time || getNearestHour(currentTime)}
           onClick={() => !isLoading && setIsTimeSheetOpen(true)}
         />
 
@@ -227,14 +229,14 @@ export default function HomePage() {
       >
         <TimeFilter
           currentTime={currentTime}
-          selectedTime={filters.userSelectedTime}
-          onTimeSelect={async (time) => {
-            console.log('시간 선택됨:', time);
-            setFilters({ userSelectedTime: time });
+          selectedTime={time}
+          onTimeSelect={async (selectedTime) => {
+            console.log('시간 선택됨:', selectedTime);
+            setTime(selectedTime);
             
             try {
               // 현재 설정된 카테고리 필터도 함께 사용
-              await fetchStores(time, filters.categories.length > 0 ? filters.categories[0] : null);
+              await fetchStores(selectedTime, filters.categories.length > 0 ? filters.categories[0] : null);
             } catch (error) {
               console.error('시간 필터 적용 실패:', error);
             }

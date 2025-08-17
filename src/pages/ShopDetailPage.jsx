@@ -32,6 +32,7 @@ const ShopDetailPage = () => {
     const { 
         stores,
         currentTime,
+        time,
         isReserving,
         selectedDesigner,
         showPiAgreement,
@@ -142,13 +143,13 @@ const ShopDetailPage = () => {
                             name={shop.name}
                             address={shop.address}
                             distance={`${shop.distance}m`}
-                            reservationTime={`${currentTime} 예약`}
+                            reservationTime={`${time} 예약`}
                         />
                     ) : (
                         <DesignerInfo
                             name={selectedDesigner.name}
                             specialty={`${specialty} 전문`}
-                            reservationTime={`${currentTime} 방문`}
+                            reservationTime={`${time} 방문`}
                         />
                     )}
                     {shop.hasDesigners ? (

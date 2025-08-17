@@ -33,25 +33,21 @@ const useStore = create((set, get) => ({
     hour12: false 
   }),
   
-  // 디버깅: 초기 currentTime 값 확인
-  // console.log('useStore 초기 currentTime:', new Date().toLocaleTimeString('ko-KR', { 
-  //   hour: '2-digit', 
-  //   minute: '2-digit',
-  //   hour12: false 
-  // })),
-  
   // ===== 정렬 옵션 상태 관리 =====
   /** 현재 정렬 옵션 ('discount' | 'price') */
   sortOption: 'discount',
-  
+
   // ===== 필터 기준 상태 관리 =====
   /** 상세 필터 기준 (상세필터 페이지/바텀시트에서 수정) */
   filters: {
     // 선택된 업종 목록 (예: ['nail', 'hair'])
     categories: appStorage.get('filters_categories') || [],
-    // 사용자가 선택한 시간 (null = 선택 안함, 로그인 시 초기화)
-    userSelectedTime: appStorage.get('filters_userSelectedTime') || null,
   },
+
+  // ===== 시간 상태 관리 =====
+  /** 표시될 시간 (AppStorage에서 관리, null = 초기값) */
+  time: appStorage.get('time') || null,
+  
 
   // ===== 가게 데이터 상태 관리 =====
   /** 백엔드 API에서 가져온 가게 목록 데이터 */
@@ -112,6 +108,16 @@ const useStore = create((set, get) => ({
     const truncatedAddress = address.length > 7 ? `${address.slice(0, 7)}...` : address;
     set({ currentAddress: truncatedAddress });
   },
+
+   /**
+   * 시간 설정 (AppStorage에 저장)
+   * @param {string} newTime - 새로운 시간 (HH:MM 형식)
+   */
+  setTime: (newTime) => {
+    appStorage.set('time', newTime);
+    set({ time: newTime });
+  },
+  
   
   /**
    * 현재 시간 업데이트 (1분마다 자동 호출)
@@ -138,25 +144,22 @@ const useStore = create((set, get) => ({
       hour12: false 
     });
     
-    // userSelectedTime이 null일 때만 기본값 설정 (사용자가 선택한 값이 있으면 유지)
-    const currentFilters = get().filters;
-    if (currentFilters.userSelectedTime === null) {
+    // time이 null일 때만 기본값 설정 (사용자가 선택한 값이 있으면 유지)
+    const currentTime = get().time;
+    if (currentTime === null) {
       const currentHour = new Date().getHours();
       const currentMinute = new Date().getMinutes();
       const nextHour = currentMinute === 0 ? (currentHour + 1) % 24 : (currentHour + 1) % 24;
-      const initialAvailableAt = `${String(nextHour).padStart(2, '0')}:00`;
+      const initialTime = `${String(nextHour).padStart(2, '0')}:00`;
       
-      console.log('initializeTime 호출됨, 초기 시간:', newTime, '초기 userSelectedTime:', initialAvailableAt);
+      console.log('initializeTime 호출됨, 초기 시간:', newTime, '초기 time:', initialTime);
       
       set({ 
         currentTime: newTime,
-        filters: {
-          ...currentFilters,
-          userSelectedTime: initialAvailableAt
-        }
+        time: initialTime
       });
     } else {
-      console.log('initializeTime 호출됨, 초기 시간:', newTime, '기존 userSelectedTime 유지:', currentFilters.userSelectedTime);
+      console.log('initializeTime 호출됨, 초기 시간:', newTime, '기존 time 유지:', currentTime);
       
       set({ 
         currentTime: newTime
@@ -178,9 +181,6 @@ const useStore = create((set, get) => ({
     const newFilters = { ...get().filters, ...partial };
     
     // 필터 값 변경 시 appStorage에 저장
-    if (partial.userSelectedTime !== undefined) {
-      appStorage.set('filters_userSelectedTime', partial.userSelectedTime);
-    }
     if (partial.categories !== undefined) {
       appStorage.set('filters_categories', partial.categories);
     }
@@ -191,18 +191,11 @@ const useStore = create((set, get) => ({
   
   /** 필터 초기화 */
   resetFilters: () => {
-    const now = new Date();
-    const currentHour = now.getHours();
-    const currentMinute = now.getMinutes();
-    const nextHour = currentMinute === 0 ? (currentHour + 1) % 24 : (currentHour + 1) % 24;
-    const defaultAvailableAt = `${String(nextHour).padStart(2, '0')}:00`;
-    
     // appStorage에서 필터 값 제거
-    appStorage.remove('filters_userSelectedTime');
     appStorage.remove('filters_categories');
     
     set({
-      filters: { categories: [], userSelectedTime: null }
+      filters: { categories: [] }
     });
   },
   
@@ -270,7 +263,7 @@ const useStore = create((set, get) => ({
    * @param {number} storeId - 가게 ID
    */
   toggleLikeWithAPI: async (storeId) => {
-    const { filters, stores, likedStoreIds } = get();
+    const { filters, stores, likedStoreIds, time } = get();
     const { accessToken, isTokenValid, refreshTokens } = useUserInfo.getState();
     
     console.log('toggleLikeWithAPI 호출 - storeId:', storeId);
@@ -318,8 +311,8 @@ const useStore = create((set, get) => ({
       if (isCurrentlyLiked) {
         // 이미 찜한 상태면 삭제
         // 먼저 찜 목록을 조회하여 해당 store_id의 like_id 찾기
-        const timeParam = filters.userSelectedTime ? 
-          parseInt(filters.userSelectedTime.split(':')[0]) : 
+        const timeParam = time ? 
+          parseInt(time.split(':')[0]) : 
           new Date().getHours();
         const categoryParam = filters.categories.length > 0 ? filters.categories[0] : null;
         
@@ -375,7 +368,7 @@ const useStore = create((set, get) => ({
    * 사용자 찜 목록 조회
    */
   fetchUserLikes: async () => {
-    const { filters, stores } = get();
+    const { filters, stores, time } = get();
     const { accessToken, isTokenValid, refreshTokens } = useUserInfo.getState();
     
     if (!accessToken) {
@@ -400,8 +393,8 @@ const useStore = create((set, get) => ({
 
     try {
       // time 파라미터 변환
-      const timeParam = filters.userSelectedTime ? 
-        parseInt(filters.userSelectedTime.split(':')[0]) : 
+      const timeParam = time ? 
+        parseInt(time.split(':')[0]) : 
         new Date().getHours();
       
       // category 파라미터 (첫 번째 카테고리 사용)
@@ -475,7 +468,7 @@ const useStore = create((set, get) => ({
    * @returns {Array} 정렬된 가게 목록
    */
   getSortedStores: () => {
-    const { stores, sortOption, filters } = get();
+    const { stores, sortOption, filters, time } = get();
     const sortedStores = [...stores];
     console.log('getSortedStores 호출, 현재 store 상태:', get());
     let filteredStores = [...stores];
@@ -491,8 +484,8 @@ const useStore = create((set, get) => ({
     }
 
     // 2) 시간 필터 적용 - 백서버에서 이미 필터링된 결과를 받아오므로 클라이언트에서 추가 필터링 불필요
-    if (filters.userSelectedTime) {
-      console.log('시간 필터 적용됨 (백서버에서 필터링):', filters.userSelectedTime);
+    if (time) {
+      console.log('시간 필터 적용됨 (백서버에서 필터링):', time);
     }
 
     // 3) 정렬 적용

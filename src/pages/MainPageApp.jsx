@@ -15,21 +15,37 @@ import LoginPage from './LoginPage';
 import Layout from '../components/layout/Layout';
 import useStore from '../hooks/store/useStore';
 import useUserInfo from '../hooks/user/useUserInfo';
+import { getNearestHour } from '../components/filter/TimeFilter';
 
 const MainPageApp = () => {
   // Zustand 스토어에서 페이지 관련 상태와 액션 가져오기
-  const { currentPage, setCurrentPage } = useStore();
+  const { currentPage, setCurrentPage, time, setTime, currentTime } = useStore();
   
   // 사용자 정보에서 인증 상태와 주소 확인
   const { authUser, userAddress, accessToken } = useUserInfo();
 
+  /**
+   * 시간 체크 및 설정 함수
+   */
+  const checkAndSetTime = () => {
+    if (time === null) {
+      const nearestHour = getNearestHour(currentTime);
+      setTime(nearestHour);
+      console.log('MainPageApp: 초기 시간 설정됨:', nearestHour);
+    }
+  };
+
   // 주소가 없으면 주소 검색 페이지로 설정
   useEffect(() => {
-    
     if (!userAddress && currentPage !== "search-address" && currentPage !== "login") {
       setCurrentPage("search-address");
     }
   }, [userAddress, currentPage, setCurrentPage]);
+
+  // 초기 time 체크 및 설정
+  useEffect(() => {
+    checkAndSetTime();
+  }, [currentTime]);
 
   // 로그인하지 않았으면 로그인 페이지로 설정
   console.log(authUser);
