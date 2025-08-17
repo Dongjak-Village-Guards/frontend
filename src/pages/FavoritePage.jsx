@@ -72,8 +72,7 @@ const FavoritePage = () => {
       {/* 필터 영역 */}
       <FilterRow>
         <TimeToggle
-          label={filters.availableAt || getNearestHour(currentTime)}
-          active={!!filters.availableAt}
+          label={filters.userSelectedTime || getNearestHour(currentTime)}
           onClick={() => !isLoading && console.log('시간 필터 클릭')}
         />
 
