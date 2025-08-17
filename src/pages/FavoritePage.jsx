@@ -23,7 +23,8 @@ const FavoritePage = () => {
     currentTime, 
     setCurrentPage,
     updateCurrentTime,
-    filters
+    filters,
+    time
   } = useStore();
 
   // 컴포넌트 마운트 시 초기 로딩 처리
@@ -72,7 +73,7 @@ const FavoritePage = () => {
       {/* 필터 영역 */}
       <FilterRow>
         <TimeToggle
-          label={filters.userSelectedTime || getNearestHour(currentTime)}
+          label={time || getNearestHour(currentTime)}
           onClick={() => !isLoading && console.log('시간 필터 클릭')}
         />
 
