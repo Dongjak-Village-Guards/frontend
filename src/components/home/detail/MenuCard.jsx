@@ -22,6 +22,12 @@ import ReservationButton from '../../common/ReservationButton';
 const MenuCard = ({ menu, onReserve = false }) => {
     const { startReservation, selectedDesigner, isReserving } = useStore();
 
+    // menu가 없거나 필수 필드가 없을 경우 처리
+    if (!menu) {
+        console.warn('MenuCard: menu prop이 없습니다.');
+        return null;
+    }
+
     const handleReserve = (e) => {
         e.stopPropagation();
         startReservation(menu, selectedDesigner);
@@ -31,23 +37,30 @@ const MenuCard = ({ menu, onReserve = false }) => {
     // 예약 페이지에서 메뉴 카드 속 '예약하기' 버튼 숨김
     const hideButton = isReserving;
 
+    // API 응답 구조에 맞게 필드 매핑
+    const menuName = menu.menu_name || menu.name || '메뉴명 없음';
+    const discountRate = menu.discount_rate || menu.discountRate || 0;
+    const originalPrice = menu.menu_price || menu.originalPrice || 0;
+    const discountPrice = menu.discounted_price || menu.discountPrice || 0;
+    const isReserved = !menu.is_available || menu.isReserved || false;
+
   return (
     <Card>
         <Div>
             <MenuImage src={menuImage} alt='임시 메뉴 이미지' />
             <Detail>
-                <MenuName>{menu.name.length > 7 ? `${menu.name.slice(0, 7)}...` : menu.name}</MenuName>
+                <MenuName>{menuName.length > 7 ? `${menuName.slice(0, 7)}...` : menuName}</MenuName>
                 <PriceInfo>
-                    <DiscountRate>{menu.discountRate}%</DiscountRate>
-                    <OriginalPrice>{menu.originalPrice.toLocaleString()}원</OriginalPrice>
+                    <DiscountRate>{discountRate}%</DiscountRate>
+                    <OriginalPrice>{originalPrice.toLocaleString()}원</OriginalPrice>
                 </PriceInfo>
-                <DiscountPrice>{menu.discountPrice.toLocaleString()}원</DiscountPrice>
+                <DiscountPrice>{discountPrice.toLocaleString()}원</DiscountPrice>
             </Detail>
         </Div>
         <ButtonContainer>
             {!hideButton && (
-                <ReservationButton onClick={handleReserve} disabled={menu.isReserved}>
-                    {menu.isReserved ? "예약마감" : "예약하기"}
+                <ReservationButton onClick={handleReserve} disabled={isReserved}>
+                    {isReserved ? "예약마감" : "예약하기"}
                 </ReservationButton>
             )}
         </ButtonContainer>
