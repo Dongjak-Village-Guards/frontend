@@ -7,7 +7,8 @@ const TopNavBar = ({
   title,
   showLike = false,
   storeId,
-  isLiked
+  isLiked,
+  onLikeToggle
 }) => (
   <FixedHeader>
     <TopSpacer />
@@ -16,7 +17,7 @@ const TopNavBar = ({
         <AiOutlineLeft className='back-button' size={16} />
         <NavTitle>{title}</NavTitle>
       </NavButtonArea>
-      {showLike && <LikeButton storeId={storeId} isLiked={isLiked} />}
+      {showLike && <LikeButton storeId={storeId} isLiked={isLiked} onLikeToggle={onLikeToggle} />}
     </NavBar>
   </FixedHeader>
 );

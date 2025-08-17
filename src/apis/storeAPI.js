@@ -353,4 +353,125 @@ export const deleteLike = async (likeId, accessToken) => {
     console.error('찜 삭제 실패:', error);
     throw error;
   }
+};
+
+// ===== ShopDetailPage 관련 API 함수들 =====
+
+/**
+ * 특정 Store의 Space 개수 및 id 조회
+ * @param {number} storeId - 가게 ID
+ * @returns {Promise<Object>} Space 개수와 ID 목록
+ */
+export const fetchStoreSpacesCount = async (storeId) => {
+  try {
+    console.log(`Store Space 개수 조회 시작... (Store ID: ${storeId})`);
+    
+    const response = await fetch(`${REST_API_BASE_URL}/v1/stores/${storeId}/`);
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('Store Space 개수 조회 성공:', data);
+    
+    return data;
+  } catch (error) {
+    console.error('Store Space 개수 조회 실패:', error);
+    throw error;
+  }
+};
+
+/**
+ * 특정 Store의 Menu 목록 조회 (Space 1개일 때)
+ * @param {number} storeId - 가게 ID
+ * @param {number} time - 시간 (0~23)
+ * @param {string} accessToken - 액세스 토큰
+ * @returns {Promise<Object>} 가게 정보와 메뉴 목록
+ */
+export const fetchStoreMenus = async (storeId, time, accessToken) => {
+  try {
+    console.log(`Store 메뉴 조회 시작... (Store ID: ${storeId}, Time: ${time})`);
+    
+    const response = await fetch(`${REST_API_BASE_URL}/v1/stores/${storeId}/menus/?time=${time}`, {
+      method: 'GET',
+      headers: buildHeaders(accessToken),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('Store 메뉴 조회 성공:', data);
+    
+    return data;
+  } catch (error) {
+    console.error('Store 메뉴 조회 실패:', error);
+    throw error;
+  }
+};
+
+/**
+ * 특정 Store의 Space 목록 조회 (Space 2개 이상일 때)
+ * @param {number} storeId - 가게 ID
+ * @param {number} time - 시간 (0~23)
+ * @param {string} accessToken - 액세스 토큰
+ * @returns {Promise<Object>} 가게 정보와 Space 목록
+ */
+export const fetchStoreSpacesList = async (storeId, time, accessToken) => {
+  try {
+    console.log(`Store Space 목록 조회 시작... (Store ID: ${storeId}, Time: ${time})`);
+    
+    const response = await fetch(`${REST_API_BASE_URL}/v1/stores/${storeId}/spaces/?time=${time}`, {
+      method: 'GET',
+      headers: buildHeaders(accessToken),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('Store Space 목록 조회 성공:', data);
+    
+    return data;
+  } catch (error) {
+    console.error('Store Space 목록 조회 실패:', error);
+    throw error;
+  }
+};
+
+/**
+ * 특정 Space의 메뉴 상세 조회
+ * @param {number} spaceId - Space ID
+ * @param {number} time - 시간 (0~23)
+ * @param {string} accessToken - 액세스 토큰
+ * @returns {Promise<Object>} Space 정보와 메뉴 목록
+ */
+export const fetchSpaceDetails = async (spaceId, time, accessToken) => {
+  try {
+    console.log(`Space 상세 조회 시작... (Space ID: ${spaceId}, Time: ${time})`);
+    
+    const response = await fetch(`${REST_API_BASE_URL}/v1/stores/spaces/${spaceId}/details/?time=${time}`, {
+      method: 'GET',
+      headers: buildHeaders(accessToken),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('Space 상세 조회 성공:', data);
+    
+    return data;
+  } catch (error) {
+    console.error('Space 상세 조회 실패:', error);
+    throw error;
+  }
 }; 

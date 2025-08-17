@@ -18,6 +18,12 @@ import ReservationButton from '../../common/ReservationButton';
 const DesignerCard = ({ designer, onSelect }) => {
     const { startReservation } = useStore();
 
+    // menus가 없을 경우 처리
+    if (!designer.menus || designer.menus.length === 0) {
+        console.warn('DesignerCard: menus 필드가 없거나 비어있습니다.', designer);
+        return null;
+    }
+
     // 최대 할인율 계산
     const maxDiscountRate = Math.max(...designer.menus.map(menu => menu.discountRate));
 

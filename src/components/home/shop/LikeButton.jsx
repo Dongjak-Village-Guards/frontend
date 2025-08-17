@@ -12,9 +12,10 @@ import useUserInfo from "../../../hooks/user/useUserInfo";
  * LikeButton 컴포넌트
  * @param {number} storeId - 가게 ID
  * @param {boolean} isLiked - 현재 좋아요 상태
+ * @param {Function} onLikeToggle - 좋아요 토글 콜백 함수 (선택사항)
  */
 
-const LikeButton = ({ storeId, isLiked }) => {
+const LikeButton = ({ storeId, isLiked, onLikeToggle }) => {
   // Zustand 스토어에서 좋아요 토글 함수와 로딩 상태 가져오기
   const { toggleLikeWithAPI, likeLoading, setCurrentPage } = useStore();
   const { accessToken } = useUserInfo();
@@ -37,8 +38,13 @@ const LikeButton = ({ storeId, isLiked }) => {
       return;
     }
 
-    // API 호출과 함께 찜 토글
-    await toggleLikeWithAPI(storeId);
+    // 커스텀 토글 함수가 있으면 사용, 없으면 기본 함수 사용
+    if (onLikeToggle) {
+      await onLikeToggle();
+    } else {
+      // API 호출과 함께 찜 토글
+      await toggleLikeWithAPI(storeId);
+    }
   };
 
   return (
