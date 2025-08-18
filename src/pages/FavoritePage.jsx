@@ -14,6 +14,7 @@ import Spinner from '../components/common/Spinner';
 import TimeToggle from '../components/filter/TimeToggle';
 import CategoryToggle from '../components/filter/CategoryToggle';
 import { getNearestHour } from '../components/filter/TimeFilter';
+import { useNavigate } from 'react-router-dom';
 
 const FavoritePage = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -59,9 +60,11 @@ const FavoritePage = () => {
   };
 
   // 가게 카드 클릭 시 상세 페이지로 이동
-  const handleCardClick = (storeId) => {
-    setCurrentPage(`shop-detail-${storeId}`);
-  };
+//  const handleCardClick = (storeId) => {
+//    setCurrentPage(`shop-detail-${storeId}`);
+//  };
+  const navigate = useNavigate();
+  const handleCardClick = (storeId) => navigate(`/shop/${storeId}`);
 
   return (
     <PageContainer>
