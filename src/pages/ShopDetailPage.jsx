@@ -346,7 +346,11 @@ const ShopDetailPage = () => {
                     {spaceCount === 1 || (spaceCount >= 2 && !selectedSpaceId) ? (
                         <ShopImage 
                             src={getImageSrc(storeData?.store_image_url || storeData?.space_image_url)} 
-                            alt={storeData?.store_name || storeData?.space_name} 
+                            alt={storeData?.store_name || storeData?.space_name}
+                            onError={(e) => {
+                                console.warn('가게 이미지 로드 실패, placeholder 이미지로 대체');
+                                e.target.src = placeholderImage;
+                            }}
                         />
                     ) : null}
                     

@@ -55,10 +55,21 @@ const MenuCard = ({ menu, onReserve = false }) => {
     // 예약 불가능 상태에 따른 카드 스타일 결정
     const isUnavailable = isReserved;
 
+    // 이미지 로드 실패 시 임시 이미지로 대체
+    const handleImageError = (e) => {
+        console.warn(`메뉴 이미지 로드 실패: ${menuName}, using fallback`);
+        e.target.src = menuImage;
+        e.target.alt = '임시 메뉴 이미지';
+    };
+
   return (
     <Card isUnavailable={isUnavailable}>
         <Div>
-            <MenuImage src={menuImage} alt='임시 메뉴 이미지' />
+            <MenuImage 
+                src={menu.menu_image_url || menuImage} 
+                alt={menuName}
+                onError={handleImageError}
+            />
             <Detail>
                 <MenuName isUnavailable={isUnavailable}>{menuName.length > 7 ? `${menuName.slice(0, 7)}...` : menuName}</MenuName>
                 <PriceInfo>
