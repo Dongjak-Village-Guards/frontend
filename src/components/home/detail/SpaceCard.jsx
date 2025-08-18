@@ -14,7 +14,7 @@ import ReservationButton from '../../common/ReservationButton';
  * @param {Function} onSelect - Space 선택 시 호출되는 함수
  */
 const SpaceCard = ({ space, onSelect }) => {
-  const { startReservation } = useStore();
+//  const { startReservation } = useStore();
 
   // 이미지 처리
   const getImageSrc = (imageUrl) => {
@@ -32,7 +32,14 @@ const SpaceCard = ({ space, onSelect }) => {
   return (
     <Card>
       <Div>
-        <SpaceImage src={getImageSrc(space.image)} alt={space.name} />
+        <SpaceImage 
+          src={getImageSrc(space.image)} 
+          alt={space.name}
+          onError={(e) => {
+            console.warn(`Space 이미지 로드 실패: ${space.id}, using fallback`);
+            e.target.src = placeholderImage;
+          }}
+        />
         <Detail>
           <SpaceName>{space.name}</SpaceName>
           <DiscountText>

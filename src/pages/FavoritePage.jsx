@@ -98,13 +98,15 @@ const FavoritePage = () => {
       </Header>
 
       {/* 필터 영역 */}
-      <FilterContainer
-        time={time}
-        filters={filters}
-        onTimeSelect={handleTimeSelect}
-        onCategorySelect={handleCategorySelect}
-        isLoading={isLoading}
-      />
+      <SubContainer>
+        <FilterContainer
+            time={time}
+            filters={filters}
+            onTimeSelect={handleTimeSelect}
+            onCategorySelect={handleCategorySelect}
+            isLoading={isLoading}
+        />
+      </SubContainer>
 
       {/* 찜한 가게 목록 */}
       <ContentContainer>
@@ -172,13 +174,11 @@ const HeaderTitle = styled.h1`
 const ContentContainer = styled.div`
   flex: 1;
   overflow-y: auto;
-  padding: 16px 0;
 `;
 
 const StoreList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 12px;
 `;
 
 const LoadingContainer = styled.div`
@@ -207,4 +207,13 @@ const EmptyText = styled.div`
 const EmptySubText = styled.div`
   font-size: 14px;
   color: #666;
+`;
+
+const SubContainer = styled.div`
+  position: -webkit-sticky;
+  position: sticky;
+  top: 84px;
+  z-index: 15;
+  background-color: #fff;
+//  padding: clamp(8px, 2vh, 16px) 0;
 `;

@@ -246,6 +246,7 @@ export default ReservationPage;
 // ===== Styled Components ===== //
 
 const ReservationContainer = styled.div`
+  margin-top: 1.5rem;
   padding: 0px 16px;
   background: #fff;
   display: flex;
@@ -261,7 +262,8 @@ const SectionTitle = styled.h2`
   font-size: 16px;
   font-weight: 700;
   color: #000;
-  text-align: center;
+//  text-align: center;
+  padding-left: 20px;
   margin-bottom: 16px;
 `;
 
