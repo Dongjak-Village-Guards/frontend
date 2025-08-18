@@ -102,6 +102,10 @@ const SchedulePage = () => {
       const reservations = await fetchUserReservations(currentToken);
       const transformedData = transformReservationData(reservations);
       setAppointments(transformedData);
+      
+      // 할인 금액 계산 및 전역 상태에 저장
+      const { calculateAndSetTotalDiscount } = useStore.getState();
+      calculateAndSetTotalDiscount(reservations);
     } catch (error) {
       console.error('예약 목록 조회 실패:', error);
       // 에러 발생 시 빈 배열로 설정
@@ -186,7 +190,7 @@ const SchedulePage = () => {
       // 성공 시 바텀시트 닫기
       handleCancelConfirmClose();
       
-      // 예약 목록 새로고침
+      // 예약 목록 새로고침 (할인 금액도 함께 업데이트됨)
       await fetchReservations();
       
     } catch (error) {

@@ -209,33 +209,35 @@ export default function HomePage() {
           </BannerTitle>
         </BannerTextContainer>
       </BannerWrapper>
+      
+      <FilterAndSortToggleContainer>
+        {/* 필터/정렬 영역 (배너 아래에 위치, 스크롤 시 주소바 바로 아래에 고정) */}
+        <FilterContainer
+            time={time}
+            filters={filters}
+            onTimeSelect={handleTimeSelect}
+            onCategorySelect={handleCategorySelect}
+            isLoading={isLoading}
+        />
 
-      {/* 필터/정렬 영역 (배너 아래에 위치, 스크롤 시 주소바 바로 아래에 고정) */}
-      <FilterContainer
-        time={time}
-        filters={filters}
-        onTimeSelect={handleTimeSelect}
-        onCategorySelect={handleCategorySelect}
-        isLoading={isLoading}
-      />
-
-      {/* 정렬 토글 */}
-      <SortToggleContainer>
-        <SortToggle onClick={handleToggleSort}>
-          <span>{sortOption === 'discount' ? '할인율순' : '가격순'}</span>
-          <AiFillCaretDown size={16} color="#000" />
-        </SortToggle>
-        {isSortOpen && !isLoading && (
-          <SortDropdown>
-            <SortOption onClick={() => !isLoading && handleSortChange('discount')}>
-              할인율순
-            </SortOption>
-            <SortOption onClick={() => !isLoading && handleSortChange('price')}>
-              가격순
-            </SortOption>
-          </SortDropdown>
-        )}
-      </SortToggleContainer>
+        {/* 정렬 토글 */}
+        <SortToggleContainer>
+            <SortToggle onClick={handleToggleSort}>
+            <span>{sortOption === 'discount' ? '할인율순' : '가격순'}</span>
+            <AiFillCaretDown size={16} color="#000" />
+            </SortToggle>
+            {isSortOpen && !isLoading && (
+            <SortDropdown>
+                <SortOption onClick={() => !isLoading && handleSortChange('discount')}>
+                할인율순
+                </SortOption>
+                <SortOption onClick={() => !isLoading && handleSortChange('price')}>
+                가격순
+                </SortOption>
+            </SortDropdown>
+            )}
+        </SortToggleContainer>
+      </FilterAndSortToggleContainer>
 
       {/* 매장 리스트 */}
       <StoreList>
@@ -475,4 +477,16 @@ const EmptyText = styled.div`
 const EmptySubText = styled.div`
   font-size: 14px;
   color: #666;
+`;
+
+const FilterAndSortToggleContainer = styled.div`
+  display: flex; 
+  justify-content: space-between;
+  align-items: center;
+  position: -webkit-sticky;
+  position: sticky;
+  top: clamp(40px, 10vh, 5.5rem); // 눈바디 수정
+  z-index: 15;
+  background-color: #fff;
+
 `;

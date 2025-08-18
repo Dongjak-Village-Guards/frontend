@@ -27,7 +27,8 @@ export default TopNavBar;
 // ===== Styled Components ===== //
 
 const FixedHeader = styled.div`
-  position: absolute;
+  position: -webkit-sticky;
+  position: sticky;
   top: 0;
   left: 0;
   right: 0;
