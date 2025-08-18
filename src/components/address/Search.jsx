@@ -40,13 +40,18 @@ const Search = () => {
 
   /** 주소 상태 저장&관리를 위한 handle함수 추가
    * 초기 주소검색 페이지에서 받은 주소 메인페이지 상단에 표시
-   * 추후 백DB 생기면 관리 
+   * 백엔드에도 주소 정보 저장
    */
-  const handleAddressSelect = (address) => {
-    // 주소 정보 저장
-    setUserAddress(address);
-    // 메인 페이지로 이동
-    setCurrentPage("home");
+  const handleAddressSelect = async (address) => {
+    try {
+      // 주소 정보 저장 (로컬 + 백엔드)
+      await setUserAddress(address);
+      // 메인 페이지로 이동
+      setCurrentPage("home");
+    } catch (error) {
+      console.error('주소 설정 실패:', error);
+      alert('주소 설정에 실패했습니다. 다시 시도해주세요.');
+    }
   };
 
   return (

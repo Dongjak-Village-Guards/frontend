@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 // 현재 시간의 다음 정각을 계산하는 함수
-const getNearestHour = (currentTime) => {
+export const getNearestHour = (currentTime) => {
   const [currentHour, currentMinute] = String(currentTime).split(':').map(Number);
   
   // 현재가 정각이면 다음 시간, 아니면 다음 정각
@@ -11,7 +11,7 @@ const getNearestHour = (currentTime) => {
   return `${String(nextHour).padStart(2, '0')}:00`;
 };
 
-// 현재 시간 이후부터 12시간, 1시간 단위로 생성
+// 현재 시간부터 12시간, 1시간 단위로 생성
 const generateTimeOptions = (currentTime) => {
   const [currentHour, currentMinute] = String(currentTime).split(':').map(Number);
   
@@ -29,18 +29,25 @@ const generateTimeOptions = (currentTime) => {
 
 const TimeFilter = ({ currentTime, selectedTime, onTimeSelect, onClose }) => {
   const handleTimeClick = (time) => {
-    console.log('시간 선택됨:', time);
     onTimeSelect(time);
     onClose();
   };
 
+  // 선택된 시간을 표시 형식으로 변환 (25~36 → 01:00~12:00)
+  const getDisplayTime = (time) => {
+    if (!time) return '';
+    const [hour, minute] = time.split(':').map(Number);
+    const displayHour = hour % 24; // 25~36을 1~12로 변환
+    return `${String(displayHour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+  };
+
   return (
     <TimeList>
-      {generateTimeOptions(getNearestHour(currentTime)).map((time) => (
+      {generateTimeOptions(currentTime).map((time) => (
         <TimeItem
           key={time}
           onClick={() => handleTimeClick(time)}
-          $selected={selectedTime === time}
+          $selected={getDisplayTime(selectedTime) === time}
           aria-label={`시간 ${time} 선택`}
         >
           {time}

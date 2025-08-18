@@ -1,9 +1,43 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import useUserInfo from '../hooks/user/useUserInfo';
+import useStore from '../hooks/store/useStore';
+import { fetchUserReservations } from '../apis/reservationAPI';
 
 const MyPage = () => {
-  const { authUser, logoutUser } = useUserInfo();
+  const { authUser, logoutUser, accessToken, isTokenValid, refreshTokens } = useUserInfo();
+  const { totalDiscountAmount, calculateAndSetTotalDiscount, isDiscountDataLoaded } = useStore();
+  const [localLoading, setLocalLoading] = useState(false);
+
+  // 할인 데이터 조건부 로딩
+  useEffect(() => {
+    // 1. 이미 데이터가 있으면 사용
+    if (isDiscountDataLoaded) return;
+    
+    // 2. 로그인된 상태에서만 데이터 가져오기
+    if (authUser && !localLoading) {
+      const loadDiscountData = async () => {
+        setLocalLoading(true);
+        try {
+          if (!isTokenValid()) {
+            const refreshSuccess = await refreshTokens();
+            if (!refreshSuccess) return;
+          }
+          
+          const { accessToken: currentToken } = useUserInfo.getState();
+          const reservations = await fetchUserReservations(currentToken);
+          
+          calculateAndSetTotalDiscount(reservations);
+        } catch (error) {
+          console.error('할인 데이터 로딩 실패:', error);
+        } finally {
+          setLocalLoading(false);
+        }
+      };
+      
+      loadDiscountData();
+    }
+  }, [authUser, isDiscountDataLoaded, localLoading, calculateAndSetTotalDiscount, isTokenValid, refreshTokens]);
 
   const handleLogout = () => {
     logoutUser();
@@ -24,7 +58,13 @@ const MyPage = () => {
         <UserDetails>
           <UserName>{authUser?.displayName || 'randomuser_99999'}</UserName>
           <UserEmail>{authUser?.email || 'alswo6102@gmail.com'}</UserEmail>
-          <UserSavings>지금까지 <SavingsAmount>190,000 원</SavingsAmount> 아꼈어요!</UserSavings>
+          <UserSavings>
+            {localLoading ? (
+              <span>할인 정보를 불러오는 중...</span>
+            ) : (
+              <>지금까지 <SavingsAmount>{totalDiscountAmount.toLocaleString()} 원</SavingsAmount> 아꼈어요!</>
+            )}
+          </UserSavings>
         </UserDetails>
       </UserInfoSection>
 
