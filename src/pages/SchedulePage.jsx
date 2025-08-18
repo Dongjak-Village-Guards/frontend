@@ -295,27 +295,13 @@ const SchedulePage = () => {
       >
         <Divider />
         <ReservationCompleteContent>
-          <CompleteIcon>✅</CompleteIcon>
-          <CompleteTitle>예약이 성공적으로 완료되었습니다</CompleteTitle>
           {reservationData && (
             <ReservationInfo>
-              <InfoRow>
-                <InfoLabel>매장명:</InfoLabel>
-                <InfoValue>{reservationData.store_name}</InfoValue>
-              </InfoRow>
-              <InfoRow>
-                <InfoLabel>예약일:</InfoLabel>
-                <InfoValue>{reservationData.reservation_date}</InfoValue>
-              </InfoRow>
-              <InfoRow>
-                <InfoLabel>예약시간:</InfoLabel>
-                <InfoValue>{reservationData.reservation_time}</InfoValue>
-              </InfoRow>
+                <InfoLabel><InfoSpan>매장</InfoSpan> <InfoSpan>예약일시</InfoSpan></InfoLabel>
+                
+                <InfoLabel><InfoSpan>{reservationData.store_name}</InfoSpan> <InfoSpan>{reservationData.reservation_date} {reservationData.reservation_time}</InfoSpan> </InfoLabel> 
             </ReservationInfo>
           )}
-          <ConfirmButton onClick={handleReservationCompleteClose}>
-            확인
-          </ConfirmButton>
         </ReservationCompleteContent>
       </BottomSheet>
     </PageContainer>
@@ -489,61 +475,32 @@ const Divider = styled.div`
 `;
 
 const ReservationCompleteContent = styled.div`
-  padding: 24px 16px;
+//  padding: 24px 16px;
   text-align: center;
-`;
-
-const CompleteIcon = styled.div`
-  font-size: 48px;
-  margin-bottom: 16px;
-`;
-
-const CompleteTitle = styled.div`
-  font-size: 18px;
-  font-weight: 600;
-  color: #000;
-  margin-bottom: 24px;
 `;
 
 const ReservationInfo = styled.div`
   background: #f8f9fa;
   border-radius: 8px;
-  padding: 16px;
   margin-bottom: 24px;
   text-align: left;
-`;
-
-const InfoRow = styled.div`
+  margin-top: 0.7rem;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-  
-  &:last-child {
-    margin-bottom: 0;
-  }
 `;
 
-const InfoLabel = styled.span`
-  font-size: 14px;
+const InfoLabel = styled.div`
+  display: flex;
+  flex-direction: column;
+  font-size: 16px;
   color: #666;
   font-weight: 500;
+  padding:  0;
 `;
 
-const InfoValue = styled.span`
-  font-size: 14px;
-  color: #000;
-  font-weight: 600;
-`;
-
-const ConfirmButton = styled.button`
-  background: #DA2538;
-  color: #fff;
-  border: none;
-  width: 100%;
-  height: 48px;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
+const InfoSpan = styled.span`
+  display: flex;
+  flex-direction: column;
+  padding-left: 1.5rem;
+  margin: 0.7rem 0;
+  font-weight: 700;
 `;

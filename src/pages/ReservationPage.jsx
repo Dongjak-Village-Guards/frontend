@@ -26,8 +26,6 @@ const ReservationPage = ({ shop }) => {
     cancelReservation, 
     togglePiAgreement, 
     showPiAgreement, 
-    isAgreed, 
-    setAgreed,
     setCurrentPage
   } = useStore();
 
@@ -38,6 +36,7 @@ const ReservationPage = ({ shop }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [reserving, setReserving] = useState(false);
+  const [isAgreed, setIsAgreed] = useState(false);
 
   // 메뉴 상세 데이터 로드
   useEffect(() => {
@@ -45,6 +44,12 @@ const ReservationPage = ({ shop }) => {
       try {
         setLoading(true);
         setError(null);
+        
+        console.log('=== ReservationPage 디버깅 ===');
+        console.log('selectedMenu:', selectedMenu);
+        console.log('selectedMenu.item_id:', selectedMenu?.item_id);
+        console.log('selectedMenu 구조:', JSON.stringify(selectedMenu, null, 2));
+        console.log('accessToken 존재:', !!accessToken);
         
         if (!selectedMenu || !selectedMenu.item_id) {
           throw new Error('메뉴 정보가 없습니다.');
@@ -79,17 +84,18 @@ const ReservationPage = ({ shop }) => {
     
     try {
       setReserving(true);
+      setError(null);
       
       console.log('예약 생성 시작', { itemId: menuData.item_id });
       
       const reservationResult = await createReservation(menuData.item_id, accessToken);
       console.log('예약 생성 성공:', reservationResult);
       
-              // 예약 완료 데이터를 localStorage에 저장 (SchedulePage에서 바텀시트로 표시)
-        localStorage.setItem('completedReservation', JSON.stringify(reservationResult));
+      // 예약 완료 데이터를 localStorage에 저장 (SchedulePage에서 바텀시트로 표시)
+      localStorage.setItem('completedReservation', JSON.stringify(reservationResult));
       
       // 예약 상태 초기화
-    //  cancelReservation();
+      //  cancelReservation();
       
       // 예약 완료 후 SchedulePage로 이동 (바텀시트로 알림)
       setCurrentPage('history');
@@ -100,14 +106,22 @@ const ReservationPage = ({ shop }) => {
     } catch (error) {
       console.error('예약 생성 실패:', error);
       
-      // 에러 처리
-      if (error.status === 401) {
-        setCurrentPage('login');
-      } else if (error.status === 404) {
-        alert('해당 메뉴를 찾을 수 없습니다.');
-      } else {
-        alert('예약 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+      // 서버 에러 메시지 추출
+      let errorMessage = '예약에 실패했습니다.';
+      
+      if (error.message && error.message.includes('400')) {
+        // 400 에러의 경우 서버 응답에서 에러 메시지 추출
+        try {
+          // 에러 객체에서 서버 응답 메시지 확인
+          if (error.serverResponse) {
+            errorMessage = error.serverResponse.error || errorMessage;
+          }
+        } catch (parseError) {
+          console.error('에러 메시지 파싱 실패:', parseError);
+        }
       }
+      
+      setError(errorMessage);
     } finally {
       setReserving(false);
     }
@@ -115,7 +129,7 @@ const ReservationPage = ({ shop }) => {
 
   // 체크박스 변경 핸들러
   const handleCheckboxChange = (e) => {
-    setAgreed(e.target.checked);
+    setIsAgreed(e.target.checked);
   };
 
   // 화살표 버튼 클릭 핸들러
@@ -202,6 +216,11 @@ const ReservationPage = ({ shop }) => {
             </ArrowIcon>
           </CheckboxContainer>
           <Line />
+          {error && (
+            <ErrorContainer>
+              <ErrorText>{error}</ErrorText>
+            </ErrorContainer>
+          )}
           <ReserveButton 
             disabled={!isAgreed || reserving} 
             onClick={handleConfirm}
