@@ -22,6 +22,12 @@ import ReservationButton from '../../common/ReservationButton';
 const MenuCard = ({ menu, onReserve = false }) => {
     const { startReservation, selectedDesigner, isReserving } = useStore();
 
+    // menu가 없거나 필수 필드가 없을 경우 처리
+    if (!menu) {
+        console.warn('MenuCard: menu prop이 없습니다.');
+        return null;
+    }
+
     const handleReserve = (e) => {
         e.stopPropagation();
         startReservation(menu, selectedDesigner);
@@ -31,23 +37,52 @@ const MenuCard = ({ menu, onReserve = false }) => {
     // 예약 페이지에서 메뉴 카드 속 '예약하기' 버튼 숨김
     const hideButton = isReserving;
 
+    // API 응답 구조에 맞게 필드 매핑
+    const menuName = menu.menu_name || menu.name || '메뉴명 없음';
+    const discountRate = menu.discount_rate || menu.discountRate || 0;
+    const originalPrice = menu.menu_price || menu.originalPrice || 0;
+    const discountPrice = menu.discounted_price || menu.discountPrice || 0;
+    const isReserved = !menu.is_available || menu.isReserved || false;
+
+    // 예약 불가능 상태에 따른 버튼 텍스트 결정
+    const getButtonText = () => {
+        if (isReserved) {
+            return "예약 마감";
+        }
+        return "예약하기";
+    };
+
+    // 예약 불가능 상태에 따른 카드 스타일 결정
+    const isUnavailable = isReserved;
+
+    // 이미지 로드 실패 시 임시 이미지로 대체
+    const handleImageError = (e) => {
+        console.warn(`메뉴 이미지 로드 실패: ${menuName}, using fallback`);
+        e.target.src = menuImage;
+        e.target.alt = '임시 메뉴 이미지';
+    };
+
   return (
-    <Card>
+    <Card isUnavailable={isUnavailable}>
         <Div>
-            <MenuImage src={menuImage} alt='임시 메뉴 이미지' />
+            <MenuImage 
+                src={menu.menu_image_url || menuImage} 
+                alt={menuName}
+                onError={handleImageError}
+            />
             <Detail>
-                <MenuName>{menu.name.length > 7 ? `${menu.name.slice(0, 7)}...` : menu.name}</MenuName>
+                <MenuName isUnavailable={isUnavailable}>{menuName.length > 7 ? `${menuName.slice(0, 7)}...` : menuName}</MenuName>
                 <PriceInfo>
-                    <DiscountRate>{menu.discountRate}%</DiscountRate>
-                    <OriginalPrice>{menu.originalPrice.toLocaleString()}원</OriginalPrice>
+                    <DiscountRate isUnavailable={isUnavailable}>{discountRate}%</DiscountRate>
+                    <OriginalPrice isUnavailable={isUnavailable}>{originalPrice.toLocaleString()}원</OriginalPrice>
                 </PriceInfo>
-                <DiscountPrice>{menu.discountPrice.toLocaleString()}원</DiscountPrice>
+                <DiscountPrice isUnavailable={isUnavailable}>{discountPrice.toLocaleString()}원</DiscountPrice>
             </Detail>
         </Div>
         <ButtonContainer>
             {!hideButton && (
-                <ReservationButton onClick={handleReserve} disabled={menu.isReserved}>
-                    {menu.isReserved ? "예약마감" : "예약하기"}
+                <ReservationButton onClick={handleReserve} disabled={isReserved}>
+                    {getButtonText()}
                 </ReservationButton>
             )}
         </ButtonContainer>
@@ -70,6 +105,8 @@ const Card = styled.div`
     align-items: center;
     gap: 8px;
     margin-bottom: 12px;
+    background-color: ${props => props.isUnavailable ? '#FFEBEB' : '#fff'}; /* 예약 불가능 상태일 때 배경색 변경 */
+    border-color: ${props => props.isUnavailable ? '#FF0000' : '#CCC'}; /* 예약 불가능 상태일 때 테두리 색 변경 */
 `;
 
 const Div = styled.div`
@@ -98,7 +135,7 @@ const MenuName = styled.h3`
     font-size: 14px;
     font-weight: 600;
     line-height: 14px;
-    color: #000;
+    color: ${props => props.isUnavailable ? '#FF0000' : '#000'}; /* 예약 불가능 상태일 때 색 변경 */
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -116,22 +153,22 @@ const PriceInfo = styled.div`
 
 /* 할인율 표시 */
 const DiscountRate = styled.span`
-    color: #F00;
+    color: ${props => props.isUnavailable ? '#FF0000' : '#F00'}; /* 예약 불가능 상태일 때 색 변경 */
     font-size: 12px;
 `;
 
 /* 원래 가격 (취소선 처리) */
 const OriginalPrice = styled.span`
     font-size: 12px;
-    color: #999;
-    text-decoration: line-through;
+    color: ${props => props.isUnavailable ? '#FF0000' : '#999'}; /* 예약 불가능 상태일 때 색 변경 */
+    text-decoration: ${props => props.isUnavailable ? 'line-through' : 'line-through'}; /* 예약 불가능 상태일 때 취소선 제거 */
 `;
 
 /* 할인 가격 */
 const DiscountPrice = styled.span`
     font-size: 14px;
     font-weight: 600;
-    color: #000;
+    color: ${props => props.isUnavailable ? '#FF0000' : '#000'}; /* 예약 불가능 상태일 때 색 변경 */
     line-height: 14px;
 `;
 

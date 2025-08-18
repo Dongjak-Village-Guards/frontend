@@ -10,6 +10,7 @@ import saladImage from "../../../assets/images/salad.png";
 import steakImage from "../../../assets/images/steak.png";
 import koreanImage from "../../../assets/images/korean.png";
 import hairImage from "../../../assets/images/hair.png";
+import placeholderImage from "../../../assets/images/placeholder.svg";
 
 /**
  * StoreCard 컴포넌트
@@ -29,7 +30,7 @@ const StoreCard = ({ store }) => {
     7: hairImage,
   };
 
-  const imageSrc = imageMap[store.id] || '/assets/images/placeholder.png';
+  const imageSrc = imageMap[store.id] || placeholderImage;
 
   return (
     <CardImageContainer>
@@ -39,7 +40,7 @@ const StoreCard = ({ store }) => {
           alt={`${store.name} 메인 이미지`}
           onError={(e) => {
             console.warn(`이미지 로드 실패: ${store.id}, using fallback`);
-            e.target.src = '../../assets/images/placeholder.png';
+            e.target.src = placeholderImage;
           }}
         />
       </ImageGroup>

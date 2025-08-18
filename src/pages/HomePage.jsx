@@ -10,24 +10,19 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { FiChevronDown } from "react-icons/fi";
 import { AiFillCaretDown } from "react-icons/ai";
-import BottomSheet from "../components/common/BottomSheet";
-import TimeToggle from "../components/filter/TimeToggle";
-import CategoryToggle from "../components/filter/CategoryToggle";
-import CategoryFilter from "../components/filter/CategoryFilter";
-import TimeFilter from "../components/filter/TimeFilter";
+import FilterContainer from "../components/filter/FilterContainer";
 import Spinner from "../components/common/Spinner";
 import useStore from "../hooks/store/useStore";
 import useUserInfo from "../hooks/user/useUserInfo";
 import Card from "../components/home/shop/Card";
 import bannerImage from "../assets/images/bannerImage.png";
 import { useNavigate } from "react-router-dom";
+import { CATEGORY_OPTIONS } from "../components/filter/CategoryFilter";
 
 export default function HomePage() {
   const navigate = useNavigate();
   /** @state 토글 상태 */
   const [isSortOpen, setIsSortOpen] = useState(false);
-  const [isTimeSheetOpen, setIsTimeSheetOpen] = useState(false);
-  const [isCategorySheetOpen, setIsCategorySheetOpen] = useState(false);
 
   /** @state 로딩 상태 */
   const [isLoading, setIsLoading] = useState(false);
@@ -47,10 +42,15 @@ export default function HomePage() {
     setFilters,
     setCurrentPage,
     setFromHomePage,
+    fetchStores, // Zustand 스토어 액션 (API 함수 아님)
+    fetchUserLikes,
+    loading,
+    time,
+    setTime,
   } = useStore();
 
   /** 사용자 주소 */
-  const { userAddress } = useUserInfo();
+  const { userAddress, accessToken } = useUserInfo();
 
   /** 초기 로딩 처리 */
   useEffect(() => {
@@ -59,12 +59,25 @@ export default function HomePage() {
       // 초기 시간 설정 (새로고침 시에만 실행)
       console.log('updateCurrentTime 호출');
       updateCurrentTime();
+      
+      // 백엔드 API에서 가게 목록 가져오기 (현재 설정된 필터들 사용)
+      try {
+        await fetchStores(time, filters.categories.length > 0 ? filters.categories[0] : null);
+        
+        // 로그인된 사용자인 경우에만 찜 목록 가져오기
+        if (accessToken) {
+          await fetchUserLikes();
+        }
+      } catch (error) {
+        console.error('초기 가게 목록 로딩 실패:', error);
+      }
+      
       // 0.1초 지연으로 렌더링 시간 시뮬레이션
       await new Promise(res => setTimeout(res, 100));
       setLoading(false);
     };
     initializePage();
-  }, [updateCurrentTime]);
+  }, [updateCurrentTime, fetchStores, fetchUserLikes, time, filters.categories, accessToken]);
 
   /**
    * 정렬 변경
@@ -93,17 +106,52 @@ export default function HomePage() {
   };
 
   /**
-   * 업종 변경
-   * @param {Array} categories - 선택된 업종 배열
+   * 시간 선택 핸들러
+   * @param {string} selectedTime - 선택된 시간
    */
-  const handleCategoryChange = (categories) => {
-    setFilters({ categories });
-    // 업종 필터 변경 시 로딩 처리
+  const handleTimeSelect = async (selectedTime) => {
+    console.log('시간 선택됨:', selectedTime);
+    setTime(selectedTime);
+    
+    try {
+      // 현재 설정된 카테고리 필터도 함께 사용
+      await fetchStores(selectedTime, filters.categories.length > 0 ? filters.categories[0] : null);
+    } catch (error) {
+      console.error('시간 필터 적용 실패:', error);
+    }
+    
+    console.log('setTimeout 설정 - 0.3초 후 로딩 시작');
+    // 0.3초 후 바텀시트 닫힘, 2초 로딩 (테스트용)
+    setTimeout(async () => {
+      console.log('setTimeout 콜백 실행 - 로딩 시작');
+      setLoading(true);
+      console.log('0.3초 로딩 시작');
+      await new Promise(resolve => setTimeout(resolve, 300));
+      console.log('0.3초 로딩 완료');
+      setLoading(false);
+      console.log('시간필터 로딩 완료');
+    }, 300);
+  };
+
+  /**
+   * 업종 선택 핸들러
+   * @param {string|null} category - 선택된 업종 (단일 값)
+   */
+  const handleCategorySelect = async (category) => {
+    console.log('handleCategorySelect 호출됨, category:', category);
+    setFilters({ categories: category ? [category] : [] });
+    
+    // 카테고리 필터 적용 시 API 재호출 (현재 설정된 시간 필터도 함께 사용)
+    try {
+      await fetchStores(time, category);
+    } catch (error) {
+      console.error('카테고리 필터 적용 실패:', error);
+    }
+    
+    // 로딩 처리 (시간 필터와 동일한 방식)
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      // 업종이 모두 해제되었을 때(선택안함 클릭 시) 바텀시트 닫기
-      if (!categories.length) setIsCategorySheetOpen(false);
     }, 300);
   };
 
@@ -122,26 +170,18 @@ export default function HomePage() {
     return displayAddress.length > 8 ? `${displayAddress.slice(0, 8)}...` : displayAddress;
   };
 
-  /** 다음 정각 계산 */
-  const getNearestHour = (currentTime) => {
-    const [currentHour, currentMinute] = String(currentTime).split(':').map(Number);
-    // 현재가 정각이면 다음 시간, 아니면 다음 정각
-    const nextHour = currentMinute === 0 ? (currentHour + 1) % 24 : (currentHour + 1) % 24;
-    return `${String(nextHour).padStart(2, '0')}:00`;
-  };
-
   /** 업종 라벨 */
   const getCategoryLabel = () => {
+    console.log('getCategoryLabel 호출됨, filters.categories:', filters.categories);
     if (filters.categories.length === 0) return '업종';
-    if (filters.categories.length === 1) {
-      const categoryMap = { hair: '미용실', nail: '네일샵', pilates: '필라테스' };
-      return categoryMap[filters.categories[0]] || '업종';
-    }
-    // 2개 이상 선택 시: "첫번째 업종 외 N종" 형태
-    const categoryMap = { hair: '미용실', nail: '네일샵', pilates: '필라테스' };
-    const firstCategory = categoryMap[filters.categories[0]] || '업종';
-    const remainingCount = filters.categories.length - 1;
-    return `${firstCategory} 외 ${remainingCount}종`;
+    
+    // CATEGORY_OPTIONS에서 해당 카테고리의 label 찾기
+    const selectedCategory = filters.categories[0];
+    const categoryOption = CATEGORY_OPTIONS.find(option => option.value === selectedCategory);
+    const label = categoryOption ? categoryOption.label : '업종';
+    
+    console.log('선택된 카테고리 라벨:', label);
+    return label;
   };
   // 정렬된 가게 목록 가져오기
   const sortedStores = getSortedStores();
@@ -169,118 +209,60 @@ export default function HomePage() {
           </BannerTitle>
         </BannerTextContainer>
       </BannerWrapper>
-
-      {/* 필터/정렬 영역 (배너 아래에 위치, 스크롤 시 주소바 바로 아래에 고정) */}
-      <FilterRow>
-        <TimeToggle
-          label={filters.availableAt || getNearestHour(currentTime)}
-          active={!!filters.availableAt}
-          onClick={() => !isLoading && setIsTimeSheetOpen(true)}
+      
+      <FilterAndSortToggleContainer>
+        {/* 필터/정렬 영역 (배너 아래에 위치, 스크롤 시 주소바 바로 아래에 고정) */}
+        <FilterContainer
+            time={time}
+            filters={filters}
+            onTimeSelect={handleTimeSelect}
+            onCategorySelect={handleCategorySelect}
+            isLoading={isLoading}
         />
 
-        <CategoryToggle
-          label={getCategoryLabel()}
-          active={filters.categories.length > 0}
-          onClick={() => !isLoading && setIsCategorySheetOpen(true)} 
-        />
-
+        {/* 정렬 토글 */}
         <SortToggleContainer>
-          <SortToggle onClick={handleToggleSort}>
+            <SortToggle onClick={handleToggleSort}>
             <span>{sortOption === 'discount' ? '할인율순' : '가격순'}</span>
             <AiFillCaretDown size={16} color="#000" />
-          </SortToggle>
-          {isSortOpen && !isLoading && (
+            </SortToggle>
+            {isSortOpen && !isLoading && (
             <SortDropdown>
-              <SortOption onClick={() => !isLoading && handleSortChange('discount')}>
+                <SortOption onClick={() => !isLoading && handleSortChange('discount')}>
                 할인율순
-              </SortOption>
-              <SortOption onClick={() => !isLoading && handleSortChange('price')}>
+                </SortOption>
+                <SortOption onClick={() => !isLoading && handleSortChange('price')}>
                 가격순
-              </SortOption>
+                </SortOption>
             </SortDropdown>
-          )}
+            )}
         </SortToggleContainer>
-      </FilterRow>
-
-      {/* 예약 시간 선택 바텀시트 */}
-      <BottomSheet
-        open={isTimeSheetOpen}
-        title="예약 시간"
-        onClose={() => {
-          console.log('HomePage에서 onClose 호출됨');
-          setIsTimeSheetOpen(false);
-        }}
-      >
-        <TimeFilter
-          currentTime={currentTime}
-          selectedTime={filters.availableAt}
-          onTimeSelect={(time) => {
-            console.log('시간 선택됨:', time);
-            // 시간 선택 시 로딩 처리
-            setFilters({ availableAt: time });
-            
-            console.log('setTimeout 설정 - 0.3초 후 로딩 시작');
-            // 0.3초 후 바텀시트 닫힘, 2초 로딩 (테스트용)
-            setTimeout(async () => {
-              console.log('setTimeout 콜백 실행 - 로딩 시작');
-              setLoading(true);
-              console.log('0.3초 로딩 시작');
-              await new Promise(resolve => setTimeout(resolve, 300));
-              console.log('0.3초 로딩 완료');
-              setLoading(false);
-              console.log('시간필터 로딩 완료');
-            }, 300);
-          }}
-          onClose={() => setIsTimeSheetOpen(false)}
-        />
-      </BottomSheet>
-
-      {/* 업종 선택 바텀시트 */}
-      <BottomSheet
-        open={isCategorySheetOpen}
-        title="업종"
-        onClose={() => {
-          console.log('업종 바텀시트 닫기');
-          // 업종 바텀시트 닫기 시 로딩 처리
-          setLoading(true);
-          setTimeout(async () => {
-            console.log('업종 바텀시트 로딩 시작');
-            await new Promise(resolve => setTimeout(resolve, 300));
-            console.log('업종 바텀시트 로딩 완료');
-            setLoading(false);
-        }, 300);
-        setIsCategorySheetOpen(false);
-        }}
-      >
-        <CategoryFilter
-          selectedCategories={filters.categories}
-          onCategoryChange={handleCategoryChange}
-          onClose={() => setIsCategorySheetOpen(false)}
-        />
-      </BottomSheet>
+      </FilterAndSortToggleContainer>
 
       {/* 매장 리스트 */}
       <StoreList>
-        {isLoading ? (
+        {isLoading || loading ? (
           <LoadingContainer>
-                <Spinner />
+            <Spinner />
           </LoadingContainer>
+        ) : sortedStores.length > 0 ? (
+          sortedStores.map(store => (
+            <Card 
+              key={store.id} 
+              store={store} 
+              onClick={() => handleCardClick(store.id)}
+            />
+          ))
         ) : (
-          <>
-            {sortedStores.map(store => (
-              <Card
-            key={store.id}
-            store={store}
-            onClick={() => handleCardClick(store.id)}
-          />
-            ))}
-          </>
+          <EmptyState>
+            <EmptyText>해당 조건의 가게가 없어요</EmptyText>
+            <EmptySubText>다른 조건으로 검색해보세요!</EmptySubText>
+          </EmptyState>
         )}
       </StoreList>
-
     </HomeContainer>
   );
-};
+}
 
 // ===== Styled Components ===== //
 
@@ -317,6 +299,7 @@ const AddressText = styled.div`
   overflow: hidden;
   color: #000;
   text-overflow: ellipsis;
+  white-space: nowrap;
   font-style: normal;
   font-weight: 700;
   line-height: normal;
@@ -396,27 +379,6 @@ const BannerSubTitle = styled.div`
   align-self: flex-end;
 `;
 
-/* 필터 라인 영역
-(배너 아래에 위치, 스크롤 시 주소바 바로 아래에 Layout 내부에서 고정됨.) */
-const FilterRow = styled.div`
-  position: -webkit-sticky;
-  position: sticky;
-  top: 90px;
-  z-index: 15;
-  //  margin: 0px 0px clamp(8px, 2vh, 16px) 0px; // 필터바 padding 변경요구 반영
-  padding: clamp(8px, 2vh, 16px) 0; // 약간의 편법
-  display: flex;
-  align-items: center;
-  gap: clamp(6px, 2vw, 10px);
-  background: #fff;
-  transition: all 0.3s ease;
-  width: 100%;
-  
-  /* sticky 포지션이 확실히 작동하도록 추가 설정 */
-  transform: translateZ(0);
-  will-change: transform;
-`;
-
 /* 정렬 토글 컨테이너(토글 버튼 & 드롭다운) */
 const SortToggleContainer = styled.div`
   margin-left: auto;
@@ -491,4 +453,40 @@ const LoadingContainer = styled.div`
   justify-content: center;
   align-items: center;
   min-height: 200px; /* 최소 높이 보장 */
+`;
+
+/* 빈 상태 컨테이너 */
+const EmptyState = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+`;
+
+/* 빈 상태 텍스트 */
+const EmptyText = styled.div`
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+`;
+
+/* 빈 상태 서브 텍스트 */
+const EmptySubText = styled.div`
+  font-size: 14px;
+  color: #666;
+`;
+
+const FilterAndSortToggleContainer = styled.div`
+  display: flex; 
+  justify-content: space-between;
+  align-items: center;
+  position: -webkit-sticky;
+  position: sticky;
+  top: clamp(40px, 10vh, 5.5rem); // 눈바디 수정
+  z-index: 15;
+  background-color: #fff;
+
 `;
