@@ -368,9 +368,10 @@ const AppointmentCard = styled.div`
   background: #fff;
   border: 1px solid #e0e0e0;
   border-radius: 12px;
-  padding: 16px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
+  justify-contenet: space-between;
   gap: 12px;
 `;
 
@@ -407,17 +408,17 @@ const AppointmentDetails = styled.div`
 
 const SalonName = styled.div`
   display: flex;
-  align-items: center;
+//  align-items: center;
   gap: 4px;
 `;
 
 const SalonNameText = styled.span`
-  background: #FFF3CD;
+//  background: #FFF3CD;
   color: #000;
-  padding: 2px 8px;
+  padding: 2px;
   border-radius: 4px;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 700;
 `;
 
 const ChevronIcon = styled(FiChevronRight)`
