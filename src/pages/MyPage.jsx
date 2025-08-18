@@ -1,43 +1,43 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import useUserInfo from '../hooks/user/useUserInfo';
-import useStore from '../hooks/store/useStore';
-import { fetchUserReservations } from '../apis/reservationAPI';
+import { fetchUserInfo } from '../apis/authAPI';
 
 const MyPage = () => {
   const { authUser, logoutUser, accessToken, isTokenValid, refreshTokens } = useUserInfo();
-  const { totalDiscountAmount, calculateAndSetTotalDiscount, isDiscountDataLoaded } = useStore();
-  const [localLoading, setLocalLoading] = useState(false);
+  const [userInfo, setUserInfo] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  // 할인 데이터 조건부 로딩
+  // 사용자 상세 정보 조회
   useEffect(() => {
-    // 1. 이미 데이터가 있으면 사용
-    if (isDiscountDataLoaded) return;
-    
-    // 2. 로그인된 상태에서만 데이터 가져오기
-    if (authUser && !localLoading) {
-      const loadDiscountData = async () => {
-        setLocalLoading(true);
-        try {
-          if (!isTokenValid()) {
-            const refreshSuccess = await refreshTokens();
-            if (!refreshSuccess) return;
-          }
-          
-          const { accessToken: currentToken } = useUserInfo.getState();
-          const reservations = await fetchUserReservations(currentToken);
-          
-          calculateAndSetTotalDiscount(reservations);
-        } catch (error) {
-          console.error('할인 데이터 로딩 실패:', error);
-        } finally {
-          setLocalLoading(false);
-        }
-      };
+    const loadUserInfo = async () => {
+      if (!authUser || !accessToken) return;
       
-      loadDiscountData();
-    }
-  }, [authUser, isDiscountDataLoaded, localLoading, calculateAndSetTotalDiscount, isTokenValid, refreshTokens]);
+      setLoading(true);
+      try {
+        // 토큰 유효성 확인 및 갱신
+        if (!isTokenValid()) {
+          const refreshSuccess = await refreshTokens();
+          if (!refreshSuccess) return;
+        }
+        
+        // 갱신된 토큰 가져오기
+        const { accessToken: currentToken } = useUserInfo.getState();
+        
+        // 유저 본인 정보 조회 API 호출
+        const userData = await fetchUserInfo(currentToken);
+        setUserInfo(userData);
+        
+        console.log('사용자 상세 정보 로딩 완료:', userData);
+      } catch (error) {
+        console.error('사용자 상세 정보 로딩 실패:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUserInfo();
+  }, [authUser, accessToken, isTokenValid, refreshTokens]);
 
   const handleLogout = () => {
     logoutUser();
@@ -56,13 +56,13 @@ const MyPage = () => {
           <ProfilePlaceholder />
         </ProfileImage>
         <UserDetails>
-          <UserName>{authUser?.displayName || 'randomuser_99999'}</UserName>
-          <UserEmail>{authUser?.email || 'alswo6102@gmail.com'}</UserEmail>
+          <UserName>{userInfo?.user_nickname || authUser?.displayName || 'randomuser_99999'}</UserName>
+          <UserEmail>{userInfo?.user_email || authUser?.email || 'alswo6102@gmail.com'}</UserEmail>
           <UserSavings>
-            {localLoading ? (
-              <span>할인 정보를 불러오는 중...</span>
+            {loading ? (
+              <span>정보를 불러오는 중...</span>
             ) : (
-              <>지금까지 <SavingsAmount>{totalDiscountAmount.toLocaleString()} 원</SavingsAmount> 아꼈어요!</>
+              <>지금까지 <SavingsAmount>{userInfo?.user_discounted_cost_sum?.toLocaleString() || '0'} 원</SavingsAmount> 아꼈어요!</>
             )}
           </UserSavings>
         </UserDetails>
