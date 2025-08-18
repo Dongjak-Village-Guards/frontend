@@ -10,24 +10,19 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { FiChevronDown } from "react-icons/fi";
 import { AiFillCaretDown } from "react-icons/ai";
-import BottomSheet from "../components/common/BottomSheet";
-import TimeToggle from "../components/filter/TimeToggle";
-import CategoryToggle from "../components/filter/CategoryToggle";
-import CategoryFilter, { CATEGORY_OPTIONS } from "../components/filter/CategoryFilter";
-import TimeFilter, { getNearestHour } from "../components/filter/TimeFilter";
+import FilterContainer from "../components/filter/FilterContainer";
 import Spinner from "../components/common/Spinner";
 import useStore from "../hooks/store/useStore";
 import useUserInfo from "../hooks/user/useUserInfo";
 import Card from "../components/home/shop/Card";
 import bannerImage from "../assets/images/bannerImage.png";
 import { useNavigate } from "react-router-dom";
+import { CATEGORY_OPTIONS } from "../components/filter/CategoryFilter";
 
 export default function HomePage() {
   const navigate = useNavigate();
   /** @state 토글 상태 */
   const [isSortOpen, setIsSortOpen] = useState(false);
-  const [isTimeSheetOpen, setIsTimeSheetOpen] = useState(false);
-  const [isCategorySheetOpen, setIsCategorySheetOpen] = useState(false);
 
   /** @state 로딩 상태 */
   const [isLoading, setIsLoading] = useState(false);
@@ -111,7 +106,35 @@ export default function HomePage() {
   };
 
   /**
-   * 업종 변경 (하나만 선택)
+   * 시간 선택 핸들러
+   * @param {string} selectedTime - 선택된 시간
+   */
+  const handleTimeSelect = async (selectedTime) => {
+    console.log('시간 선택됨:', selectedTime);
+    setTime(selectedTime);
+    
+    try {
+      // 현재 설정된 카테고리 필터도 함께 사용
+      await fetchStores(selectedTime, filters.categories.length > 0 ? filters.categories[0] : null);
+    } catch (error) {
+      console.error('시간 필터 적용 실패:', error);
+    }
+    
+    console.log('setTimeout 설정 - 0.3초 후 로딩 시작');
+    // 0.3초 후 바텀시트 닫힘, 2초 로딩 (테스트용)
+    setTimeout(async () => {
+      console.log('setTimeout 콜백 실행 - 로딩 시작');
+      setLoading(true);
+      console.log('0.3초 로딩 시작');
+      await new Promise(resolve => setTimeout(resolve, 300));
+      console.log('0.3초 로딩 완료');
+      setLoading(false);
+      console.log('시간필터 로딩 완료');
+    }, 300);
+  };
+
+  /**
+   * 업종 선택 핸들러
    * @param {string|null} category - 선택된 업종 (단일 값)
    */
   const handleCategorySelect = async (category) => {
@@ -188,110 +211,56 @@ export default function HomePage() {
       </BannerWrapper>
 
       {/* 필터/정렬 영역 (배너 아래에 위치, 스크롤 시 주소바 바로 아래에 고정) */}
-      <FilterRow>
-        <TimeToggle
-          label={time || getNearestHour(currentTime)}
-          onClick={() => !isLoading && setIsTimeSheetOpen(true)}
-        />
+      <FilterContainer
+        time={time}
+        filters={filters}
+        onTimeSelect={handleTimeSelect}
+        onCategorySelect={handleCategorySelect}
+        isLoading={isLoading}
+      />
 
-        <CategoryToggle
-          label={getCategoryLabel()}
-          active={filters.categories.length > 0}
-          onClick={() => !isLoading && setIsCategorySheetOpen(true)} 
-        />
-
-        <SortToggleContainer>
-          <SortToggle onClick={handleToggleSort}>
-            <span>{sortOption === 'discount' ? '할인율순' : '가격순'}</span>
-            <AiFillCaretDown size={16} color="#000" />
-          </SortToggle>
-          {isSortOpen && !isLoading && (
-            <SortDropdown>
-              <SortOption onClick={() => !isLoading && handleSortChange('discount')}>
-                할인율순
-              </SortOption>
-              <SortOption onClick={() => !isLoading && handleSortChange('price')}>
-                가격순
-              </SortOption>
-            </SortDropdown>
-          )}
-        </SortToggleContainer>
-      </FilterRow>
-
-      {/* 예약 시간 선택 바텀시트 */}
-      <BottomSheet
-        open={isTimeSheetOpen}
-        title="예약 시간"
-        onClose={() => {
-          console.log('HomePage에서 onClose 호출됨');
-          setIsTimeSheetOpen(false);
-        }}
-      >
-        <TimeFilter
-          currentTime={currentTime}
-          selectedTime={time}
-          onTimeSelect={async (selectedTime) => {
-            console.log('시간 선택됨:', selectedTime);
-            setTime(selectedTime);
-            
-            try {
-              // 현재 설정된 카테고리 필터도 함께 사용
-              await fetchStores(selectedTime, filters.categories.length > 0 ? filters.categories[0] : null);
-            } catch (error) {
-              console.error('시간 필터 적용 실패:', error);
-            }
-            
-            console.log('setTimeout 설정 - 0.3초 후 로딩 시작');
-            // 0.3초 후 바텀시트 닫힘, 2초 로딩 (테스트용)
-            setTimeout(async () => {
-              console.log('setTimeout 콜백 실행 - 로딩 시작');
-              setLoading(true);
-              console.log('0.3초 로딩 시작');
-              await new Promise(resolve => setTimeout(resolve, 300));
-              console.log('0.3초 로딩 완료');
-              setLoading(false);
-              console.log('시간필터 로딩 완료');
-            }, 300);
-          }}
-          onClose={() => setIsTimeSheetOpen(false)}
-        />
-      </BottomSheet>
-
-      {/* 업종 선택 바텀시트 */}
-      <BottomSheet
-        open={isCategorySheetOpen}
-        title="업종"
-        onClose={() => setIsCategorySheetOpen(false)}
-      >
-        <CategoryFilter
-          selectedCategory={filters.categories.length > 0 ? filters.categories[0] : null}
-          onCategorySelect={handleCategorySelect}
-          onClose={() => setIsCategorySheetOpen(false)}
-        />
-      </BottomSheet>
+      {/* 정렬 토글 */}
+      <SortToggleContainer>
+        <SortToggle onClick={handleToggleSort}>
+          <span>{sortOption === 'discount' ? '할인율순' : '가격순'}</span>
+          <AiFillCaretDown size={16} color="#000" />
+        </SortToggle>
+        {isSortOpen && !isLoading && (
+          <SortDropdown>
+            <SortOption onClick={() => !isLoading && handleSortChange('discount')}>
+              할인율순
+            </SortOption>
+            <SortOption onClick={() => !isLoading && handleSortChange('price')}>
+              가격순
+            </SortOption>
+          </SortDropdown>
+        )}
+      </SortToggleContainer>
 
       {/* 매장 리스트 */}
       <StoreList>
         {isLoading || loading ? (
           <LoadingContainer>
-                <Spinner />
+            <Spinner />
           </LoadingContainer>
+        ) : sortedStores.length > 0 ? (
+          sortedStores.map(store => (
+            <Card 
+              key={store.id} 
+              store={store} 
+              onClick={() => handleCardClick(store.id)}
+            />
+          ))
         ) : (
-          <>
-            {sortedStores.map(store => (
-              <Card
-            key={store.id}
-            store={store}
-            onClick={() => handleCardClick(store.id)}
-          />
-            ))}
-          </>
+          <EmptyState>
+            <EmptyText>해당 조건의 가게가 없어요</EmptyText>
+            <EmptySubText>다른 조건으로 검색해보세요!</EmptySubText>
+          </EmptyState>
         )}
       </StoreList>
-
     </HomeContainer>
   );
-};
+}
 
 // ===== Styled Components ===== //
 
@@ -328,6 +297,7 @@ const AddressText = styled.div`
   overflow: hidden;
   color: #000;
   text-overflow: ellipsis;
+  white-space: nowrap;
   font-style: normal;
   font-weight: 700;
   line-height: normal;
@@ -407,27 +377,6 @@ const BannerSubTitle = styled.div`
   align-self: flex-end;
 `;
 
-/* 필터 라인 영역
-(배너 아래에 위치, 스크롤 시 주소바 바로 아래에 Layout 내부에서 고정됨.) */
-const FilterRow = styled.div`
-  position: -webkit-sticky;
-  position: sticky;
-  top: 90px;
-  z-index: 15;
-  //  margin: 0px 0px clamp(8px, 2vh, 16px) 0px; // 필터바 padding 변경요구 반영
-  padding: clamp(8px, 2vh, 16px) 0; // 약간의 편법
-  display: flex;
-  align-items: center;
-  gap: clamp(6px, 2vw, 10px);
-  background: #fff;
-  transition: all 0.3s ease;
-  width: 100%;
-  
-  /* sticky 포지션이 확실히 작동하도록 추가 설정 */
-  transform: translateZ(0);
-  will-change: transform;
-`;
-
 /* 정렬 토글 컨테이너(토글 버튼 & 드롭다운) */
 const SortToggleContainer = styled.div`
   margin-left: auto;
@@ -502,4 +451,28 @@ const LoadingContainer = styled.div`
   justify-content: center;
   align-items: center;
   min-height: 200px; /* 최소 높이 보장 */
+`;
+
+/* 빈 상태 컨테이너 */
+const EmptyState = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+`;
+
+/* 빈 상태 텍스트 */
+const EmptyText = styled.div`
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+`;
+
+/* 빈 상태 서브 텍스트 */
+const EmptySubText = styled.div`
+  font-size: 14px;
+  color: #666;
 `;

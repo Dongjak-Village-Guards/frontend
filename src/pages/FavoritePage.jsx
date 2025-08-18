@@ -12,9 +12,7 @@ import styled from 'styled-components';
 import useStore from '../hooks/store/useStore';
 import Card from '../components/home/shop/Card';
 import Spinner from '../components/common/Spinner';
-import TimeToggle from '../components/filter/TimeToggle';
-import CategoryToggle from '../components/filter/CategoryToggle';
-import { getNearestHour } from '../components/filter/TimeFilter';
+import FilterContainer from '../components/filter/FilterContainer';
 
 const FavoritePage = () => {
   const navigate = useNavigate();
@@ -26,7 +24,10 @@ const FavoritePage = () => {
     setCurrentPage,
     updateCurrentTime,
     filters,
-    time
+    time,
+    setTime,
+    setFilters,
+    fetchStores
   } = useStore();
 
   // 컴포넌트 마운트 시 초기 로딩 처리
@@ -47,17 +48,41 @@ const FavoritePage = () => {
   // 찜한 가게만 필터링
   const favoriteStores = stores.filter(store => store.isLiked);
 
-  // 업종 필터 라벨 생성
-  const getCategoryLabel = () => {
-    if (filters.categories.length === 0) return '업종';
-    if (filters.categories.length === 1) {
-      const categoryMap = { hair: '미용실', nail: '네일샵', pilates: '필라테스' };
-      return categoryMap[filters.categories[0]] || '업종';
+  // 시간 선택 핸들러
+  const handleTimeSelect = async (selectedTime) => {
+    console.log('FavoritePage 시간 선택됨:', selectedTime);
+    setTime(selectedTime);
+    
+    try {
+      // 현재 설정된 카테고리 필터도 함께 사용
+      await fetchStores(selectedTime, filters.categories.length > 0 ? filters.categories[0] : null);
+    } catch (error) {
+      console.error('FavoritePage 시간 필터 적용 실패:', error);
     }
-    const categoryMap = { hair: '미용실', nail: '네일샵', pilates: '필라테스' };
-    const firstCategory = categoryMap[filters.categories[0]] || '업종';
-    const remainingCount = filters.categories.length - 1;
-    return `${firstCategory} 외 ${remainingCount}종`;
+    
+    // 로딩 처리
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 300);
+  };
+
+  // 업종 선택 핸들러
+  const handleCategorySelect = async (category) => {
+    console.log('FavoritePage 업종 선택됨:', category);
+    setFilters({ categories: category ? [category] : [] });
+    
+    try {
+      await fetchStores(time, category);
+    } catch (error) {
+      console.error('FavoritePage 업종 필터 적용 실패:', error);
+    }
+    
+    // 로딩 처리
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 300);
   };
 
   // 가게 카드 클릭 시 상세 페이지로 이동
@@ -73,18 +98,13 @@ const FavoritePage = () => {
       </Header>
 
       {/* 필터 영역 */}
-      <FilterRow>
-        <TimeToggle
-          label={time || getNearestHour(currentTime)}
-          onClick={() => !isLoading && console.log('시간 필터 클릭')}
-        />
-
-        <CategoryToggle
-          label={getCategoryLabel()}
-          active={filters.categories.length > 0}
-          onClick={() => !isLoading && console.log('업종 필터 클릭')} 
-        />
-      </FilterRow>
+      <FilterContainer
+        time={time}
+        filters={filters}
+        onTimeSelect={handleTimeSelect}
+        onCategorySelect={handleCategorySelect}
+        isLoading={isLoading}
+      />
 
       {/* 찜한 가게 목록 */}
       <ContentContainer>
@@ -149,43 +169,23 @@ const HeaderTitle = styled.h1`
   color: #000;
 `;
 
-const FilterRow = styled.div`
-  position: -webkit-sticky;
-  position: sticky;
-  top: 84px;
-  z-index: 15;
-  padding: clamp(8px, 2vh, 16px) 0;
-  display: flex;
-  align-items: center;
-  gap: clamp(6px, 2vw, 10px);
-  background: #fff;
-  transition: all 0.3s ease;
-  width: 100%;
-  transform: translateZ(0);
-  will-change: transform;
-`;
-
 const ContentContainer = styled.div`
   flex: 1;
   overflow-y: auto;
+  padding: 16px 0;
 `;
 
 const StoreList = styled.div`
-  background: #fff;
-  width: 100%;
-  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 `;
 
 const LoadingContainer = styled.div`
-  height: 100%;
-  overflow-y: hidden;
-  position: relative;
-  top: 1rem;
-  background: rgba(255, 255, 255, 0.95);
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 200px;
+  padding: 60px 0;
 `;
 
 const EmptyState = styled.div`
@@ -193,18 +193,18 @@ const EmptyState = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 80px 20px;
+  padding: 60px 20px;
   text-align: center;
 `;
 
 const EmptyText = styled.div`
   font-size: 18px;
   font-weight: 600;
-  color: #666;
+  color: #333;
   margin-bottom: 8px;
 `;
 
 const EmptySubText = styled.div`
   font-size: 14px;
-  color: #999;
+  color: #666;
 `;
