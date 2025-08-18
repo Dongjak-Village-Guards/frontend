@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
 import { FiChevronRight } from 'react-icons/fi';
 import ReservationButton from '../components/common/ReservationButton';
 import BottomSheet from '../components/common/BottomSheet';
@@ -11,6 +12,7 @@ import { fetchUserReservations, cancelReservation } from '../apis/reservationAPI
 import placeholderImage from '../assets/images/placeholder.svg';
 
 const SchedulePage = () => {
+  const navigate = useNavigate();
   const { currentPage } = useStore();
   const { accessToken, isTokenValid, refreshTokens } = useUserInfo();
   
@@ -38,6 +40,9 @@ const SchedulePage = () => {
 
   // 백엔드 데이터를 UI 형식으로 변환
   const transformReservationData = (reservations) => {
+    console.log('=== 예약 데이터 변환 디버깅 ===');
+    console.log('원본 예약 데이터:', reservations);
+    
     return reservations.map(reservation => {
       // 취소 가능 여부 계산
       const now = new Date();
@@ -45,8 +50,20 @@ const SchedulePage = () => {
       const timeDifference = reservationDateTime - now;
       const isCancellable = timeDifference > 30 * 60 * 1000; // 30분 이상 남아야 취소 가능
 
+      // store_id 확인
+      console.log('예약 데이터 필드들:', {
+        reservation_id: reservation.reservation_id,
+        store_id: reservation.store_id,
+        store_name: reservation.store_name,
+        space_name: reservation.space_name,
+        menu_name: reservation.menu_name,
+        reservation_date: reservation.reservation_date,
+        reservation_time: reservation.reservation_time
+      });
+
       return {
         id: reservation.reservation_id,
+        storeId: reservation.store_id, // store_id 추가
         salonName: reservation.store_name,
         visitTime: formatDateTime(reservation.reservation_date, reservation.reservation_time),
         designer: reservation.space_name,
@@ -189,6 +206,21 @@ const SchedulePage = () => {
     setReservationData(null);
   };
 
+  // 가게 제목 클릭 핸들러
+  const handleSalonClick = (storeId, visitTime) => {
+    console.log('=== 가게 클릭 디버깅 ===');
+    console.log('가게 ID:', storeId);
+    console.log('방문 시간:', visitTime);
+    
+    if (!storeId) {
+      console.warn('가게 ID가 없습니다.');
+      return;
+    }
+    
+    // ShopDetailPage로 라우팅
+    navigate(`/shop/${storeId}`);
+  };
+
   return (
     <PageContainer>
       {/* 상단 헤더 */}
@@ -217,7 +249,7 @@ const SchedulePage = () => {
                     />
                   </ProfileImage>
                   <AppointmentDetails>
-                    <SalonName>
+                    <SalonName onClick={() => handleSalonClick(appointment.storeId, appointment.visitTime)}>
                       <SalonNameText>{appointment.salonName}</SalonNameText>
                       <ChevronIcon />
                     </SalonName>
@@ -410,6 +442,12 @@ const SalonName = styled.div`
   display: flex;
 //  align-items: center;
   gap: 4px;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  
+  &:hover {
+    opacity: 0.8;
+  }
 `;
 
 const SalonNameText = styled.span`
