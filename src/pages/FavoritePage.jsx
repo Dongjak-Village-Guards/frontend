@@ -7,6 +7,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import useStore from '../hooks/store/useStore';
 import Card from '../components/home/shop/Card';
@@ -14,9 +15,9 @@ import Spinner from '../components/common/Spinner';
 import TimeToggle from '../components/filter/TimeToggle';
 import CategoryToggle from '../components/filter/CategoryToggle';
 import { getNearestHour } from '../components/filter/TimeFilter';
-import { useNavigate } from 'react-router-dom';
 
 const FavoritePage = () => {
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   
   const { 
@@ -60,11 +61,9 @@ const FavoritePage = () => {
   };
 
   // 가게 카드 클릭 시 상세 페이지로 이동
-//  const handleCardClick = (storeId) => {
-//    setCurrentPage(`shop-detail-${storeId}`);
-//  };
-  const navigate = useNavigate();
-  const handleCardClick = (storeId) => navigate(`/shop/${storeId}`);
+  const handleCardClick = (storeId) => {
+    navigate(`/shop/${storeId}`);
+  };
 
   return (
     <PageContainer>

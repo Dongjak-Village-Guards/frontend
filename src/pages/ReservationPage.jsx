@@ -3,7 +3,7 @@
  * 선택된 메뉴와 가게 정보, 개인정보 제3자 동의 체크박스를 표시
  */
 
-import { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import useStore from '../hooks/store/useStore';
@@ -15,7 +15,6 @@ import { ReactComponent as ArrowButton } from '../assets/images/piArrow.svg';
 import Line from '../components/common/Line';
 import Spinner from '../components/common/Spinner';
 import { fetchMenuItemDetails, createReservation } from '../apis/storeAPI';
-import appStorage from '../storage/AppStorage';
 
 const ReservationPage = ({ shop }) => {
   const navigate = useNavigate();
@@ -86,8 +85,8 @@ const ReservationPage = ({ shop }) => {
       const reservationResult = await createReservation(menuData.item_id, accessToken);
       console.log('예약 생성 성공:', reservationResult);
       
-      // 예약 완료 데이터를 AppStorage에 저장 (SchedulePage에서 바텀시트로 표시)
-      appStorage.set('completedReservation', reservationResult);
+              // 예약 완료 데이터를 localStorage에 저장 (SchedulePage에서 바텀시트로 표시)
+        localStorage.setItem('completedReservation', JSON.stringify(reservationResult));
       
       // 예약 상태 초기화
     //  cancelReservation();
