@@ -7,9 +7,15 @@ import useStore from '../hooks/store/useStore';
 import useUserInfo from '../hooks/user/useUserInfo';
 import Spinner from '../components/common/Spinner';
 import { getNearestHour } from '../components/filter/TimeFilter';
+import { fetchUserReservations, cancelReservation } from '../apis/reservationAPI';
+import placeholderImage from '../assets/images/placeholder.svg';
 
 const SchedulePage = () => {
   const { currentPage } = useStore();
+  const { accessToken, isTokenValid, refreshTokens } = useUserInfo();
+  
+  // 로딩 상태
+  const [loading, setLoading] = useState(false);
   
   // 예약 취소 확인을 위한 상태
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
@@ -19,33 +25,102 @@ const SchedulePage = () => {
   const [reservationCompleteOpen, setReservationCompleteOpen] = useState(false);
   const [reservationData, setReservationData] = useState(null);
 
-  // 예약 데이터 (실제로는 API에서 가져올 데이터)
-  const [appointments, setAppointments] = useState([
-    {
-      id: 1,
-      salonName: '노량진 미용실',
-      visitTime: '99:99',
-      designer: 'A 디자이너',
-      service: '남성 컷',
-      profileImage: '/path/to/profile1.jpg'
-    },
-    {
-      id: 2,
-      salonName: '노량진 미용실',
-      visitTime: '99:99',
-      designer: 'A 구장',
-      service: '',
-      profileImage: '/path/to/profile2.jpg'
-    },
-    {
-      id: 3,
-      salonName: '노량진 미용실',
-      visitTime: '99:99',
-      designer: 'A 디자이너',
-      service: '남성 컷',
-      profileImage: '/path/to/profile3.jpg'
+  // 예약 데이터
+  const [appointments, setAppointments] = useState([]);
+
+  // 날짜/시간 포맷팅 함수
+  const formatDateTime = (date, time) => {
+    const dateObj = new Date(`${date}T${time}`);
+    const hours = dateObj.getHours().toString().padStart(2, '0');
+    const minutes = dateObj.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+  };
+
+  // 백엔드 데이터를 UI 형식으로 변환
+  const transformReservationData = (reservations) => {
+    return reservations.map(reservation => {
+      // 취소 가능 여부 계산
+      const now = new Date();
+      const reservationDateTime = new Date(`${reservation.reservation_date}T${reservation.reservation_time}`);
+      const timeDifference = reservationDateTime - now;
+      const isCancellable = timeDifference > 30 * 60 * 1000; // 30분 이상 남아야 취소 가능
+
+      return {
+        id: reservation.reservation_id,
+        salonName: reservation.store_name,
+        visitTime: formatDateTime(reservation.reservation_date, reservation.reservation_time),
+        designer: reservation.space_name,
+        service: reservation.menu_name,
+        profileImage: reservation.store_image_url || placeholderImage,
+        isCancellable: isCancellable, // 취소 가능 여부 추가
+        originalDate: reservation.reservation_date, // 원본 날짜 저장
+        originalTime: reservation.reservation_time  // 원본 시간 저장
+      };
+    });
+  };
+
+  // 예약 목록 조회
+  const fetchReservations = async () => {
+    if (!accessToken) {
+      console.log('로그인이 필요합니다.');
+      return;
     }
-  ]);
+
+    setLoading(true);
+    try {
+      // 토큰 유효성 확인 및 갱신
+      if (!isTokenValid()) {
+        console.log('토큰이 만료되었습니다. 토큰 갱신을 시도합니다.');
+        const refreshSuccess = await refreshTokens();
+        if (!refreshSuccess) {
+          console.error('토큰 갱신에 실패했습니다.');
+          return;
+        }
+        console.log('토큰 갱신 성공');
+      }
+
+      // 갱신된 토큰 가져오기
+      const { accessToken: currentToken } = useUserInfo.getState();
+      
+      const reservations = await fetchUserReservations(currentToken);
+      const transformedData = transformReservationData(reservations);
+      setAppointments(transformedData);
+    } catch (error) {
+      console.error('예약 목록 조회 실패:', error);
+      // 에러 발생 시 빈 배열로 설정
+      setAppointments([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 컴포넌트 마운트 시 예약 목록 조회
+  useEffect(() => {
+    if (currentPage === 'history') {
+      fetchReservations();
+    }
+  }, [currentPage, accessToken]);
+
+  // 시간 경과에 따른 취소 가능 여부 실시간 업데이트
+  useEffect(() => {
+    if (currentPage === 'history' && appointments.length > 0) {
+      const interval = setInterval(() => {
+        setAppointments(prev => 
+          prev.map(appointment => {
+            // 원본 날짜와 시간 정보 사용
+            const now = new Date();
+            const reservationDateTime = new Date(`${appointment.originalDate}T${appointment.originalTime}`);
+            const timeDifference = reservationDateTime - now;
+            const isCancellable = timeDifference > 30 * 60 * 1000; // 30분 이상 남아야 취소 가능
+            
+            return { ...appointment, isCancellable };
+          })
+        );
+      }, 60000); // 1분마다 업데이트
+
+      return () => clearInterval(interval);
+    }
+  }, [currentPage, appointments.length]);
 
   // 예약 완료 알림 바텀시트 표시 (예약 후 SchedulePage로 이동 시)
   useEffect(() => {
@@ -73,11 +148,34 @@ const SchedulePage = () => {
   };
 
   // 예약 취소 실행
-  const handleConfirmCancel = () => {
-    if (selectedAppointmentId) {
-      setAppointments(prev => prev.filter(app => app.id !== selectedAppointmentId));
+  const handleConfirmCancel = async () => {
+    if (!selectedAppointmentId) return;
+
+    try {
+      // 토큰 유효성 확인 및 갱신
+      if (!isTokenValid()) {
+        const refreshSuccess = await refreshTokens();
+        if (!refreshSuccess) {
+          alert('로그인이 만료되었습니다. 다시 로그인해주세요.');
+          return;
+        }
+      }
+
+      // 갱신된 토큰 가져오기
+      const { accessToken: currentToken } = useUserInfo.getState();
+      
+      await cancelReservation(selectedAppointmentId, currentToken);
+      
+      // 성공 시 바텀시트 닫기
+      handleCancelConfirmClose();
+      
+      // 예약 목록 새로고침
+      await fetchReservations();
+      
+    } catch (error) {
+      console.error('예약 취소 실패:', error);
+      alert(error.message);
     }
-    handleCancelConfirmClose();
   };
 
   // 예약 유지 (바텀시트 닫기)
@@ -100,13 +198,23 @@ const SchedulePage = () => {
 
       {/* 예약 목록 */}
       <ContentContainer>
-        {appointments.length > 0 ? (
+        {loading ? (
+          <LoadingContainer>
+            <Spinner />
+          </LoadingContainer>
+        ) : appointments.length > 0 ? (
           <AppointmentList>
             {appointments.map(appointment => (
               <AppointmentCard key={appointment.id}>
                 <CardContent>
                   <ProfileImage>
-                    <ProfilePlaceholder />
+                    <ProfileImageSrc 
+                      src={appointment.profileImage} 
+                      alt={appointment.salonName}
+                      onError={(e) => {
+                        e.target.src = placeholderImage;
+                      }}
+                    />
                   </ProfileImage>
                   <AppointmentDetails>
                     <SalonName>
@@ -121,9 +229,12 @@ const SchedulePage = () => {
                   </AppointmentDetails>
                 </CardContent>
                 <ReservationButton 
-                    variant="secondary"
-                    onClick={() => handleCancelClick(appointment.id)}
-                    >예약 취소</ReservationButton>
+                    variant={appointment.isCancellable ? "secondary" : "primary"}
+                    disabled={!appointment.isCancellable}
+                    onClick={appointment.isCancellable ? () => handleCancelClick(appointment.id) : undefined}
+                    >
+                    {appointment.isCancellable ? "예약 취소" : "취소 불가"}
+                </ReservationButton>
               </AppointmentCard>
             ))}
           </AppointmentList>
@@ -241,11 +352,6 @@ const Header = styled.div`
 `;
 
 const HeaderTitle = styled.h1`
-  //  font-size: 22px;
-//  font-weight: 700;
-//  color: #000;
-//  margin: 0;
-//width: 100%;
     font-size: 22px;
     font-weight: 700;
     line-height: 14px;
@@ -256,6 +362,14 @@ const ContentContainer = styled.div`
   flex: 1;
   overflow-y: auto;
   padding-top: 16px;
+`;
+
+const LoadingContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  padding: 40px 0;
 `;
 
 const AppointmentList = styled.div`
@@ -288,18 +402,14 @@ const ProfileImage = styled.div`
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  overflow: hidden;
 `;
 
-const ProfilePlaceholder = styled.div`
+const ProfileImageSrc = styled.img`
   width: 100%;
   height: 100%;
   border-radius: 8px;
-  background: #f0f0f0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  color: #999;
+  object-fit: cover;
 `;
 
 const AppointmentDetails = styled.div`
@@ -340,23 +450,6 @@ const ServiceInfo = styled.div`
   color: #666;
 `;
 
-const CancelButton = styled.button`
-  background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 8px 16px;
-  font-size: 14px;
-  color: #000;
-  cursor: pointer;
-  align-self: center;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: #f8f8f8;
-    border-color: #ccc;
-  }
-`;
-
 const EmptyState = styled.div`
   display: flex;
   flex-direction: column;
@@ -386,8 +479,7 @@ const ButtonGroup = styled.div`
   display: flex;
   gap: 0;
   width: 100%;
-//  height: 100%;
-  margin-top: 8px; // 임시
+  margin-top: 8px;
 `;
 
 const Divider = styled.div`
