@@ -86,6 +86,22 @@ const ReservationPage = ({ shop }) => {
       setReserving(true);
       setError(null);
       
+      console.log('=== 예약 요청 전 데이터 확인 ===');
+      console.log('menuData:', menuData);
+      console.log('item_id:', menuData.item_id);
+      console.log('accessToken 존재:', !!accessToken);
+      console.log('accessToken 길이:', accessToken?.length);
+      console.log('isAgreed:', isAgreed);
+      console.log('현재 시간:', new Date().toISOString());
+      
+      // 시간 관련 정보 추가
+      const { time } = useStore.getState();
+      console.log('=== 시간 관련 정보 ===');
+      console.log('선택된 시간:', time);
+      console.log('현재 시간 (시):', new Date().getHours());
+      console.log('현재 시간 (분):', new Date().getMinutes());
+      console.log('현재 시간 (전체):', new Date().toLocaleString('ko-KR'));
+      
       console.log('예약 생성 시작', { itemId: menuData.item_id });
       
       const reservationResult = await createReservation(menuData.item_id, accessToken);
@@ -104,21 +120,13 @@ const ReservationPage = ({ shop }) => {
       navigate(-1);
       
     } catch (error) {
-      console.error('예약 생성 실패:', error);
+      console.log('예약 생성 실패:', error);
       
-      // 서버 에러 메시지 추출
       let errorMessage = '예약에 실패했습니다.';
       
-      if (error.message && error.message.includes('400')) {
-        // 400 에러의 경우 서버 응답에서 에러 메시지 추출
-        try {
-          // 에러 객체에서 서버 응답 메시지 확인
-          if (error.serverResponse) {
-            errorMessage = error.serverResponse.error || errorMessage;
-          }
-        } catch (parseError) {
-          console.error('에러 메시지 파싱 실패:', parseError);
-        }
+      // 서버에서 받은 구체적인 에러 메시지가 있으면 사용
+      if (error.serverResponse && error.serverResponse.error) {
+        errorMessage = error.serverResponse.error;
       }
       
       setError(errorMessage);
