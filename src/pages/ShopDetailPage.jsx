@@ -55,6 +55,10 @@ const ShopDetailPage = () => {
     const [spaceCount, setSpaceCount] = useState(null);
     const [selectedSpaceId, setSelectedSpaceId] = useState(null);
 
+    // 현재 가게의 Zustand 상태에서 좋아요 상태 가져오기
+    const currentStore = stores.find(store => store.id === parseInt(id));
+    const isLiked = currentStore?.isLiked || false;
+
     // 시간 파라미터 변환 함수
     const convertTimeToParam = (time) => {
         if (time === null) {
@@ -125,23 +129,13 @@ const ShopDetailPage = () => {
         }
     };
 
-    // 좋아요 토글 처리
+    // 좋아요 토글 처리 - Zustand 스토어만 업데이트
     const handleLikeToggle = async () => {
         if (!storeData) return;
         
         try {
             await toggleLikeWithAPI(parseInt(id));
-            // 토글 후 데이터 재로드
-            const storeId = parseInt(id);
-            const timeParam = convertTimeToParam(time);
-            
-            if (spaceCount === 1) {
-                const menuData = await fetchStoreMenus(storeId, timeParam, accessToken);
-                setStoreData(menuData);
-            } else if (spaceCount >= 2 && selectedSpaceId) {
-                const spaceData = await fetchSpaceDetails(selectedSpaceId, timeParam, accessToken);
-                setStoreData(spaceData);
-            }
+            // API 재호출 제거 - Zustand 스토어가 자동으로 상태를 업데이트함
         } catch (error) {
             console.error('좋아요 토글 실패', error);
         }
@@ -235,7 +229,7 @@ const ShopDetailPage = () => {
                 title={getPageTitle()}
                 showLike={!isReserving && !showPiAgreement}
                 storeId={parseInt(id)}
-                isLiked={storeData?.is_liked || false}
+                isLiked={isLiked}
                 onLikeToggle={handleLikeToggle}
             />
     

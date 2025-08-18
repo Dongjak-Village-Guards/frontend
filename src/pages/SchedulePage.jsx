@@ -4,7 +4,9 @@ import { FiChevronRight } from 'react-icons/fi';
 import ReservationButton from '../components/common/ReservationButton';
 import BottomSheet from '../components/common/BottomSheet';
 import useStore from '../hooks/store/useStore';
-import appStorage from '../storage/AppStorage';
+import useUserInfo from '../hooks/user/useUserInfo';
+import Spinner from '../components/common/Spinner';
+import { getNearestHour } from '../components/filter/TimeFilter';
 
 const SchedulePage = () => {
   const { currentPage } = useStore();
@@ -49,11 +51,11 @@ const SchedulePage = () => {
   useEffect(() => {
     if (currentPage === 'history') {
       // 예약 완료 데이터가 있다면 바텀시트 표시
-      const completedReservation = appStorage.get('completedReservation');
+      const completedReservation = localStorage.getItem('completedReservation');
       if (completedReservation) {
-        setReservationData(completedReservation);
+        setReservationData(JSON.parse(completedReservation));
         setReservationCompleteOpen(true);
-        appStorage.remove('completedReservation'); // 사용 후 제거
+        localStorage.removeItem('completedReservation'); // 사용 후 제거
       }
     }
   }, [currentPage]);
