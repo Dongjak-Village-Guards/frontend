@@ -524,29 +524,48 @@ export const fetchMenuItemDetails = async (itemId, accessToken) => {
  */
 export const createReservation = async (itemId, accessToken) => {
   try {
+    console.log('=== API 요청 데이터 확인 ===');
+    console.log('요청 URL:', `${REST_API_BASE_URL}/v1/reservations/`);
+    console.log('요청 Method:', 'POST');
+    console.log('itemId:', itemId);
+    console.log('itemId 타입:', typeof itemId);
+    console.log('accessToken 존재:', !!accessToken);
+    console.log('accessToken 길이:', accessToken?.length);
+    
+    const requestBody = { item_id: itemId };
+    console.log('요청 Body:', JSON.stringify(requestBody));
+    
+    const headers = {
+      ...buildHeaders(accessToken),
+      'Content-Type': 'application/json',
+    };
+    console.log('요청 Headers:', headers);
+    
     console.log(`예약 생성 시작... (Item ID: ${itemId})`);
     
     const response = await fetch(`${REST_API_BASE_URL}/v1/reservations/`, {
       method: 'POST',
-      headers: {
-        ...buildHeaders(accessToken),
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        item_id: itemId,
-      }),
+      headers: headers,
+      body: JSON.stringify(requestBody),
     });
     
     if (!response.ok) {
       console.error('=== 예약 생성 400 에러 상세 ===');
       console.error('Status:', response.status);
       console.error('Status Text:', response.statusText);
+      console.error('Response URL:', response.url);
+      console.error('Response Headers:', Object.fromEntries(response.headers.entries()));
+      
+      // 응답 본문을 한 번만 읽기
+      const responseText = await response.text();
+      console.error('Response Body (텍스트):', responseText);
       
       try {
-        const errorData = await response.json();
-        console.error('서버 에러 응답:', errorData);
+        const errorData = JSON.parse(responseText);
+        console.error('서버 에러 응답 (JSON):', errorData);
         console.error('에러 코드:', errorData.errorCode);
         console.error('에러 메시지:', errorData.message);
+        console.error('에러 상세:', errorData.error);
         
         // 에러 객체에 서버 응답 포함
         const error = new Error(`HTTP error! status: ${response.status}`);
@@ -555,12 +574,11 @@ export const createReservation = async (itemId, accessToken) => {
         throw error;
       } catch (jsonError) {
         console.error('JSON 파싱 실패:', jsonError);
-        const textResponse = await response.text();
-        console.error('텍스트 응답:', textResponse);
+        console.error('원본 텍스트 응답:', responseText);
         
         const error = new Error(`HTTP error! status: ${response.status}`);
         error.status = response.status;
-        error.serverResponse = { error: textResponse };
+        error.serverResponse = { error: responseText };
         throw error;
       }
     }
