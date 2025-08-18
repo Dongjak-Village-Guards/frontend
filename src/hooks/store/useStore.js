@@ -67,10 +67,6 @@ const useStore = create(
       selectedMenu: null,
       selectedDesigner: null,
 
-      // ===== 할인 금액 상태 관리 =====
-      totalDiscountAmount: 0,
-      isDiscountDataLoaded: false,
-
       // ===== 개인정보 동의서 상태 관리 =====
       showPiAgreement: false,
       isAgreed: false,
@@ -96,9 +92,7 @@ const useStore = create(
           selectedMenu: null,
           selectedDesigner: null,
           showPiAgreement: false,
-          isAgreed: false,
-          totalDiscountAmount: 0,
-          isDiscountDataLoaded: false
+          isAgreed: false
         });
       },
       
@@ -467,55 +461,6 @@ const useStore = create(
       })),
       setAgreed: (agreed) => set({ isAgreed: agreed }),
       
-      // ===== 할인 금액 관리 함수들 ===== //
-      
-      /**
-       * 총 할인 금액 설정
-       * @param {number} amount - 총 할인 금액
-       */
-      setTotalDiscountAmount: (amount) => set({ totalDiscountAmount: amount }),
-      
-      /**
-       * 할인 데이터 로딩 상태 설정
-       * @param {boolean} loaded - 로딩 완료 여부
-       */
-      setDiscountDataLoaded: (loaded) => set({ isDiscountDataLoaded: loaded }),
-      
-      /**
-       * 예약 데이터로부터 총 할인 금액 계산 및 설정
-       * @param {Array} reservations - 예약 목록
-       */
-      calculateAndSetTotalDiscount: (reservations) => {
-        console.log('=== 할인 금액 계산 디버깅 ===');
-        console.log('예약 데이터:', reservations);
-        
-        const totalDiscount = reservations.reduce((sum, reservation, index) => {
-          console.log(`예약 ${index + 1} 필드들:`, Object.keys(reservation));
-          console.log(`예약 ${index + 1} 전체 데이터:`, reservation);
-          
-          // 예약 데이터에서 할인 금액 계산
-          // 실제 API 응답 구조에 따라 수정 필요
-          const discountAmount = reservation.discount_amount || 
-                                reservation.saved_amount || 
-                                reservation.discount_price ||
-                                reservation.price_discount ||
-                                (reservation.original_price - reservation.final_price) || 
-                                (reservation.original_price - reservation.price) ||
-                                (reservation.regular_price - reservation.discount_price) ||
-                                0;
-          
-          console.log(`예약 ${index + 1} 할인 금액:`, discountAmount);
-          return sum + discountAmount;
-        }, 0);
-        
-        set({ 
-          totalDiscountAmount: totalDiscount,
-          isDiscountDataLoaded: true 
-        });
-        
-        console.log('총 할인 금액 계산 완료:', totalDiscount);
-      },
-      
       // ===== Getter 함수들 ===== //
       
       /**
@@ -610,8 +555,6 @@ const useStore = create(
         currentAddress: state.currentAddress,
         likedStoreIds: state.likedStoreIds,
         stores: state.stores,
-        totalDiscountAmount: state.totalDiscountAmount,
-        isDiscountDataLoaded: state.isDiscountDataLoaded,
       }),
     }
   )
