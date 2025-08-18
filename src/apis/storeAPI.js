@@ -6,7 +6,7 @@ const REST_API_BASE_URL = 'https://buynow.n-e.kr';
  * @param {string|number|null} time - 시간 (HH:MM 형식 문자열, 숫자, 또는 null)
  * @returns {number} API time 파라미터 (0~23)
  */
-const convertTimeToParam = (time) => {
+export const convertTimeToParam = (time) => {
   if (time === null) {
     return new Date().getHours();
   }
@@ -406,6 +406,12 @@ export const fetchStoreMenus = async (storeId, time, accessToken) => {
     
     const data = await response.json();
     console.log('Store 메뉴 조회 성공:', data);
+    console.log('=== 단일 Space API 응답 디버깅 ===');
+    console.log('API 응답 전체:', data);
+    console.log('menus 배열 길이:', data?.menus?.length);
+    console.log('첫 번째 메뉴:', data?.menus?.[0]);
+    console.log('첫 번째 메뉴 item_id:', data?.menus?.[0]?.item_id);
+    console.log('모든 메뉴의 item_id:', data?.menus?.map(menu => ({ menu_id: menu.menu_id, item_id: menu.item_id })));
     
     return data;
   } catch (error) {
@@ -532,10 +538,31 @@ export const createReservation = async (itemId, accessToken) => {
     });
     
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      const error = new Error(errorData.message || `HTTP error! status: ${response.status}`);
-      error.status = response.status;
-      throw error;
+      console.error('=== 예약 생성 400 에러 상세 ===');
+      console.error('Status:', response.status);
+      console.error('Status Text:', response.statusText);
+      
+      try {
+        const errorData = await response.json();
+        console.error('서버 에러 응답:', errorData);
+        console.error('에러 코드:', errorData.errorCode);
+        console.error('에러 메시지:', errorData.message);
+        
+        // 에러 객체에 서버 응답 포함
+        const error = new Error(`HTTP error! status: ${response.status}`);
+        error.status = response.status;
+        error.serverResponse = errorData;
+        throw error;
+      } catch (jsonError) {
+        console.error('JSON 파싱 실패:', jsonError);
+        const textResponse = await response.text();
+        console.error('텍스트 응답:', textResponse);
+        
+        const error = new Error(`HTTP error! status: ${response.status}`);
+        error.status = response.status;
+        error.serverResponse = { error: textResponse };
+        throw error;
+      }
     }
     
     const data = await response.json();

@@ -26,7 +26,8 @@ import {
   fetchStoreSpacesCount, 
   fetchStoreMenus, 
   fetchStoreSpacesList, 
-  fetchSpaceDetails 
+  fetchSpaceDetails,
+  convertTimeToParam
 } from '../apis/storeAPI';
 
 const ShopDetailPage = () => {
@@ -59,15 +60,28 @@ const ShopDetailPage = () => {
     const currentStore = stores.find(store => store.id === parseInt(id));
     const isLiked = currentStore?.isLiked || false;
 
-    // 시간 파라미터 변환 함수
-    const convertTimeToParam = (time) => {
-        if (time === null) {
-            return new Date().getHours();
+
+
+    // 현재 시간과 메뉴 시간 비교 (이전 시간대는 예약 불가능)
+    const isTimeExpired = () => {
+        console.log('=== 시간 만료 체크 ===');
+        console.log('time 파라미터:', time);
+        console.log('time 타입:', typeof time);
+        
+        if (!time) {
+            console.log('time 파라미터가 없음 - 만료되지 않음으로 처리');
+            return false;
         }
-        if (typeof time === 'string') {
-            return parseInt(time.split(':')[0]);
-        }
-        return time;
+        
+        const currentHour = new Date().getHours();
+        const menuHour = convertTimeToParam(time);
+        
+        console.log('현재 시간:', currentHour);
+        console.log('메뉴 시간 (convertTimeToParam):', menuHour);
+        console.log('시간 만료 여부:', menuHour < currentHour);
+        console.log('비교 결과:', `${menuHour} < ${currentHour} = ${menuHour < currentHour}`);
+        
+        return menuHour < currentHour;
     };
 
     // 초기 데이터 로드
@@ -166,6 +180,78 @@ const ShopDetailPage = () => {
         return storeData.menus.filter(menu => menu.menu_id !== featured.menu_id);
     };
 
+    // 예약 가능한 메뉴가 있는지 확인
+    const hasAvailableMenus = () => {
+        if (!storeData || !storeData.menus) return false;
+        return storeData.menus.some(menu => menu.is_available);
+    };
+
+    // 메뉴의 예약 불가능 여부 확인 (통합 조건)
+    const isMenuUnavailable = (menu) => {
+        if (!menu) return true;
+        
+        console.log('=== 개별 메뉴 예약 불가능 체크 ===');
+        console.log('메뉴:', menu.menu_name);
+        console.log('menu.is_available:', menu.is_available);
+        console.log('time 파라미터:', time);
+        
+        const timeExpired = isTimeExpired();
+        const result = !menu.is_available || timeExpired;
+        
+        console.log('시간 만료 여부:', timeExpired);
+        console.log('최종 예약 불가능 여부:', result);
+        console.log('---');
+        
+        return result;
+    };
+
+    // 모든 메뉴의 예약 가능 여부 확인 (수정된 버전)
+    const areAllMenusUnavailable = () => {
+        console.log('=== 모든 메뉴 예약 불가능 체크 ===');
+        console.log('storeData:', storeData);
+        console.log('storeData.menus:', storeData?.menus);
+        console.log('time 파라미터:', time);
+        
+        if (!storeData || !storeData.menus) {
+            console.log('메뉴 데이터 없음 - 예약 불가능으로 처리');
+            return true;
+        }
+        
+        const result = storeData.menus.every(menu => isMenuUnavailable(menu));
+        console.log('모든 메뉴 예약 불가능 여부:', result);
+        
+        return result;
+    };
+
+    // 예약 불가능한 이유 확인
+    const getUnavailableReason = () => {
+        console.log('=== 예약 불가능 이유 확인 ===');
+        console.log('storeData:', storeData);
+        console.log('storeData.menus:', storeData?.menus);
+        console.log('time 파라미터:', time);
+        
+        if (!storeData || !storeData.menus) {
+            console.log('메뉴 데이터 없음');
+            return '메뉴 정보가 없습니다.';
+        }
+        
+        const currentHour = new Date().getHours();
+        const menuHour = convertTimeToParam(time);
+        
+        console.log('현재 시간:', currentHour);
+        console.log('메뉴 시간 (convertTimeToParam):', menuHour);
+        console.log('그냥 time:', time);
+        console.log('시간 만료 여부:', menuHour < currentHour);
+        
+        if (menuHour < currentHour) {
+            console.log('시간 만료로 인한 예약 불가능');
+            return '선택한 시간대가 이미 지났습니다.';
+        }
+        
+        console.log('일반적인 예약 불가능');
+        return '현재 예약 가능한 메뉴가 없습니다.';
+    };
+
     // 뒤로 가기 처리
     const handleBack = () => {
         if (showPiAgreement) {
@@ -196,6 +282,14 @@ const ShopDetailPage = () => {
 
     // 예약 버튼 클릭 시
     const handleReserve = (menu) => {
+        console.log('=== 메뉴 선택 디버깅 ===');
+        console.log('선택된 메뉴 객체:', menu);
+        console.log('item_id 존재 여부:', !!menu?.item_id);
+        console.log('item_id 값:', menu?.item_id);
+        console.log('메뉴 ID:', menu?.menu_id);
+        console.log('메뉴 이름:', menu?.menu_name);
+        console.log('Space 개수:', spaceCount);
+        console.log('선택된 Space ID:', selectedSpaceId);
         startReservation(menu, null);
     };
 
@@ -299,36 +393,54 @@ const ShopDetailPage = () => {
                             /* Space 상세 화면: 메뉴 목록 */
                             <>
                                 <Line />
-                                <MenuSection>
-                                    <SectionTitle>가장 할인율이 큰 대표 메뉴!</SectionTitle>
-                                    <MenuCard
-                                        menu={getFeaturedMenu()}
-                                        onReserve={() => handleReserve(getFeaturedMenu())}
-                                    />
-                                </MenuSection>
-                                <Line />
-                                <MenuSection>
-                                    <SectionTitle>다른 할인 메뉴</SectionTitle>
-                                    <MenuList menus={getOtherMenus()} onReserve={handleReserve} />
-                                </MenuSection>
+                                {areAllMenusUnavailable() ? (
+                                    <UnavailableMessage>
+                                        <UnavailableTitle>{getUnavailableReason()}</UnavailableTitle>
+                                        <UnavailableSubtitle>다른 시간대를 확인해보세요</UnavailableSubtitle>
+                                    </UnavailableMessage>
+                                ) : (
+                                    <>
+                                        <MenuSection>
+                                            <SectionTitle>가장 할인율이 큰 대표 메뉴!</SectionTitle>
+                                            <MenuCard
+                                                menu={getFeaturedMenu()}
+                                                onReserve={() => handleReserve(getFeaturedMenu())}
+                                            />
+                                        </MenuSection>
+                                        <Line />
+                                        <MenuSection>
+                                            <SectionTitle>다른 할인 메뉴</SectionTitle>
+                                            <MenuList menus={getOtherMenus()} onReserve={handleReserve} />
+                                        </MenuSection>
+                                    </>
+                                )}
                             </>
                         )
                     ) : (
                         /* Space가 1개인 경우: 바로 메뉴 목록 */
                         <>
                             <Line />
-                            <MenuSection>
-                                <SectionTitle>가장 할인율이 큰 대표 메뉴!</SectionTitle>
-                                <MenuCard
-                                    menu={getFeaturedMenu()}
-                                    onReserve={() => handleReserve(getFeaturedMenu())}
-                                />
-                            </MenuSection>
-                            <Line />
-                            <MenuSection>
-                                <SectionTitle>다른 할인 메뉴</SectionTitle>
-                                <MenuList menus={getOtherMenus()} onReserve={handleReserve} />
-                            </MenuSection>
+                            {areAllMenusUnavailable() ? (
+                                <UnavailableMessage>
+                                    <UnavailableTitle>{getUnavailableReason()}</UnavailableTitle>
+                                    <UnavailableSubtitle>다른 시간대를 확인해보세요</UnavailableSubtitle>
+                                </UnavailableMessage>
+                            ) : (
+                                <>
+                                    <MenuSection>
+                                        <SectionTitle>가장 할인율이 큰 대표 메뉴!</SectionTitle>
+                                        <MenuCard
+                                            menu={getFeaturedMenu()}
+                                            onReserve={() => handleReserve(getFeaturedMenu())}
+                                        />
+                                    </MenuSection>
+                                    <Line />
+                                    <MenuSection>
+                                        <SectionTitle>다른 할인 메뉴</SectionTitle>
+                                        <MenuList menus={getOtherMenus()} onReserve={handleReserve} />
+                                    </MenuSection>
+                                </>
+                            )}
                         </>
                     )}
                     </>
@@ -423,4 +535,20 @@ const ErrorText = styled.div`
 const ErrorSubText = styled.div`
     font-size: 14px;
     color: #999;
+`;
+
+const UnavailableMessage = styled.div`
+    padding: 16px;
+    text-align: center;
+    color: #999;
+    font-size: 14px;
+`;
+
+const UnavailableTitle = styled.div`
+    font-weight: 600;
+    margin-bottom: 4px;
+`;
+
+const UnavailableSubtitle = styled.div`
+    font-size: 12px;
 `;
