@@ -6,7 +6,7 @@
 import styled from 'styled-components'
 import menuImage from '../../../assets/images/menu.png';
 import useStore from '../../../hooks/store/useStore';
-import ReservationButton from '../../common/ReservationButton';
+import ReservationButton from '../../ui/ReservationButton';
 
 /**
  * MenuCard 컴포넌트

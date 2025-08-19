@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import placeholderImage from '../../../assets/images/placeholder.svg';
 import useStore from '../../../hooks/store/useStore';
-import ReservationButton from '../../common/ReservationButton';
+import ReservationButton from '../../ui/ReservationButton';
 
 /**
  * Space 목록용 카드 컴포넌트 (기존 DesignerCard 스타일 유지)
