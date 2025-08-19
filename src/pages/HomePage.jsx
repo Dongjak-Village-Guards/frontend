@@ -283,7 +283,7 @@ const AddressBar = styled.div`
   z-index: 20;
   display: flex;
   align-items: center;
-  padding: 44px 0 16px 0;
+  padding: 16px 0;//임시
   background: #fff;
   width: 100%;
   
@@ -485,8 +485,7 @@ const FilterAndSortToggleContainer = styled.div`
   align-items: center;
   position: -webkit-sticky;
   position: sticky;
-  top: clamp(40px, 10vh, 5.5rem); // 눈바디 수정
+  top: clamp(60px, 10vh, 5vh); // 눈바디 수정 > 거의 최적
   z-index: 15;
   background-color: #fff;
-
 `;

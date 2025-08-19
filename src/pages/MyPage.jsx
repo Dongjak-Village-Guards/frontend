@@ -121,17 +121,17 @@ const PageContainer = styled.div`
 
 const Header = styled.div`
   position: sticky;
-    top: 0;
-    left: 0;
-    right: 0;
-    padding: 52px 0 16px 0;
-    background: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    z-index: 10;
-    border-bottom: 2px solid #DA2538;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 16px 0;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  z-index: 10;
+  border-bottom: 2px solid #DA2538;
 `;
 
 const HeaderTitle = styled.h1`

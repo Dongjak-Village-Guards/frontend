@@ -56,16 +56,18 @@ const Search = () => {
 
   return (
     <SearchWrapper>
-      <SearchBar>
-        <input
-          type='text'
-          placeholder='도로명 또는 건물명으로 검색'
-          value={keyword}
-          onChange={(e) => setKeyword(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-        />
-        <SearchIcon className='search-icon' onClick={handleSearch} />
-      </SearchBar>
+      <SearchFixArea>
+        <SearchBar>
+            <input
+            type='text'
+            placeholder='도로명 또는 건물명으로 검색'
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            />
+            <SearchIcon className='search-icon' onClick={handleSearch} />
+        </SearchBar>
+      </SearchFixArea>
       
       {loading && hasSearched && <Spinner />}
       {!loading && !error && hasSearched && results.length === 0 && <NoResult>검색 결과가 없어요</NoResult>}
@@ -87,9 +89,11 @@ export default Search;
 
 const SearchWrapper = styled.div`
   width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
+  background-color: red;
 `;
 
 const SearchBar = styled.div`
@@ -165,4 +169,11 @@ const ResultItem = styled.li`
 
   user-select: none;
   cursor: pointer;
+`;
+
+const SearchFixArea = styled.div`
+  width: 100%;
+
+// 스크롤시 고정역할
+  
 `;

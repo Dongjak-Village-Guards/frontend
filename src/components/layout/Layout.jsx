@@ -67,11 +67,11 @@ const PhoneFrame = styled.div`
 const ContentArea = styled.div`
   flex: 1;
   overflow-y: auto;
-  padding-bottom: 80px; /* 데스크톱에서 NavBar 높이만큼 */
+//  padding-bottom: 80px; /* 데스크톱에서 NavBar 높이만큼 */
 
   /* 모바일에서는 safe-area 고려 */
   @media (max-width: 768px) {
-    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+    //padding-bottom: calc(80px + env(safe-area-inset-bottom)); 일단 임시로 지움
   }
 
   /* 반응형 웹 수정: 모바일에서 스크롤 최적화 */

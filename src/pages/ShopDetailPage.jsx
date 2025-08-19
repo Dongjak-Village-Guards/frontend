@@ -557,12 +557,3 @@ const UnavailableMessage = styled.div`
     color: #999;
     font-size: 14px;
 `;
-
-const UnavailableTitle = styled.div`
-    font-weight: 600;
-    margin-bottom: 4px;
-`;
-
-const UnavailableSubtitle = styled.div`
-    font-size: 12px;
-`;
