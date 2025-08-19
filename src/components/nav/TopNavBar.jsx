@@ -45,7 +45,6 @@ const NavBar = styled.div`
   align-items: center;
   justify-content: space-between;
 //  width: 100px;
-  border: 1px solid red;
   gap: 4px;
 //  margin-bottom: 16px; // 임시...
 `;
