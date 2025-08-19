@@ -1,25 +1,6 @@
 import styled from "styled-components";
 
-const ReservationButton = ({ 
-  children, 
-  onClick, 
-  disabled, 
-  variant = "primary", // primary, secondary, danger
-  ...props 
-}) => (
-  <StyledButton 
-    onClick={onClick} 
-    disabled={disabled} 
-    variant={variant}
-    {...props}
-  >
-    {children}
-  </StyledButton>
-);
-
-export default ReservationButton;
-
-const StyledButton = styled.button`
+export const StyledButton = styled.button`
   border: ${({ variant, disabled }) => {
     if (disabled) return "1px solid #737373";
     switch (variant) {
@@ -80,4 +61,4 @@ const StyledButton = styled.button`
       }
     }};
   }
-`;
+`; 

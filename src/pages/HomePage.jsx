@@ -11,7 +11,7 @@ import styled from "styled-components";
 import { FiChevronDown } from "react-icons/fi";
 import { AiFillCaretDown } from "react-icons/ai";
 import FilterContainer from "../components/filter/FilterContainer";
-import Spinner from "../components/common/Spinner";
+import Spinner from "../components/ui/Spinner";
 import useStore from "../hooks/store/useStore";
 import useUserInfo from "../hooks/user/useUserInfo";
 import Card from "../components/home/shop/Card";

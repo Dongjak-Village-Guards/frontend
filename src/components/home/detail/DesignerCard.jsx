@@ -5,7 +5,7 @@
 import styled from 'styled-components';
 import designerImage from '../../../assets/images/designer.png';
 import useStore from '../../../hooks/store/useStore';
-import ReservationButton from '../../common/ReservationButton';
+import ReservationButton from '../../ui/ReservationButton';
 
 /**
  * DesignerCard 컴포넌트

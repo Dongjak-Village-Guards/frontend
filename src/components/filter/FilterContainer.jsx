@@ -6,7 +6,7 @@
 
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import BottomSheet from '../common/BottomSheet';
+import BottomSheet from '../ui/BottomSheet';
 import TimeToggle from './TimeToggle';
 import CategoryToggle from './CategoryToggle';
 import CategoryFilter, { CATEGORY_OPTIONS } from './CategoryFilter';

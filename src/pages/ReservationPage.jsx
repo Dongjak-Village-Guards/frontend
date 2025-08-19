@@ -12,8 +12,8 @@ import ShopInfo from '../components/home/detail/ShopInfo';
 import MenuCard from '../components/home/detail/MenuCard';
 import PiAgreement from '../components/home/detail/PiAgreement';
 import { ReactComponent as ArrowButton } from '../assets/images/piArrow.svg';
-import Line from '../components/common/Line';
-import Spinner from '../components/common/Spinner';
+import Line from '../components/ui/Line';
+import Spinner from '../components/ui/Spinner';
 import { fetchMenuItemDetails, createReservation } from '../apis/storeAPI';
 
 const ReservationPage = ({ shop }) => {

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { ReactComponent as SearchIcon } from '../../../../assets/images/search.svg';
 import { fetchAddressResults } from '../../../../apis/addressAPI';
-import Spinner from '../../../common/Spinner';
+import Spinner from '../../../ui/Spinner';
 import useUserInfo from '../../../../hooks/user/useUserInfo';
 import useStore from '../../../../hooks/store/useStore';
 import {

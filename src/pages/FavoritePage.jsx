@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import useStore from '../hooks/store/useStore';
 import Card from '../components/home/shop/Card';
-import Spinner from '../components/common/Spinner';
+import Spinner from '../components/ui/Spinner';
 import FilterContainer from '../components/filter/FilterContainer';
 
 const FavoritePage = () => {

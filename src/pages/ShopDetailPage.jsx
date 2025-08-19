@@ -21,7 +21,7 @@ import DesignerInfo from '../components/home/detail/DesignerInfo';
 import ReservationPage from './ReservationPage';
 import Layout from '../components/layout/Layout';
 import TopNavBar from '../components/nav/TopNavBar';
-import Spinner from '../components/common/Spinner';
+import Spinner from '../components/ui/Spinner';
 import { 
   fetchStoreSpacesCount, 
   fetchStoreMenus, 
