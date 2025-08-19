@@ -3,7 +3,7 @@
  * 로그인 다음 or 홈 화면에서 주소 변경할 때 사용
  */
 
-import Search from '../components/address/Search'
+import Search from '../components/features/address/AddressSearch'
 import styled from 'styled-components'
 import useStore from '../hooks/store/useStore'
 import useUserInfo from '../hooks/user/useUserInfo'

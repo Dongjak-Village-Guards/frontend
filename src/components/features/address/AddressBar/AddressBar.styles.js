@@ -1,22 +1,6 @@
 import styled from "styled-components";
-import { AiOutlineCaretDown } from "react-icons/ai";
 
-const AddressBar = ({ address, onAddressClick }) => {
-  return (
-    <AddressContainer onClick={onAddressClick}>
-      <AddressText>{address}</AddressText>
-      <SelectArrow>
-        <AiOutlineCaretDown />
-      </SelectArrow>
-    </AddressContainer>
-  );
-};
-
-export default AddressBar;
-
-// ===== Styled Components ===== //
-
-const AddressContainer = styled.div`
+export const AddressContainer = styled.div`
   display: flex;
   align-items: center;
   padding: 18px 20px 0 20px;
@@ -33,7 +17,7 @@ const AddressContainer = styled.div`
   }
 `;
 
-const AddressText = styled.div`
+export const AddressText = styled.div`
   color: #000000;
   font-size: 22px;
   font-weight: 700;
@@ -47,10 +31,10 @@ const AddressText = styled.div`
   flex: 1;
 `;
 
-const SelectArrow = styled.div`
+export const SelectArrow = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 19px;
   color: #666;
-`;
+`; 
