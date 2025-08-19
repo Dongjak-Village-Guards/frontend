@@ -154,7 +154,7 @@ const Header = styled.div`
   top: 0;
   left: 0;
   right: 0;
-  padding: 52px 0 16px 0;
+  padding: 16px 0;
   background: #fff;
   display: flex;
   align-items: center;
@@ -212,7 +212,7 @@ const EmptySubText = styled.div`
 const SubContainer = styled.div`
   position: -webkit-sticky;
   position: sticky;
-  top: 84px;
+  top: 48px;
   z-index: 15;
   background-color: #fff;
 //  padding: clamp(8px, 2vh, 16px) 0;

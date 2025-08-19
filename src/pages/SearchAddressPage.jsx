@@ -47,16 +47,18 @@ export default SearchAddressPage;
 
 const AddressWrapper = styled.div`
   background-color: #ffffff;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
+//  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+//  justify-content: center;
+//  align-items: flex-start;
   width: 100%;
-  height: 100%;
-  position: relative;
+//  height: 100%;
+//  position: relative;
 `;
 
 const AddressContainer = styled.div`
-  position: relative;
+//  position: relative;
   background-color: #ffffff;
   width: 100%;
   height: 100%;
@@ -66,8 +68,8 @@ const AddressContainer = styled.div`
 `;
 
 const AddressFrame = styled.div`
-  position: relative;
-  top: 128px;
+//  position: relative;
+//  top: 128px;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -78,6 +80,13 @@ const AddressFrame = styled.div`
 
 const TextContainer = styled.div`
   width: 100%;
+
+//  // 스크롤시 고정역할
+//  position: sticky;
+//  background-color: white;
+////  top: clamp(80px, 8vh, 4vh);
+//  top: 50px;
+////  padding-top: 1rem;
 
   .title {
     color: #282828;

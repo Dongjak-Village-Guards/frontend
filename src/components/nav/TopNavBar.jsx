@@ -30,23 +30,24 @@ const FixedHeader = styled.div`
   position: -webkit-sticky;
   position: sticky;
   top: 0;
-  left: 0;
-  right: 0;
   z-index: 20;
   background: #fff;
 `;
 
 const TopSpacer = styled.div`
-  height: 44px;
+//  height: 44px;
   background: #fff;
 `;
 
 const NavBar = styled.div`
-  padding: 8px 16px;
+  padding: 16px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+//  width: 100px;
+  border: 1px solid red;
   gap: 4px;
+//  margin-bottom: 16px; // 임시...
 `;
 
 const NavButtonArea = styled.div`
