@@ -190,9 +190,9 @@ export default function HomePage() {
     <HomeContainer>
       {/* 상단 주소 */}
       <AddressBar>
-        <AddressText>
+        <AddressText onClick={handleAddressClick}>
           <AddressTextContent>{getAddressDisplayText()}</AddressTextContent>
-          <AddressIcon onClick={handleAddressClick}>
+          <AddressIcon>
             <FiChevronDown size={16} color="#DA2538" />
           </AddressIcon>
         </AddressText>
@@ -294,6 +294,18 @@ const AddressBar = styled.div`
   touch-action: manipulation; // 모바일에서 주소바 클릭 시 자동 줌 방지 테스트 -> 해결 안 됨
 `;
 
+/* 주소 아이콘 */
+const AddressIcon = styled.span`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  will-change: transform;
+  transition: transform 0.2s ease;
+`;
+
 /* 주소 텍스트 */
 const AddressText = styled.div`
   overflow: hidden;
@@ -308,6 +320,12 @@ const AddressText = styled.div`
   gap: clamp(2px, 2vw, 4px);
   padding: 4px 8px;
   border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+
+  &:hover ${AddressIcon} {
+    transform: rotate(180deg);
+  }
 `;
 
 /* 주소 텍스트 내용 */
@@ -316,22 +334,7 @@ const AddressTextContent = styled.span`
   text-overflow: ellipsis;
   white-space: nowrap;
   flex: 1;
-`;
-
-/* 주소 아이콘 */
-const AddressIcon = styled.span`
-  cursor: pointer;
-  transition: transform 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2px;
-  border-radius: 4px;
-  flex-shrink: 0;
-
-  &:hover {
-    transform: rotate(180deg);
-  }
+  user-select: none;
 `;
 
 /* 배너 광고 영역(주소바 아래에 위치) */
