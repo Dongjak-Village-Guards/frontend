@@ -18,17 +18,11 @@ export const AddressContainer = styled.div`
 `;
 
 export const AddressText = styled.div`
-  color: #000000;
+  color: #000;
   font-size: 22px;
   font-weight: 700;
   letter-spacing: 0;
   line-height: normal;
-  
-  // 긴 text ...으로 대체
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  flex: 1;
 `;
 
 export const SelectArrow = styled.div`
@@ -37,4 +31,4 @@ export const SelectArrow = styled.div`
   justify-content: center;
   font-size: 19px;
   color: #666;
-`; 
+`;

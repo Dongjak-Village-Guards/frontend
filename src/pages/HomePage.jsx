@@ -167,7 +167,7 @@ export default function HomePage() {
    */
   const displayAddress = userAddress ? userAddress.roadAddr : currentAddress;
   const getAddressDisplayText = () => {
-    return displayAddress.length > 8 ? `${displayAddress.slice(0, 8)}...` : displayAddress;
+    return displayAddress.length > 15 ? `${displayAddress.slice(0, 15)}...` : displayAddress;
   };
 
   /** 업종 라벨 */
