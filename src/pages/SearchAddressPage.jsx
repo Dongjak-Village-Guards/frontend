@@ -7,7 +7,7 @@ import Search from '../components/features/address/AddressSearch'
 import styled from 'styled-components'
 import useStore from '../hooks/store/useStore'
 import useUserInfo from '../hooks/user/useUserInfo'
-import TopNavBar from '../components/nav/TopNavBar'
+import TopNavBar from '../components/layout/TopNavBar/TopNavBar'
 
 const SearchAddressPage = () => {
   const { setCurrentPage, fromHomePage } = useStore();

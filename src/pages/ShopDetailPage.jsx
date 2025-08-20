@@ -11,17 +11,17 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import useStore from '../hooks/store/useStore';
 import useUserInfo from '../hooks/user/useUserInfo';
-import MenuCard from '../components/home/detail/MenuCard';
-import ShopInfo from '../components/home/detail/ShopInfo';
-import MenuList from '../components/home/detail/MenuList';
+import MenuCard from '../components/sections/shop-detail/MenuCard/MenuCard';
+import ShopInfo from '../components/sections/shop-detail/ShopInfo/ShopInfo';
+import MenuList from '../components/sections/shop-detail/MenuList/MenuList';
 import styled from 'styled-components';
-import SpaceCard from '../components/home/detail/SpaceCard';
+import SpaceCard from '../components/sections/shop-detail/SpaceCard/SpaceCard';
 import placeholderImage from "../assets/images/placeholder.svg";
-import DesignerInfo from '../components/home/detail/DesignerInfo';
+import DesignerInfo from '../components/sections/shop-detail/DesignerInfo/DesignerInfo';
 import ReservationPage from './ReservationPage';
 import Layout from '../components/layout/Layout';
-import TopNavBar from '../components/nav/TopNavBar';
-import Spinner from '../components/ui/Spinner';
+import TopNavBar from '../components/layout/TopNavBar/TopNavBar';
+import Spinner from '../components/ui/Spinner/Spinner';
 import { 
   fetchStoreSpacesCount, 
   fetchStoreMenus, 

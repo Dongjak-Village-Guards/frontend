@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { FiChevronRight } from 'react-icons/fi';
-import ReservationButton from '../components/ui/ReservationButton';
-import BottomSheet from '../components/ui/BottomSheet';
+import ReservationButton from '../components/ui/ReservationButton/ReservationButton';
+import BottomSheet from '../components/ui/BottomSheet/BottomSheet';
 import useStore from '../hooks/store/useStore';
 import useUserInfo from '../hooks/user/useUserInfo';
-import Spinner from '../components/ui/Spinner';
-import { getNearestHour } from '../components/filter/TimeFilter';
+import Spinner from '../components/ui/Spinner/Spinner';
+import { getNearestHour } from '../components/features/filter/TimeFilter/TimeFilter';
 import { fetchUserReservations, cancelReservation } from '../apis/reservationAPI';
 import placeholderImage from '../assets/images/placeholder.svg';
 

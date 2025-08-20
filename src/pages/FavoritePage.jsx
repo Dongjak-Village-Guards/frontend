@@ -10,9 +10,9 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import useStore from '../hooks/store/useStore';
-import Card from '../components/home/shop/Card';
-import Spinner from '../components/ui/Spinner';
-import FilterContainer from '../components/filter/FilterContainer';
+import Card from '../components/features/shop/ShopCard/ShopCard';
+import Spinner from '../components/ui/Spinner/Spinner';
+import FilterContainer from '../components/features/filter/FilterContainer/FilterContainer';
 
 const FavoritePage = () => {
   const navigate = useNavigate();
