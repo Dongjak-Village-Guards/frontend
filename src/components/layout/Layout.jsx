@@ -1,6 +1,6 @@
 import { forwardRef } from "react";
 import styled from 'styled-components';
-import NavBar from '../nav/BottomNavBar';
+import NavBar from './BottomNavBar/BottomNavBar';
 
 const Layout = forwardRef(({ children, currentPage = "home", onPageChange }, contentAreaRef) => {
   // 로그인/주소검색/상세 페이지에서는 NavBar 숨김
@@ -11,7 +11,7 @@ const Layout = forwardRef(({ children, currentPage = "home", onPageChange }, con
       <PhoneFrame>
         <ContentArea ref={contentAreaRef} className="content-area">
           {children}
-        </ContentArea>
+                </ContentArea>
         {showNavBar && <NavBar current={currentPage} onSelect={onPageChange} />}
         
         {/* 바텀시트 포털 마운트 지점 */}
@@ -67,11 +67,11 @@ const PhoneFrame = styled.div`
 const ContentArea = styled.div`
   flex: 1;
   overflow-y: auto;
-  padding-bottom: 80px; /* 데스크톱에서 NavBar 높이만큼 */
+//  padding-bottom: 80px; /* 데스크톱에서 NavBar 높이만큼 */
 
   /* 모바일에서는 safe-area 고려 */
   @media (max-width: 768px) {
-    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+    //padding-bottom: calc(80px + env(safe-area-inset-bottom)); 일단 임시로 지움
   }
 
   /* 반응형 웹 수정: 모바일에서 스크롤 최적화 */

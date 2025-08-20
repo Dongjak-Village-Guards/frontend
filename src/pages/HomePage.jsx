@@ -10,14 +10,14 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { FiChevronDown } from "react-icons/fi";
 import { AiFillCaretDown } from "react-icons/ai";
-import FilterContainer from "../components/filter/FilterContainer";
-import Spinner from "../components/common/Spinner";
+import FilterContainer from "../components/features/filter/FilterContainer/FilterContainer";
+import Spinner from "../components/ui/Spinner/Spinner";
 import useStore from "../hooks/store/useStore";
 import useUserInfo from "../hooks/user/useUserInfo";
-import Card from "../components/home/shop/Card";
+import Card from "../components/features/shop/ShopCard/ShopCard";
 import bannerImage from "../assets/images/bannerImage.png";
 import { useNavigate } from "react-router-dom";
-import { CATEGORY_OPTIONS } from "../components/filter/CategoryFilter";
+import { CATEGORY_OPTIONS } from "../components/features/filter/CategoryFilter/CategoryFilter";
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -283,7 +283,7 @@ const AddressBar = styled.div`
   z-index: 20;
   display: flex;
   align-items: center;
-  padding: 44px 0 16px 0;
+  padding: 16px 0;//임시
   background: #fff;
   width: 100%;
   
@@ -485,8 +485,7 @@ const FilterAndSortToggleContainer = styled.div`
   align-items: center;
   position: -webkit-sticky;
   position: sticky;
-  top: clamp(40px, 10vh, 5.5rem); // 눈바디 수정
+  top: clamp(60px, 10vh, 5vh); // 눈바디 수정 > 거의 최적
   z-index: 15;
   background-color: #fff;
-
 `;
