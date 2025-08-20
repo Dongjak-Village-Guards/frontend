@@ -8,12 +8,12 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import useStore from '../hooks/store/useStore';
 import useUserInfo from '../hooks/user/useUserInfo';
-import ShopInfo from '../components/home/detail/ShopInfo';
-import MenuCard from '../components/home/detail/MenuCard';
-import PiAgreement from '../components/home/detail/PiAgreement';
+import ShopInfo from '../components/sections/shop-detail/ShopInfo/ShopInfo';
+import MenuCard from '../components/sections/shop-detail/MenuCard/MenuCard';
+import PiAgreement from '../components/sections/shop-detail/PiAgreement/PiAgreement';
 import { ReactComponent as ArrowButton } from '../assets/images/piArrow.svg';
-import Line from '../components/common/Line';
-import Spinner from '../components/common/Spinner';
+import Line from '../components/ui/Line/Line';
+import Spinner from '../components/ui/Spinner/Spinner';
 import { fetchMenuItemDetails, createReservation } from '../apis/storeAPI';
 
 const ReservationPage = ({ shop }) => {

@@ -4,7 +4,7 @@
 
 import Logo from '../assets/images/logo.png';
 import { ReactComponent as Bubble } from '../assets/images/bubble.svg';
-import Google from '../components/login/Google';
+import Google from '../components/features/auth/Google/Google';
 import styled from 'styled-components';
 
 const Login = () => {

@@ -15,7 +15,7 @@ import LoginPage from './LoginPage';
 import Layout from '../components/layout/Layout';
 import useStore from '../hooks/store/useStore';
 import useUserInfo from '../hooks/user/useUserInfo';
-import { getNearestHour } from '../components/filter/TimeFilter';
+import { getNearestHour } from '../components/features/filter/TimeFilter/TimeFilter';
 
 const MainPageApp = () => {
   // Zustand 스토어에서 페이지 관련 상태와 액션 가져오기
