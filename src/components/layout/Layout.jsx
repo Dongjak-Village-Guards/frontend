@@ -1,6 +1,6 @@
 import { forwardRef } from "react";
 import styled from 'styled-components';
-import NavBar from '../nav/BottomNavBar';
+import NavBar from './BottomNavBar/BottomNavBar';
 
 const Layout = forwardRef(({ children, currentPage = "home", onPageChange }, contentAreaRef) => {
   // 로그인/주소검색/상세 페이지에서는 NavBar 숨김
@@ -11,7 +11,7 @@ const Layout = forwardRef(({ children, currentPage = "home", onPageChange }, con
       <PhoneFrame>
         <ContentArea ref={contentAreaRef} className="content-area">
           {children}
-        </ContentArea>
+                </ContentArea>
         {showNavBar && <NavBar current={currentPage} onSelect={onPageChange} />}
         
         {/* 바텀시트 포털 마운트 지점 */}
