@@ -9,68 +9,56 @@ import styled from 'styled-components';
 
 const Login = () => {
   return (
-    <LoginWrapper>
-      <Container>
-        <img src={Logo} alt="지금살래 로고" className="logo-icon" />
+    <Container>
+      <img src={Logo} alt="지금살래 로고" className="logo-icon" />
 
-        <FirstTitle>
-          <p className='main-title'>위기의 지갑을 구하는 3시간의 기적</p>
-        </FirstTitle>
+      <FirstTitle>
+        <p className='main-title'>위기의 지갑을 구하는 3시간의 기적</p>
+      </FirstTitle>
 
-        <SecondTitle>
-          <p className='sub-title'>
-            우리 동네 할인 정보
-            <br />
-            놓치지 마세요
-          </p>
-        </SecondTitle>
+      <SecondTitle>
+        <p className='sub-title'>
+          우리 동네 할인 정보
+          <br />
+          놓치지 마세요
+        </p>
+      </SecondTitle>
 
-        <BubbleBox>
-          <Bubble className='bubble-svg' />
-          <div className='bubble-text'>3초만에 간편 로그인</div>
-        </BubbleBox>
+      <BubbleBox>
+        <Bubble className='bubble-svg' />
+        <div className='bubble-text'>3초만에 간편 로그인</div>
+      </BubbleBox>
 
-        <GoogleButton>
-          <Google className='google-component' />
-        </GoogleButton>
-      </Container>
-    </LoginWrapper>
+      <GoogleButton>
+        <Google className='google-component' />
+      </GoogleButton>
+    </Container>
   );
 };
 
 export default Login;
 
-const LoginWrapper = styled.div`
-  background-color: #ffffff;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-`;
-
 const Container = styled.div`
-  position: relative;
-  background-color: #ffffff;
-  width: 360px;
-  height: 720px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 
   .logo-icon {
-    position: absolute;
-    height: 104px;
     width: 104px;
-    top: 188px;
-    left: 128px;
+    height: 104px;
+    margin-bottom: 24px;
   }
 `;
 
 const FirstTitle = styled.div`
-  position: absolute;
-  top: 316px;
-  left: 43px;
-  display: inline-flex;
+  display: flex;
   justify-content: center;
   align-items: center;
+  margin-bottom: 24px;
 
   .main-title {
     color: #282828;
@@ -78,17 +66,14 @@ const FirstTitle = styled.div`
     font-weight: 700;
     line-height: 14px;
     white-space: nowrap;
-    margin-top: -1px;
   }
 `;
 
 const SecondTitle = styled.div`
-  position: absolute;
-  top: 354px;
-  left: 118.5px;
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-bottom: 86px;
 
   .sub-title {
     color: #000000;
@@ -97,28 +82,29 @@ const SecondTitle = styled.div`
     line-height: 20px;
     text-align: center;
     white-space: nowrap;
-    margin-top: -1px;
   }
 `;
 
 const BubbleBox = styled.div`
-  position: relative;
-  top: 480px;
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative;
+  width: 200px;
+  height: 50px;
+  margin-bottom: 8px;
 
   .bubble-svg {
-    position: relative;
     width: 200px;
     height: 50px;
-    top: 0;
-    left: 0;
+    z-index: 0;
   }
 
   .bubble-text {
     position: absolute;
-    top: 6px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -83%);
     color: #da2538;
     font-size: 16px;
     font-weight: 600;
@@ -128,9 +114,6 @@ const BubbleBox = styled.div`
 `;
 
 const GoogleButton = styled.div`
-  position: absolute;
-  top: 538px;
-  left: 32px;
   width: 296px;
   cursor: pointer;
 

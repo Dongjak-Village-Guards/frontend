@@ -32,7 +32,6 @@ const Container = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px; /* 데스크톱에서만 패딩 */
 
   /* 모바일에서는 전체 화면 */
   @media (max-width: 768px) {
@@ -58,6 +57,7 @@ const PhoneFrame = styled.div`
     max-width: 100%;
     height: 100vh;
     box-shadow: none;
+    /* iOS 디바이스의 안전 영역(safe area)을 고려해 상단/하단 패딩을 동적으로 조정 */
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
   }
@@ -67,12 +67,6 @@ const PhoneFrame = styled.div`
 const ContentArea = styled.div`
   flex: 1;
   overflow-y: auto;
-//  padding-bottom: 80px; /* 데스크톱에서 NavBar 높이만큼 */
-
-  /* 모바일에서는 safe-area 고려 */
-  @media (max-width: 768px) {
-    //padding-bottom: calc(80px + env(safe-area-inset-bottom)); 일단 임시로 지움
-  }
 
   /* 반응형 웹 수정: 모바일에서 스크롤 최적화 */
   -webkit-overflow-scrolling: touch;
