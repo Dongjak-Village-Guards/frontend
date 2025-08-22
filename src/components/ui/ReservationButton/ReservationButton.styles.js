@@ -39,7 +39,7 @@ export const StyledButton = styled.button`
   
   font-size: 14px;
   font-weight: 400;
-  padding: 10px 0;
+  padding: 8px 12px;
   border-radius: 10px;
   cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
   transition: all 0.2s ease;
