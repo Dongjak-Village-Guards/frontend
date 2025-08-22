@@ -10,11 +10,8 @@ export const CardContainer = styled.div`
   flex-direction: column;
   cursor: pointer;
 
-  /* 반응형 웹 수정: 고정 너비 제거하고 유동적 너비 사용 */
   width: 100%;
-
-  /* 반응형 웹 수정: 고정 높이 대신 반응형 높이 사용 */
-  height: clamp(180px, 50vh, 216px);
+  height: 216px;
 
   justify-content: flex-start;
   align-items: flex-start;
@@ -24,13 +21,7 @@ export const CardContainer = styled.div`
   background: #fff;
   position: relative;
   overflow: hidden;
-  /* 반응형 웹 수정: 반응형 마진 사용 */
-  margin-bottom: clamp(12px, 3vh, 16px);
-  
-  /* 반응형 웹 수정: 모바일에서 간격 조정 */
-  @media (max-width: 480px) {
-    gap: clamp(6px, 2vw, 8px);
-  }
+  margin-bottom: 16px;
 `;
 
 export const CardHeader = styled.div`
@@ -46,7 +37,4 @@ export const CardFooter = styled.div`
     align-items: flex-start;
     /* 반응형 웹 수정: 반응형 패딩 사용 */
     padding: 0px clamp(12px, 4vw, 16.5px);
-
-    // 레이아웃 확인용
-    //border: 1px solid blue;
 `; 

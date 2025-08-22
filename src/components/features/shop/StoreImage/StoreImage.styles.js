@@ -28,9 +28,7 @@ export const ImageGroup = styled.div`
   height: 100%;
 `;
 
-/* 메인 카드 이미지
-(328x148 크기의 메인 이미지 영역)
-*/
+/* 메인 카드 이미지 */
 export const MainCardImage = styled.img`
   /* 반응형 웹 수정: 고정 크기 대신 반응형 크기 사용 */
   width: 100%;

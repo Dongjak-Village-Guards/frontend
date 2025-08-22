@@ -8,7 +8,6 @@ const FilterBar = ({ activeFilter, onFilterChange, sortOptions, onSortChange }) 
         active={activeFilter === 'time'} 
         onClick={() => onFilterChange('time')}
       >
-        시간순==
       </FilterTab>
 
       <FilterTab 

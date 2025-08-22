@@ -15,6 +15,7 @@ export const TimeItem = styled.button`
   justify-content: flex-start;
   color: ${props => props.$selected ? '#DA2538' : '#000'};
   font-weight: ${props => props.$selected ? '600' : '400'};
+  cursor: pointer;
 
   &:hover {
     color: #DA2538;
@@ -23,4 +24,4 @@ export const TimeItem = styled.button`
   &:last-child {
     border-bottom: none;
   }
-`; 
+`;
