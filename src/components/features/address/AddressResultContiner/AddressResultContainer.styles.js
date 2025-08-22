@@ -14,10 +14,9 @@ export const NoResult = styled.div`
 export const ResultContainer = styled.ul`
   width: 100%;
   list-style: none;
-  max-height: 320px;
-  overflow-y: auto;
   padding: 0;
   margin: 0;
+  box-sizing: content-box;
 `;
 
 export const ResultItem = styled.li`

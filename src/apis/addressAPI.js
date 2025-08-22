@@ -1,19 +1,17 @@
-export const fetchAddressResults = async (keyword) => {
-    const API_KEY = process.env.REACT_APP_JUSO_API_KEY; // .env 파일에 있음
-    const url = `https://business.juso.go.kr/addrlink/addrLinkApi.do?confmKey=${API_KEY}&currentPage=1&countPerPage=30&keyword=${encodeURIComponent(keyword)}&resultType=json`;
+export const fetchAddressResults = async (keyword, page = 1, pageSize = 7) => {
+  const API_KEY = process.env.REACT_APP_JUSO_API_KEY;
+  const url = `https://business.juso.go.kr/addrlink/addrLinkApi.do?confmKey=${API_KEY}&currentPage=${page}&countPerPage=${pageSize}&keyword=${encodeURIComponent(keyword)}&resultType=json`;
 
-    /** Debugging Log(API 키 호출 여부, 키 확인) 
-     console.log('API 호출 URL:', url); 
-     console.log('API 키 확인:', API_KEY ? '있음' : '없음');
-     */
-
-    try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('API 호출 실패');
-        const data = await response.json();
-        return data.results?.juso || [];
-    } catch (error) {
-        console.error('주소 검색 오류:', error);
-        return [];        
-    }
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('API 호출 실패');
+    const data = await response.json();
+    return {
+      results: data.results?.juso || [],
+      totalCount: data.results?.common?.totalCount || 0, // 총 개수 확인
+    };
+  } catch (error) {
+    console.error('주소 검색 오류:', error);
+    return { results: [], totalCount: 0 };
+  }
 };

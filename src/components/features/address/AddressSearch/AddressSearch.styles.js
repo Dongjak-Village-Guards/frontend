@@ -42,8 +42,48 @@ export const SearchBar = styled.div`
 
 export const SearchFixArea = styled.div`
   width: 100%;
-// 스크롤시 고정역할
+  // 스크롤 시 고정 역할
   position: sticky;
   background-color: white;
-  top: 143px;
-`; 
+`;
+
+export const PaginationWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  margin-top: 22px;
+`;
+
+export const PageButton = styled.button`
+  background: none;
+  border: none;
+  color: ${({ active }) => (active ? '#da2538' : '#000')};
+  text-decoration: ${({ active }) => (active ? 'underline' : 'none')};
+  font-size: 16px;
+  font-weight: 400;
+  cursor: ${({ disabled, isCaret }) => (disabled && isCaret ? 'default' : 'pointer')};
+  padding: 0;
+  width: 28px;
+  height: 28px;
+
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
+export const PageNumSpan = styled.span`
+  font-size: 16px;
+  font-weight: inherit;
+  color: inherit;
+  padding: 0 9px;
+  border-right: ${({ hasBorder }) => (hasBorder ? '1px solid #737373' : 'none')};
+  display: inline-block;
+  height: 19px;
+  vertical-align: middle;
+`;
+
+export const PageInfo = styled.span`
+  font-size: 14px;
+  color: #333;
+`;

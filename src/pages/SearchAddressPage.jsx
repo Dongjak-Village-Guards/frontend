@@ -29,7 +29,7 @@ const SearchAddressPage = () => {
         />
       )}
       <AddressContainer>
-        <AddressFrame>
+        <AddressFrame marginTop={!fromHomePage ? '120px' : '0'}>
           <TextContainer>
             <p className='title'>우리 동네를 등록해보세요</p>
             <p className='paragraph'>동네에서 가장 똑똑한 소비를 찾아드려요</p>
@@ -47,18 +47,14 @@ export default SearchAddressPage;
 
 const AddressWrapper = styled.div`
   background-color: #ffffff;
-//  display: flex;
   flex-direction: column;
   min-height: 100vh;
-//  justify-content: center;
-//  align-items: flex-start;
   width: 100%;
-//  height: 100%;
-//  position: relative;
+  height: 100vh;
+  overflow: hidden;
 `;
 
 const AddressContainer = styled.div`
-//  position: relative;
   background-color: #ffffff;
   width: 100%;
   height: 100%;
@@ -68,14 +64,13 @@ const AddressContainer = styled.div`
 `;
 
 const AddressFrame = styled.div`
-//  position: relative;
-//  top: 128px;
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 0 16px;
+  margin-top: ${props => props.marginTop || '0'};
 `;
 
 const TextContainer = styled.div`
