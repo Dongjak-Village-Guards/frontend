@@ -19,7 +19,6 @@ export const Sheet = styled.section`
   display: flex;
   flex-direction: column;
   animation: slideUp 160ms ease-out;
-//  max-height: 51.5vh; // 눈바디
 
   height: ${props => {
     switch(props.$sheetHeight) {
@@ -39,7 +38,6 @@ export const Sheet = styled.section`
     from { transform: translateY(8%); opacity: 0.8; }
     to { transform: translateY(0); opacity: 1; }
   }
-//  padding: 0 16px; // 임시
 `;
 
 export const SheetHeader = styled.header`
@@ -48,7 +46,7 @@ export const SheetHeader = styled.header`
   justify-content: space-between;
   padding: ${props => {
     if (props.$variant === "noHeaderPadding") {
-      return "12px 16px 0 16px";
+      return "20px 16px";
     }
     return props.$headerPadding;
   }};
@@ -64,10 +62,11 @@ export const SheetTitle = styled.h3`
 `;
 
 export const CloseButton = styled.button`
+  width: 24px;
+  height: 24px;
+  padding: 0;
   border: none;
   background: none;
-  font-size: 14px;
-  padding: 6px 8px;
   cursor: pointer;
   z-index: 9999 !important; /* 강제로 최상위로 */
   position: relative;

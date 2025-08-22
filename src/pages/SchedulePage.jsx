@@ -403,20 +403,20 @@ const AppointmentCard = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 12px;
+  gap: 23px;
   margin-bottom: 12px;
 `;
 
 const CardContent = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 `;
 
 const ProfileImage = styled.div`
-  width: 60px;
-  height: 60px;
-  border-radius: 8px;
+  width: 80px;
+  height: 80px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -434,7 +434,7 @@ const ProfileImageSrc = styled.img`
 const AppointmentDetails = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 10px;
   flex: 1;
 `;
 
@@ -460,13 +460,14 @@ const ChevronIcon = styled(FiChevronRight)`
 
 const VisitTime = styled.div`
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
   color: #DA2538;
 `;
 
 const ServiceInfo = styled.div`
   font-size: 14px;
-  color: #666;
+  font-weight: 600;
+  color: #000;
 `;
 
 const EmptyState = styled.div`
@@ -503,8 +504,8 @@ const ButtonGroup = styled.div`
 
 const Divider = styled.div`
   width: 100%;
-  border-bottom: 1px solid #CCCCCC;
-  padding-top: 0px;
+  height: 1px;
+  background-color: #CCC;
 `;
 
 const ReservationCompleteContent = styled.div`
@@ -513,7 +514,7 @@ const ReservationCompleteContent = styled.div`
 
 const ReservationInfo = styled.div`
   background: #f8f9fa;
-  border-radius: 8px;
+  border-radius: 10px;
   margin-bottom: 24px;
   text-align: left;
   margin-top: 0.7rem;
