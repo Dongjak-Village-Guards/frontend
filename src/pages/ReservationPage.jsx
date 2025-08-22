@@ -238,6 +238,9 @@ const ReservationPage = ({ shop }) => {
           >
             {reserving ? '예약 중...' : '예약하기'}
           </ReserveButton>
+          <NoticeText>
+            방문 시간 30분 전부터는 예약을 취소할 수 없습니다
+          </NoticeText>
         </>
       )}
     </ReservationContainer>
@@ -368,4 +371,12 @@ const BackButton = styled.button`
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
+`;
+
+const NoticeText = styled.div`
+  margin-top: 24px;
+  color: #da2538;
+  font-size: 14px;
+  text-align: center;
+  font-weight: 600;
 `;
