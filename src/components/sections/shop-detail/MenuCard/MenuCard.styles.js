@@ -13,8 +13,8 @@ export const Card = styled.div`
     align-items: center;
     gap: 8px;
     margin-bottom: 12px;
-    background-color: ${props => props.isUnavailable ? '#FFEBEB' : '#fff'}; /* 예약 불가능 상태일 때 배경색 변경 */
-    border-color: ${props => props.isUnavailable ? '#FF0000' : '#CCC'}; /* 예약 불가능 상태일 때 테두리 색 변경 */
+    background-color: ${props => props.isUnavailable ? '#FFF2F2' : '#fff'}; /* 예약 불가능 상태일 때 배경색 변경 */
+    border-color: ${props => props.isUnavailable ? '#DA2538' : '#CCC'}; /* 예약 불가능 상태일 때 테두리 색 변경 */
 `;
 
 export const Div = styled.div`
@@ -43,7 +43,7 @@ export const MenuName = styled.h3`
     font-size: 14px;
     font-weight: 600;
     line-height: 14px;
-    color: ${props => props.isUnavailable ? '#FF0000' : '#000'}; /* 예약 불가능 상태일 때 색 변경 */
+    color: #000;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -61,14 +61,14 @@ export const PriceInfo = styled.div`
 
 /* 할인율 표시 */
 export const DiscountRate = styled.span`
-    color: ${props => props.isUnavailable ? '#FF0000' : '#F00'}; /* 예약 불가능 상태일 때 색 변경 */
+    color: #f00;
     font-size: 12px;
 `;
 
 /* 원래 가격 (취소선 처리) */
 export const OriginalPrice = styled.span`
     font-size: 12px;
-    color: ${props => props.isUnavailable ? '#FF0000' : '#999'}; /* 예약 불가능 상태일 때 색 변경 */
+    color: #737373;
     text-decoration: ${props => props.isUnavailable ? 'line-through' : 'line-through'}; /* 예약 불가능 상태일 때 취소선 제거 */
 `;
 
@@ -76,7 +76,7 @@ export const OriginalPrice = styled.span`
 export const DiscountPrice = styled.span`
     font-size: 14px;
     font-weight: 600;
-    color: ${props => props.isUnavailable ? '#FF0000' : '#000'}; /* 예약 불가능 상태일 때 색 변경 */
+    color: #000;
     line-height: 14px;
 `;
 
