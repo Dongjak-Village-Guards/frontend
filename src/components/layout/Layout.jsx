@@ -32,6 +32,7 @@ const Container = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 10px;
 
   /* 모바일에서는 전체 화면 */
   @media (max-width: 768px) {
@@ -44,7 +45,7 @@ const Container = styled.div`
 const PhoneFrame = styled.div`
   width: 100%;
   max-width: 360px;
-  height: 720px;
+  height: calc(100vh - 20px);
   background: #fff;
   box-shadow: 2px 2px 16px rgba(0,0,0,0.07);
   position: relative;
