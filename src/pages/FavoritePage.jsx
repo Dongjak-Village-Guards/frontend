@@ -212,7 +212,7 @@ const EmptySubText = styled.div`
 const SubContainer = styled.div`
   position: -webkit-sticky;
   position: sticky;
-  top: 48px;
+  top: 60px;
   z-index: 15;
   background-color: #fff;
 `;
