@@ -372,7 +372,6 @@ const Header = styled.div`
 const HeaderTitle = styled.h1`
     font-size: 22px;
     font-weight: 700;
-    line-height: 14px;
     color: #000;
 `;
 
@@ -403,7 +402,7 @@ const AppointmentCard = styled.div`
   padding: 24px;
   display: flex;
   flex-direction: column;
-  justify-contenet: space-between;
+  justify-content: space-between;
   gap: 12px;
 `;
 
@@ -440,7 +439,6 @@ const AppointmentDetails = styled.div`
 
 const SalonName = styled.div`
   display: flex;
-//  align-items: center;
   gap: 4px;
   cursor: pointer;
   transition: opacity 0.2s ease;
@@ -451,7 +449,6 @@ const SalonName = styled.div`
 `;
 
 const SalonNameText = styled.span`
-//  background: #FFF3CD;
   color: #000;
   padding: 2px;
   border-radius: 4px;
@@ -514,7 +511,6 @@ const Divider = styled.div`
 `;
 
 const ReservationCompleteContent = styled.div`
-//  padding: 24px 16px;
   text-align: center;
 `;
 

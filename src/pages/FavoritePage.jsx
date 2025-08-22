@@ -167,7 +167,6 @@ const Header = styled.div`
 const HeaderTitle = styled.h1`
   font-size: 22px;
   font-weight: 700;
-  line-height: 14px;
   color: #000;
 `;
 
@@ -215,5 +214,4 @@ const SubContainer = styled.div`
   top: 48px;
   z-index: 15;
   background-color: #fff;
-//  padding: clamp(8px, 2vh, 16px) 0;
 `;

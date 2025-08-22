@@ -312,7 +312,6 @@ const AddressText = styled.div`
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 8px;
   border-radius: 8px;
   cursor: pointer;
   transition: transform 0.2s ease;

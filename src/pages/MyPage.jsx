@@ -135,14 +135,8 @@ const Header = styled.div`
 `;
 
 const HeaderTitle = styled.h1`
-//  font-size: 22px;
-//  font-weight: 700;
-//  color: #000;
-//  margin: 0;
-//width: 100%;
     font-size: 22px;
     font-weight: 700;
-    line-height: 14px;
     color: #000;
 `;
 
@@ -225,7 +219,6 @@ const MenuDivider = styled.div`
 
 const PromotionSection = styled.div`
   margin-top: 32px;
-//  margin-bottom: 24px;
   display: flex;
   justify-content: center;
   align-items: center;
