@@ -173,6 +173,7 @@ const HeaderTitle = styled.h1`
 const ContentContainer = styled.div`
   flex: 1;
   overflow-y: auto;
+  padding-bottom: 52px;
 `;
 
 const StoreList = styled.div`
