@@ -379,6 +379,7 @@ const ContentContainer = styled.div`
   flex: 1;
   overflow-y: auto;
   padding-top: 16px;
+  padding-bottom: 52px;
 `;
 
 const LoadingContainer = styled.div`
@@ -404,6 +405,7 @@ const AppointmentCard = styled.div`
   flex-direction: column;
   justify-content: space-between;
   gap: 12px;
+  margin-bottom: 16px;
 `;
 
 const CardContent = styled.div`
