@@ -81,13 +81,6 @@ const AddressFrame = styled.div`
 const TextContainer = styled.div`
   width: 100%;
 
-//  // 스크롤시 고정역할
-//  position: sticky;
-//  background-color: white;
-////  top: clamp(80px, 8vh, 4vh);
-//  top: 50px;
-////  padding-top: 1rem;
-
   .title {
     color: #282828;
     font-size: 20px;

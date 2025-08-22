@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { ReactComponent as SearchIcon } from '../../../../assets/images/search.svg';
 import { fetchAddressResults } from '../../../../apis/addressAPI';
 import Spinner from '../../../ui/Spinner/Spinner';
+import AddressResultContainer from '../AddressResultContiner/AddressResultContainer';
 import useUserInfo from '../../../../hooks/user/useUserInfo';
 import useStore from '../../../../hooks/store/useStore';
 import {
@@ -77,15 +78,13 @@ const AddressSearch = () => {
       </SearchFixArea>
       
       {loading && hasSearched && <Spinner />}
-      {!loading && !error && hasSearched && results.length === 0 && <NoResult>검색 결과가 없어요</NoResult>}
-
-      <ResultContainer>
-        {results.map((item, index) => (
-          <ResultItem key={index} onClick={() => handleAddressSelect(item)}>
-            {item.roadAddr} ({item.zipNo})
-          </ResultItem>
-        ))}
-      </ResultContainer>
+      <AddressResultContainer
+        results={results}
+        loading={loading}
+        error={error}
+        hasSearched={hasSearched}
+        onSelect={handleAddressSelect}
+      />
     </SearchWrapper>
   );
 };
