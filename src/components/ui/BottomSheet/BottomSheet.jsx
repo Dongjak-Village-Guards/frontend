@@ -14,8 +14,8 @@ const BottomSheet = ({
   title, 
   onClose, 
   children, 
-  headerPadding = "12px 16px",
-  bodyPadding = "12px 16px 16px 16px",
+  headerPadding = "20px 16px",
+  bodyPadding = "0px 16px 16px 16px",
   headerVariant = "default", // default, noHeaderPadding
   bodyVariant = "default", // default, noBodyPadding
   sheetHeight = "default", // default, mainPageSize
