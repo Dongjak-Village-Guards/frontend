@@ -213,12 +213,15 @@ const ReservationPage = ({ shop }) => {
           )}
           <Line />
           <CheckboxContainer>
-            <Checkbox
-              type="checkbox"
-              checked={isAgreed}
-              onChange={handleCheckboxChange}
-            />
-            <CheckboxLabel>개인정보 제3자 제공 동의</CheckboxLabel>
+            <CheckboxWrapper>
+              <Checkbox
+                id="pi-agree-checkbox"
+                type="checkbox"
+                checked={isAgreed}
+                onChange={handleCheckboxChange}
+              />
+              <CheckboxLabel htmlFor="pi-agree-checkbox">개인정보 제3자 제공 동의</CheckboxLabel>
+            </CheckboxWrapper>
             <ArrowIcon onClick={handleArrowClick}>
                 <ArrowButton />
             </ArrowIcon>
@@ -275,17 +278,23 @@ const CheckboxContainer = styled.div`
   height: 70px;
 `;
 
+const CheckboxWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  user-select: none;
+`;
+
 const Checkbox = styled.input`
   width: 16px;
   height: 16px;
-  cursor: pointer;
 `;
 
 const CheckboxLabel = styled.label`
   font-size: 14px;
   font-weight: 500;
   color: rgba(0,0,0,0.45);
-  flex: 1;
 `;
 
 const ArrowIcon = styled.div`
