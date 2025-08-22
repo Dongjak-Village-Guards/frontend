@@ -10,7 +10,7 @@ export const ListContainer = styled.div`
 
 /* 메뉴 없음 메시지 */
 export const NoMenus = styled.div`
-    font-size: clamp(12px, 3.5vw, 14px);
+    font-size: 14px;
     color: #000;
     text-align: center;
     padding: 16px;

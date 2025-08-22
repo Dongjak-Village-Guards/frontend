@@ -3,7 +3,6 @@ import styled from 'styled-components';
 export const CategoryList = styled.div`
   display: grid;
   grid-template-columns: repeat(1, 1fr);
-  margin-bottom: 200px; //임시
 `;
 
 export const CategoryItem = styled.button`
@@ -16,6 +15,7 @@ export const CategoryItem = styled.button`
   justify-content: flex-start;
   color: ${props => props.$selected ? '#DA2538' : '#000'};
   font-weight: ${props => props.$selected ? '600' : '400'};
+  cursor: pointer;
 
   &:hover {
     color: #DA2538;

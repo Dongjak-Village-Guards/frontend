@@ -193,7 +193,7 @@ export default function HomePage() {
         <AddressText onClick={handleAddressClick}>
           <AddressTextContent>{getAddressDisplayText()}</AddressTextContent>
           <AddressIcon>
-            <FiChevronDown size={16} color="#DA2538" />
+            <FiChevronDown size={24} color="#DA2538" />
           </AddressIcon>
         </AddressText>
       </AddressBar>
@@ -270,26 +270,22 @@ export default function HomePage() {
 const HomeContainer = styled.div`
   background: #fff;
   min-height: 100%;
-  padding: 0 clamp(8px, 4vw, 16px);
+  padding: 0 16px;
   width: 100%;
   max-width: 100%;
 `;
 
 /* 상단 주소 바(Layout 내부에서 상단에 고정되어 스크롤에 영향을 받지 않음) */
 const AddressBar = styled.div`
-  position: -webkit-sticky;
   position: sticky;
-  top: 0;
+  top: -0.5px;
   z-index: 20;
+  height: 68px;
   display: flex;
   align-items: center;
-  padding: 16px 0;//임시
-  background: #fff;
+  padding: 16px 0;
+  background-color: #fff;
   width: 100%;
-  
-  /* sticky 포지션이 확실히 작동하도록 추가 설정 */
-  transform: translateZ(0);
-  will-change: transform;
 
   touch-action: manipulation; // 모바일에서 주소바 클릭 시 자동 줌 방지 테스트 -> 해결 안 됨
 `;
@@ -313,11 +309,9 @@ const AddressText = styled.div`
   text-overflow: ellipsis;
   white-space: nowrap;
   font-style: normal;
-  font-weight: 700;
-  line-height: normal;
   display: flex;
   align-items: center;
-  gap: clamp(2px, 2vw, 4px);
+  gap: 4px;
   padding: 4px 8px;
   border-radius: 8px;
   cursor: pointer;
@@ -329,7 +323,9 @@ const AddressText = styled.div`
 `;
 
 /* 주소 텍스트 내용 */
-const AddressTextContent = styled.span`
+const AddressTextContent = styled.p`
+  font-size: 22px;
+  font-weight: 700;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -340,7 +336,6 @@ const AddressTextContent = styled.span`
 /* 배너 광고 영역(주소바 아래에 위치) */
 const BannerWrapper = styled.div`
   border-radius: 10px;
-  flex-shrink: 0;
   overflow: hidden;
   position: relative;
   background-color: #000000a9;
@@ -349,7 +344,7 @@ const BannerWrapper = styled.div`
 /* 배너 이미지 */
 const BannerImage = styled.img`
   width: 100%;
-  height: clamp(100px, 25vh, 130px);
+  height: 130px;
   opacity: 0.7;
   object-fit: cover;
   display: block;
@@ -360,13 +355,14 @@ const BannerTextContainer = styled.div`
   display: flex;
   flex-direction: column;
   position: absolute;
-  right: 6px; bottom: 6px;
+  right: 6px;
+  bottom: 6px;
 `;
 
 /* 배너 이미지 위에 Overlay되는 텍스트 */
 const BannerTitle = styled.div`
   color: #fff;
-  font-size: clamp(18px, 6.5vw, 22px);
+  font-size: 22px;
   font-weight: 700;
   line-height: normal;
   text-align: right;
@@ -375,7 +371,7 @@ const BannerTitle = styled.div`
 /* 배너 서브 텍스트 배너 상단에 표시되는 작은 텍스트 */
 const BannerSubTitle = styled.div`
   color: #FFB1B9;
-  font-size: clamp(10px, 3.5vw, 12px);
+  font-size: 12px;
   font-style: normal;
   font-weight: 700;
   line-height: normal;
@@ -384,13 +380,13 @@ const BannerSubTitle = styled.div`
 
 /* 정렬 토글 컨테이너(토글 버튼 & 드롭다운) */
 const SortToggleContainer = styled.div`
-  margin-left: auto;
   position: relative;
 `;
 
 /* 정렬 토글 버튼(할인율순/가격순 정렬 옵션) */
 const SortToggle = styled.button`
   font-size: 14px;
+  font-weight: 400;
   color: #000;
   cursor: pointer;
   border: none;
@@ -398,27 +394,28 @@ const SortToggle = styled.button`
   outline: none;
   display: flex;
   align-items: center;
-  gap: clamp(2px, 1vw, 4px);
+  gap: 4px;
   padding: 0;
 `;
 
 /* 정렬 드롭다운 메뉴 */
 const SortDropdown = styled.div`
+  font-size: 14px;
+  font-weight: 400;
   position: absolute;
   top: 100%;
   right: 0;
   background: #fff;
   border: 1px solid #CCC;
-  border-radius: clamp(6px, 2vw, 8px);
+  border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   z-index: 10;
-  min-width: clamp(70px, 20vw, 80px);
+  min-width: 80px;
 `;
 
 /* 정렬 옵션 */
 const SortOption = styled.div`
-  padding: clamp(6px, 2vw, 8px) clamp(8px, 3vw, 12px);
-  font-size: clamp(12px, 3.5vw, 14px);
+  padding: 8px 12px;
   color: #000;
   cursor: pointer;
   transition: background-color 0.2s ease;
@@ -428,11 +425,11 @@ const SortOption = styled.div`
   }
 
   &:first-child {
-    border-radius: clamp(6px, 2vw, 8px) clamp(6px, 2vw, 8px) 0 0;
+    border-radius: 8px 8px 0 0;
   }
 
   &:last-child {
-    border-radius: 0 0 clamp(6px, 2vw, 8px) clamp(6px, 2vw, 8px);
+    border-radius: 0 0 8px 8px;
   }
 `;
 
@@ -443,6 +440,8 @@ const StoreList = styled.div`
   height: 100%;
   overflow-x: hidden;
   position: relative;
+  padding-top: 1px;
+  padding-bottom: 52px;
 `;
 
 /* 로딩 컨테이너 */
@@ -488,7 +487,7 @@ const FilterAndSortToggleContainer = styled.div`
   align-items: center;
   position: -webkit-sticky;
   position: sticky;
-  top: clamp(60px, 10vh, 5vh); // 눈바디 수정 > 거의 최적
-  z-index: 15;
+  top: 66px;
+  z-index: 19;
   background-color: #fff;
 `;

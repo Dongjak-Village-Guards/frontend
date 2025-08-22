@@ -1,22 +1,15 @@
 import styled from "styled-components";
 
-//const FilterRow = styled.div`
-//  margin: 16px 12px 6px 12px;
-//  display: flex;
-//  align-items: center;
-//  gap: 10px;
-//`;
-
 // 임시 반응형 테스트 코드
 export const FilterRow = styled.div`
   position: -webkit-sticky;
   position: sticky;
   top: 0;
   z-index: 15;
-  margin: 0px 0px clamp(8px, 2vh, 16px) 0px;
+  margin: 0px 0px 16px 0px;
   display: flex;
   align-items: center;
-  gap: clamp(6px, 2vw, 10px);
+  gap: 10px;
   background: #fff;
   transition: all 0.3s ease;
   width: 100%;
@@ -36,8 +29,6 @@ export const FilterRow = styled.div`
 `;
 
 export const FilterTab = styled.button`
-//  width: 74px;
-//  height: 36px;
   padding: 5px 18px;
   border-radius: 20px;
   border: 1px solid #DA2538;
@@ -58,6 +49,5 @@ export const FilterSelect = styled.select`
   border: 1px solid #eee;
   border-radius: 6px;
   padding: 5px 10px;
-  font-size: 14px;
   cursor: pointer;
-`; 
+`;
