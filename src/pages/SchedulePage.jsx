@@ -393,7 +393,6 @@ const LoadingContainer = styled.div`
 const AppointmentList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 16px;
 `;
 
 const AppointmentCard = styled.div`
@@ -405,7 +404,7 @@ const AppointmentCard = styled.div`
   flex-direction: column;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 `;
 
 const CardContent = styled.div`
