@@ -439,18 +439,14 @@ const AppointmentDetails = styled.div`
 
 const SalonName = styled.div`
   display: flex;
+  align-items: center;
   gap: 4px;
   cursor: pointer;
   transition: opacity 0.2s ease;
-  
-  &:hover {
-    opacity: 0.8;
-  }
 `;
 
 const SalonNameText = styled.span`
   color: #000;
-  padding: 2px;
   border-radius: 4px;
   font-size: 16px;
   font-weight: 700;
