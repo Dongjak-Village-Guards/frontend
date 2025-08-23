@@ -16,7 +16,7 @@ import Line from '../components/ui/Line/Line';
 import Spinner from '../components/ui/Spinner/Spinner';
 import { fetchMenuItemDetails, createReservation } from '../apis/storeAPI';
 
-const ReservationPage = ({ shop }) => {
+const ReservationPage = ( {shop} ) => {
   const navigate = useNavigate();
   
   const { 
