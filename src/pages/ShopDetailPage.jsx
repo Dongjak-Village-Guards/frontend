@@ -53,6 +53,74 @@ const ShopDetailPage = () => {
     const [spaceCount, setSpaceCount] = useState(null);
     const [selectedSpaceId, setSelectedSpaceId] = useState(null);
 
+    // storeData 디버깅을 위한 useEffect
+    useEffect(() => {
+        console.log('=== storeData 상태 변경 디버깅 ===');
+        console.log('storeData:', storeData);
+        console.log('storeData 타입:', typeof storeData);
+        
+        if (storeData) {
+            console.log('=== storeData 상세 분석 ===');
+            console.log('전체 storeData 객체:', JSON.stringify(storeData, null, 2));
+            console.log('storeData 키들:', Object.keys(storeData));
+            
+            // 가게 정보
+            console.log('가게 이름:', storeData.store_name);
+            console.log('가게 주소:', storeData.store_address);
+            console.log('가게 이미지:', storeData.store_image_url);
+            console.log('거리:', storeData.distance);
+            
+            // Space 정보 (Space가 2개 이상인 경우)
+            if (storeData.spaces) {
+                console.log('=== Space 목록 정보 ===');
+                console.log('Space 개수:', storeData.spaces.length);
+                storeData.spaces.forEach((space, index) => {
+                    console.log(`Space ${index + 1}:`, {
+                        space_id: space.space_id,
+                        space_name: space.space_name,
+                        space_image_url: space.space_image_url,
+                        max_discount_rate: space.max_discount_rate,
+                        is_possible: space.is_possible,
+                        menus_count: space.menus?.length || 0
+                    });
+                });
+            }
+            
+            // 단일 Space 정보 (Space 상세 화면)
+            if (storeData.space_name) {
+                console.log('=== 단일 Space 정보 ===');
+                console.log('Space 이름:', storeData.space_name);
+                console.log('Space 이미지:', storeData.space_image_url);
+            }
+            
+            // 메뉴 정보
+            if (storeData.menus) {
+                console.log('=== 메뉴 정보 ===');
+                console.log('메뉴 개수:', storeData.menus.length);
+                storeData.menus.forEach((menu, index) => {
+                    console.log(`메뉴 ${index + 1}:`, {
+                        menu_id: menu.menu_id,
+                        menu_name: menu.menu_name,
+                        discount_rate: menu.discount_rate,
+                        menu_price: menu.menu_price,
+                        discounted_price: menu.discounted_price,
+                        is_available: menu.is_available,
+                        item_id: menu.item_id
+                    });
+                });
+            }
+            
+            console.log('=== 현재 페이지 상태 ===');
+            console.log('spaceCount:', spaceCount);
+            console.log('selectedSpaceId:', selectedSpaceId);
+            console.log('loading:', loading);
+            console.log('error:', error);
+            console.log('---');
+        } else {
+            console.log('storeData가 null입니다.');
+        }
+    }, [storeData, spaceCount, selectedSpaceId, loading, error]);
+
     // 현재 가게의 Zustand 상태에서 좋아요 상태 가져오기
     const currentStore = stores.find(store => store.id === parseInt(id));
     const isLiked = currentStore?.isLiked || false;
@@ -419,6 +487,7 @@ const ShopDetailPage = () => {
                             name={storeData?.space_name}
                             specialty={`${getSpecialty()} 전문`}
                             reservationTime={`${time} 방문`}
+                            designerImage={storeData?.space_image_url}
                         />
                     ) : null}
                     
