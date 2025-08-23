@@ -2,7 +2,7 @@ import styled from 'styled-components';
 
 export const FixedHeader = styled.div`
   position: -webkit-sticky;
-  position: fixed;
+  position: absolute;
   top: 0;
   z-index: 20;
   background: #fff;
