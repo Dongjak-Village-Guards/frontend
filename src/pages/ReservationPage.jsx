@@ -102,7 +102,34 @@ const ReservationPage = () => {
         console.log('selectedMenu 구조:', JSON.stringify(selectedMenu, null, 2));
         console.log('accessToken 존재:', !!accessToken);
         
+        // 새로고침 시 undefined 에러 확인을 위한 추가 디버깅
+        console.log('=== 새로고침 시 undefined 에러 확인 ===');
+        console.log('현재 URL:', window.location.href);
+        console.log('URL에 /reservation 포함 여부:', window.location.href.includes('/reservation'));
+        console.log('selectedMenu 존재 여부:', !!selectedMenu);
+        console.log('selectedMenu 타입:', typeof selectedMenu);
+        console.log('selectedMenu === null:', selectedMenu === null);
+        console.log('selectedMenu === undefined:', selectedMenu === undefined);
+        console.log('selectedMenu?.item_id 존재 여부:', !!selectedMenu?.item_id);
+        console.log('selectedMenu?.item_id 타입:', typeof selectedMenu?.item_id);
+        console.log('accessToken 타입:', typeof accessToken);
+        console.log('accessToken 길이:', accessToken?.length);
+        
+        // 새로고침으로 인한 상태 초기화 확인
+        if (!selectedMenu) {
+          console.log('경고: selectedMenu가 없음 - 새로고침으로 인한 상태 초기화 가능성');
+          console.log('이 경우 undefined 에러가 발생할 수 있음');
+          console.log('현재 페이지 상태:');
+          console.log('- loading:', loading);
+          console.log('- error:', error);
+          console.log('- reserving:', reserving);
+          console.log('- isAgreed:', isAgreed);
+          console.log('- menuData:', menuData);
+        }
+        
         if (!selectedMenu || !selectedMenu.item_id) {
+          console.log('에러: 메뉴 정보가 없어서 예약 페이지를 표시할 수 없음');
+          console.log('새로고침으로 인한 상태 초기화로 추정됨');
           throw new Error('메뉴 정보가 없습니다.');
         }
 
@@ -113,6 +140,12 @@ const ReservationPage = () => {
         
       } catch (error) {
         console.error('ReservationPage: 메뉴 상세 데이터 로드 실패', error);
+        console.log('=== 에러 상세 정보 ===');
+        console.log('에러 타입:', typeof error);
+        console.log('에러 메시지:', error.message);
+        console.log('에러 스택:', error.stack);
+        console.log('에러 상태:', error.status);
+        console.log('에러 응답:', error.response);
         setError(error);
         
         // 401 에러 시 로그인 페이지로 이동
@@ -126,6 +159,18 @@ const ReservationPage = () => {
 
     if (selectedMenu && accessToken) {
       loadMenuData();
+    } else {
+      console.log('=== ReservationPage 조건부 로딩 ===');
+      console.log('selectedMenu 존재:', !!selectedMenu);
+      console.log('accessToken 존재:', !!accessToken);
+      console.log('조건 미충족으로 loadMenuData 실행 안됨');
+      
+      // 새로고침 시 상태가 초기화된 경우
+      if (!selectedMenu && window.location.href.includes('/reservation')) {
+        console.log('경고: 예약 페이지에서 새로고침했지만 selectedMenu가 없음');
+        console.log('이 경우 undefined 에러가 발생할 수 있음');
+        console.log('해결 방법: 홈페이지로 리다이렉트하거나 에러 페이지 표시');
+      }
     }
   }, [selectedMenu, accessToken, setCurrentPage]);
 
