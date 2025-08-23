@@ -35,12 +35,9 @@ const ShopDetailPage = () => {
     const { id } = useParams();
     const { 
         stores,
-        currentTime,
         time,
         isReserving,
-        selectedDesigner,
         showPiAgreement,
-        selectDesigner,
         startReservation,
         cancelReservation,
         togglePiAgreement,
@@ -340,7 +337,7 @@ const ShopDetailPage = () => {
             <TopNavBar
                 onBack={handleBack}
                 title={getPageTitle()}
-                showLike={!isReserving && !showPiAgreement}
+                showLike={!isReserving && !showPiAgreement && !(spaceCount >= 2 && selectedSpaceId)}
                 storeId={parseInt(id)}
                 isLiked={isLiked}
                 onLikeToggle={handleLikeToggle}
