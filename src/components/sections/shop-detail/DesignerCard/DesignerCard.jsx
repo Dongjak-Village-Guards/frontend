@@ -37,7 +37,7 @@ const DesignerCard = ({ designer, onSelect }) => {
   return (
     <Card>
         <Div>
-            <DesignerImage src={designerImage} alt='임시 디자이너 이미지' />
+            <DesignerImage src={designer.image} alt='임시 디자이너 이미지' />
             <Detail>
                 <DesignerName>{designer.name}</DesignerName>
                 <DiscountText>
