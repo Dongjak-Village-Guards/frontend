@@ -7,7 +7,9 @@ export const CATEGORY_OPTIONS = [
   { value: "스터디카페", label: "스터디카페" },
   { value: "미용실", label: "미용실" },
   { value: "PT/필라테스", label: "PT/필라테스" },
-  { value: "사진 스튜디오", label: "사진 스튜디오" }
+  { value: "사진 스튜디오", label: "사진 스튜디오" },
+  { value: "연습실/합주실", label: "연습실/합주실" },
+  { value: "네일샵", label: "네일샵" }
 ];
 
 const CategoryFilter = ({ selectedCategory = null, onCategorySelect, onClose }) => {
