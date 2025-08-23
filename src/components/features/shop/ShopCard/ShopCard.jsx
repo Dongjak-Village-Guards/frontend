@@ -7,7 +7,7 @@
 import CardText from "../CardText/CardText";
 import DiscountBadge from "../DiscountBadge/DiscountBadge";
 import LikeButton from "../LikeButton/LikeButton";
-import StoreCard from "../StoreImage/StoreImage";
+import StoreImage from "../StoreImage/StoreImage";
 import {
   CardContainer,
   CardHeader,
@@ -28,6 +28,12 @@ import {
  */
 
 const ShopCard = ({ store, onClick }) => {
+
+    // store가 undefined인 경우 렌더링하지 않음
+  if (!store) {
+    return null;
+  }
+
   const { id, isLiked } = store;
   // 최대 할인율 계산 (디자이너 유무에 따라 다르게 처리)
   const discountRate = store.hasDesigners
@@ -38,7 +44,7 @@ const ShopCard = ({ store, onClick }) => {
     <CardContainer onClick={onClick}>
       <CardHeader>
         <DiscountBadge discountRate={discountRate} />
-        <StoreCard store={store} />
+        <StoreImage storeSrc={store.image} storeName={store.name} storeId={store.id} />
       </CardHeader>
 
       <CardFooter>

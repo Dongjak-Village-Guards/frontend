@@ -64,6 +64,7 @@ const transformApiData = (apiData) => {
     menu: store.menu_name,
     distance: store.distance,
     walkTime: store.on_foot,
+    image: store.store_image_url || null, // 가게 이미지 추가
     time: store.time || null, // 백서버에서 받아온 time 필드 (0~36), 없으면 null
     isLiked: store.is_liked,
     category: store.store_category || null,

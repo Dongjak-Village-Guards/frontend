@@ -251,7 +251,9 @@ export default function HomePage() {
             <Spinner />
           </LoadingContainer>
         ) : sortedStores.length > 0 ? (
-          sortedStores.map(store => (
+          sortedStores
+          .filter(store => store && store.id) // undefined나 id가 없는 store 제거
+          .map(store => (
             <Card 
               key={store.id} 
               store={store} 
