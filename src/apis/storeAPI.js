@@ -7,17 +7,36 @@ const REST_API_BASE_URL = 'https://buynow.n-e.kr';
  * @returns {number} API time 파라미터 (0~23)
  */
 export const convertTimeToParam = (time) => {
+  console.log('=== convertTimeToParam 호출 ===');
+  console.log('입력 time:', time, '타입:', typeof time);
+  
   if (time === null) {
-    return new Date().getHours();
+    const currentHour = new Date().getHours();
+    console.log('time이 null이므로 현재 시간 반환:', currentHour);
+    console.log('=== convertTimeToParam 종료 (null 처리) ===');
+    return currentHour;
   }
   
   if (typeof time === 'string') {
+    const hour = parseInt(time.split(':')[0]);
+    const currentHour = new Date().getHours();
+    console.log('문자열 파싱 - hour:', hour, '현재 시간:', currentHour);
+    
     // 백엔드 요청 ( time 0~36으로 반환, 다음날(24~36) ) 
-    if(parseInt(new Date().getHours()) > 12 & parseInt(time.split(':')[0]) / 12 < 1) return (parseInt(time.split(':')[0]) + 24);
+    if(currentHour > 12 && hour / 12 < 1) {
+      const result = hour + 24;
+      console.log('오후 조건 만족 - 다음날로 계산:', hour, '+ 24 =', result);
+      console.log('=== convertTimeToParam 종료 (오후 조건) ===');
+      return result;
+    }
 
-    return parseInt(time.split(':')[0]);
+    console.log('일반 시간 반환:', hour);
+    console.log('=== convertTimeToParam 종료 (일반) ===');
+    return hour;
   }
   
+  console.log('기타 타입 반환:', time);
+  console.log('=== convertTimeToParam 종료 (기타) ===');
   return time;
 };
 

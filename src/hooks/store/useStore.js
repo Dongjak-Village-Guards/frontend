@@ -102,15 +102,7 @@ const useStore = create(
        * @param {string} page - 변경할 페이지명
        */
       setCurrentPage: (page) => {
-        console.log('=== useStore setCurrentPage 호출 ===');
-        console.log('이전 currentPage:', get().currentPage);
-        console.log('새로운 page:', page);
-        console.log('호출 스택:', new Error().stack);
-        
         set({ currentPage: page });
-        
-        console.log('setCurrentPage 완료, 새로운 currentPage:', get().currentPage);
-        console.log('=== useStore setCurrentPage 완료 ===');
       },
       
       /**
@@ -133,7 +125,13 @@ const useStore = create(
        * @param {string} newTime - 새로운 시간 (HH:MM 형식)
        */
       setTime: (newTime) => {
+        console.log('=== setTime 호출 ===');
+        console.log('이전 time:', get().time);
+        console.log('새로운 time:', newTime);
+        console.log('호출 스택:', new Error().stack);
         set({ time: newTime });
+        console.log('setTime 완료');
+        console.log('=== setTime 종료 ===');
       },
       
       /**
@@ -143,24 +141,41 @@ const useStore = create(
       checkAndUpdateTimeIfExpired: () => {
         const { time, currentTime, setTime } = get();
         
+        console.log('=== checkAndUpdateTimeIfExpired 시작 ===');
+        console.log('입력값 - time:', time, 'currentTime:', currentTime);
+        
         if (time === null) {
           // time이 null인 경우 초기화
           const nearestHour = getNearestHour(currentTime);
+          console.log('time이 null이므로 초기화 - getNearestHour 결과:', nearestHour);
           setTime(nearestHour);
           console.log('checkAndUpdateTimeIfExpired: 초기 시간 설정됨:', nearestHour);
+          console.log('=== checkAndUpdateTimeIfExpired 종료 (null 처리) ===');
           return;
         }
         
         // 현재 설정된 time과 다음 정각 비교
         const timeHour = convertTimeToParam(time);
-        const nextHour = convertTimeToParam(currentTime.split(':').map(Number));
+        const [currentHour, currentMinute] = currentTime.split(':').map(Number);
+        const nextHour = currentMinute === 0 ? (currentHour + 1) % 24 : (currentHour + 1) % 24;
+        
+        console.log('시간 계산 결과:');
+        console.log('- timeHour (convertTimeToParam 결과):', timeHour);
+        console.log('- currentHour:', currentHour, 'currentMinute:', currentMinute);
+        console.log('- nextHour (계산된 다음 정각):', nextHour);
+        console.log('- 비교 조건: timeHour < nextHour =', timeHour < nextHour);
         
         // time이 다음 정각보다 작으면 만료된 것으로 판단
         if (timeHour < nextHour) {
           const updatedTime = getNearestHour(currentTime);
+          console.log('시간 만료 감지! getNearestHour 결과:', updatedTime);
           setTime(updatedTime);
           console.log('checkAndUpdateTimeIfExpired: 시간 만료로 인한 자동 업데이트:', time, '→', updatedTime);
+        } else {
+          console.log('시간 만료되지 않음 - 업데이트 없음');
         }
+        
+        console.log('=== checkAndUpdateTimeIfExpired 종료 ===');
       },
       
       
@@ -183,33 +198,43 @@ const useStore = create(
        * 초기 시간 설정 (앱 시작 시 한 번만 호출)
        */
       initializeTime: () => {
+        console.log('=== initializeTime 호출 ===');
         const newTime = new Date().toLocaleTimeString('ko-KR', { 
           hour: '2-digit', 
           minute: '2-digit',
           hour12: false 
         });
+        console.log('현재 시간:', newTime);
         
         // time이 null일 때만 기본값 설정 (사용자가 선택한 값이 있으면 유지)
         const currentTime = get().time;
+        console.log('현재 저장된 time:', currentTime);
+        
         if (currentTime === null) {
           const currentHour = new Date().getHours();
           const currentMinute = new Date().getMinutes();
           const nextHour = currentMinute === 0 ? (currentHour + 1) % 24 : (currentHour + 1) % 24;
           const initialTime = `${String(nextHour).padStart(2, '0')}:00`;
           
-          console.log('initializeTime 호출됨, 초기 시간:', newTime, '초기 time:', initialTime);
+          console.log('time이 null이므로 초기화:');
+          console.log('- currentHour:', currentHour, 'currentMinute:', currentMinute);
+          console.log('- nextHour:', nextHour);
+          console.log('- initialTime:', initialTime);
           
           set({ 
             currentTime: newTime,
             time: initialTime
           });
+          console.log('initializeTime: 초기 시간 설정 완료');
         } else {
-          console.log('initializeTime 호출됨, 초기 시간:', newTime, '기존 time 유지:', currentTime);
+          console.log('기존 time이 있으므로 유지:', currentTime);
           
           set({ 
             currentTime: newTime
           });
+          console.log('initializeTime: currentTime만 업데이트 완료');
         }
+        console.log('=== initializeTime 종료 ===');
       },
       
       /**
