@@ -389,7 +389,7 @@ const ShopDetailPage = () => {
             };
             loadSpacesList();
         } else {
-            navigate('/');
+            navigate('-1');
         }
     };
 
