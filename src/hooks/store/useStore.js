@@ -6,7 +6,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { fetchStoresFromAPI, fetchUserLikes, createLike, deleteLike } from '../../apis/storeAPI';
+import { fetchStoresFromAPI, fetchUserLikes, createLike, deleteLike, convertTimeToParam } from '../../apis/storeAPI';
 import useUserInfo from '../user/useUserInfo';
 import { getNearestHour } from '../../components/features/filter/TimeFilter/TimeFilter';
 
@@ -144,9 +144,8 @@ const useStore = create(
         }
         
         // 현재 설정된 time과 다음 정각 비교
-        const [timeHour] = time.split(':').map(Number);
-        const [currentHour, currentMinute] = currentTime.split(':').map(Number);
-        const nextHour = currentMinute === 0 ? (currentHour + 1) % 24 : (currentHour + 1) % 24;
+        const timeHour = convertTimeToParam(time);
+        const nextHour = convertTimeToParam(currentTime.split(':').map(Number));
         
         // time이 다음 정각보다 작으면 만료된 것으로 판단
         if (timeHour < nextHour) {
