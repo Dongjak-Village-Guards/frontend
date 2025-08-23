@@ -8,7 +8,7 @@
  */
 
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import useStore from '../hooks/store/useStore';
 import useUserInfo from '../hooks/user/useUserInfo';
 import MenuCard from '../components/sections/shop-detail/MenuCard/MenuCard';
@@ -52,22 +52,34 @@ const ShopDetailPage = () => {
         const pathParts = location.pathname.split('/');
         const storeId = pathParts[2]; // /shop/:id
         
+        console.log('=== getShopDetailStateFromUrl 함수 실행 ===');
+        console.log('전체 pathname:', location.pathname);
+        console.log('pathParts:', pathParts);
+        console.log('pathParts.length:', pathParts.length);
+        console.log('storeId:', storeId);
+        
         if (pathParts.length === 3) {
+            console.log('결과: entry-point');
             return { type: 'entry-point', storeId }; // 기본 진입점
         }
         if (pathParts.length === 4 && pathParts[3] === 'menu') {
+            console.log('결과: single-space-menu');
             return { type: 'single-space-menu', storeId }; // Space가 1개인 메뉴 페이지
         }
         if (pathParts.length === 4 && pathParts[3] === 'spaces') {
+            console.log('결과: spaces-list');
             return { type: 'spaces-list', storeId }; // Space 목록 페이지
         }
         if (pathParts.length === 5 && pathParts[3] === 'space') {
+            console.log('결과: space-menu, spaceId:', pathParts[4]);
             return { type: 'space-menu', storeId, spaceId: pathParts[4] }; // 특정 Space의 메뉴 페이지
         }
         if (pathParts.length === 4 && pathParts[3] === 'reservation') {
+            console.log('결과: reservation');
             return { type: 'reservation', storeId }; // 예약 페이지
         }
         
+        console.log('결과: entry-point (기본값)');
         return { type: 'entry-point', storeId };
     };
 
@@ -77,19 +89,206 @@ const ShopDetailPage = () => {
     const [error, setError] = useState(null);
     const [spaceCount, setSpaceCount] = useState(null);
     const [selectedSpaceId, setSelectedSpaceId] = useState(null);
+    
+    // 이전 URL 추적을 위한 ref
+    const previousPathnameRef = useRef(location.pathname);
+    const isBackNavigationRef = useRef(false);
 
     // URL 상태 파악 디버깅
     useEffect(() => {
         console.log('=== ShopDetailPage URL 상태 파악 디버깅 ===');
         console.log('현재 URL:', location.pathname);
         console.log('URL 상태:', getShopDetailStateFromUrl());
-    }, [location.pathname]);
+        
+        // URL 변경 시 selectedSpaceId 상태 동기화
+        const urlState = getShopDetailStateFromUrl();
+        console.log('=== URL 변경에 따른 상태 동기화 ===');
+        console.log('현재 selectedSpaceId:', selectedSpaceId);
+        console.log('URL에서 추출한 spaceId:', urlState.spaceId);
+        
+        if (urlState.type === 'space-menu' && urlState.spaceId) {
+            // Space 상세 페이지인 경우
+            if (selectedSpaceId !== urlState.spaceId) {
+                console.log(`selectedSpaceId 업데이트: ${selectedSpaceId} -> ${urlState.spaceId}`);
+                setSelectedSpaceId(urlState.spaceId);
+            }
+        } else if (urlState.type === 'spaces-list' || urlState.type === 'entry-point') {
+            // Space 목록 페이지인 경우
+            if (selectedSpaceId !== null) {
+                console.log(`selectedSpaceId 초기화: ${selectedSpaceId} -> null`);
+                setSelectedSpaceId(null);
+            }
+        } else if (urlState.type === 'single-space-menu') {
+            // 단일 Space 메뉴 페이지인 경우
+            if (selectedSpaceId !== null) {
+                console.log(`selectedSpaceId 초기화 (단일 Space): ${selectedSpaceId} -> null`);
+                setSelectedSpaceId(null);
+            }
+        }
+        
+        console.log('최종 selectedSpaceId:', selectedSpaceId);
+    }, [location.pathname, selectedSpaceId]);
+
+    // 브라우저 뒤로가기/앞으로가기 감지 및 상태 동기화
+    useEffect(() => {
+        let previousPathname = location.pathname;
+        let isBackNavigation = false;
+        
+        const handlePopState = () => {
+            console.log('=== 브라우저 뒤로가기/앞으로가기 감지 (popstate) ===');
+            console.log('새로운 URL:', window.location.pathname);
+            console.log('현재 selectedSpaceId:', selectedSpaceId);
+            console.log('히스토리 길이:', window.history.length);
+            console.log('히스토리 상태:', window.history.state);
+            console.log('현재 시간:', new Date().toISOString());
+            
+            // URL 상태에 따라 selectedSpaceId 동기화
+            const urlState = getShopDetailStateFromUrl();
+            console.log('새로운 URL 상태:', urlState);
+            
+            if (urlState.type === 'space-menu' && urlState.spaceId) {
+                if (selectedSpaceId !== urlState.spaceId) {
+                    console.log(`브라우저 네비게이션: selectedSpaceId 업데이트 ${selectedSpaceId} -> ${urlState.spaceId}`);
+                    setSelectedSpaceId(urlState.spaceId);
+                }
+            } else if (urlState.type === 'spaces-list' || urlState.type === 'entry-point' || urlState.type === 'single-space-menu') {
+                if (selectedSpaceId !== null) {
+                    console.log(`브라우저 네비게이션: selectedSpaceId 초기화 ${selectedSpaceId} -> null`);
+                    setSelectedSpaceId(null);
+                }
+            }
+            
+            // 브라우저 뒤로가기로 entry-point 상태가 되었을 때 홈페이지로 이동
+            if (urlState.type === 'entry-point') {
+                console.log('=== 브라우저 뒤로가기로 entry-point 상태 감지 ===');
+                console.log('홈페이지로 이동합니다.');
+                
+                // 약간의 지연을 두고 홈페이지로 이동 (무한 루프 방지)
+                setTimeout(() => {
+                    navigate('/', { replace: true });
+                }, 50);
+            }
+            
+            console.log('=== 브라우저 네비게이션 처리 완료 ===');
+        };
+
+        console.log('=== popstate 이벤트 리스너 등록 ===');
+        console.log('등록 시점의 URL:', window.location.pathname);
+        console.log('등록 시점의 히스토리 길이:', window.history.length);
+        
+        window.addEventListener('popstate', handlePopState);
+        
+        return () => {
+            console.log('=== popstate 이벤트 리스너 제거 ===');
+            window.removeEventListener('popstate', handlePopState);
+        };
+    }, [selectedSpaceId, navigate]);
+
+    // URL 변경 감지 및 브라우저 뒤로가기 처리
+    useEffect(() => {
+        console.log('=== URL 변경 감지 ===');
+        console.log('이전 URL:', previousPathnameRef.current);
+        console.log('현재 URL:', location.pathname);
+        console.log('히스토리 길이:', window.history.length);
+        console.log('히스토리 상태:', window.history.state);
+        console.log('isReserving 상태:', isReserving);
+        console.log('showPiAgreement 상태:', showPiAgreement);
+        
+        // URL이 변경되었을 때
+        if (previousPathnameRef.current !== location.pathname) {
+            console.log('URL이 변경되었습니다.');
+            
+            const urlState = getShopDetailStateFromUrl();
+            console.log('현재 URL 상태:', urlState);
+            console.log('이전 URL에 /spaces 포함 여부:', previousPathnameRef.current.includes('/spaces'));
+            console.log('이전 URL에 /reservation 포함 여부:', previousPathnameRef.current.includes('/reservation'));
+            console.log('이전 URL에 /space/ 포함 여부:', previousPathnameRef.current.includes('/space/'));
+            
+            // Space 목록 페이지에서 entry-point로 이동한 경우 (브라우저 뒤로가기로 추정)
+            if (previousPathnameRef.current.includes('/spaces') && urlState.type === 'entry-point') {
+                console.log('=== Space 목록에서 entry-point로 이동 감지 (브라우저 뒤로가기로 추정) ===');
+                console.log('홈페이지로 이동합니다.');
+                
+                // 약간의 지연을 두고 홈페이지로 이동
+                setTimeout(() => {
+                    navigate('/', { replace: true });
+                }, 50);
+            }
+            
+            // 예약 페이지에서 다른 페이지로 이동한 경우 (앞으로가기/뒤로가기)
+            if (previousPathnameRef.current.includes('/reservation')) {
+                console.log('=== 예약 페이지에서 다른 페이지로 이동 감지 ===');
+                console.log('이동 전 URL:', previousPathnameRef.current);
+                console.log('이동 후 URL:', location.pathname);
+                console.log('이동 후 URL 상태:', urlState);
+                
+                // 예약 페이지에서 Space 메뉴 페이지로 이동해야 하는 경우
+                if (urlState.type === 'space-menu' && selectedSpaceId) {
+                    console.log('예약 페이지에서 Space 메뉴 페이지로 이동해야 함');
+                    console.log('selectedSpaceId:', selectedSpaceId);
+                    // 예약 상태 초기화
+                    cancelReservation();
+                } else if (urlState.type === 'single-space-menu') {
+                    console.log('예약 페이지에서 단일 메뉴 페이지로 이동해야 함');
+                    // 예약 상태 초기화
+                    cancelReservation();
+                } else if (urlState.type === 'spaces-list') {
+                    console.log('예약 페이지에서 Space 목록 페이지로 이동해야 함');
+                    // 예약 상태 초기화
+                    cancelReservation();
+                }
+            }
+            
+            // Space 메뉴 페이지에서 예약 페이지로 이동한 경우 (앞으로가기)
+            if (previousPathnameRef.current.includes('/space/') && urlState.type === 'reservation') {
+                console.log('=== Space 메뉴 페이지에서 예약 페이지로 이동 감지 (앞으로가기) ===');
+                console.log('예약 페이지로 이동합니다.');
+                
+                // storeData에서 메뉴 정보 찾기
+                const menuFromStoreData = storeData?.menus?.[0];
+                if (menuFromStoreData) {
+                    console.log('storeData에서 메뉴 정보 찾음:', menuFromStoreData);
+                    // 예약 페이지 상태로 설정 (올바른 메뉴 데이터 전달)
+                    startReservation(menuFromStoreData, null);
+                } else {
+                    console.log('storeData에서 메뉴 정보를 찾을 수 없음');
+                    // 예약 페이지 상태로 설정 (기본값)
+                    startReservation(null, null);
+                }
+            }
+            
+            // 단일 메뉴 페이지에서 예약 페이지로 이동한 경우 (앞으로가기)
+            if (previousPathnameRef.current.includes('/menu') && urlState.type === 'reservation') {
+                console.log('=== 단일 메뉴 페이지에서 예약 페이지로 이동 감지 (앞으로가기) ===');
+                console.log('예약 페이지로 이동합니다.');
+                
+                // storeData에서 메뉴 정보 찾기
+                const menuFromStoreData = storeData?.menus?.[0];
+                if (menuFromStoreData) {
+                    console.log('storeData에서 메뉴 정보 찾음:', menuFromStoreData);
+                    // 예약 페이지 상태로 설정 (올바른 메뉴 데이터 전달)
+                    startReservation(menuFromStoreData, null);
+                } else {
+                    console.log('storeData에서 메뉴 정보를 찾을 수 없음');
+                    // 예약 페이지 상태로 설정 (기본값)
+                    startReservation(null, null);
+                }
+            }
+            
+            // 이전 URL 업데이트
+            previousPathnameRef.current = location.pathname;
+        }
+    }, [location.pathname, navigate, isReserving, showPiAgreement, selectedSpaceId, cancelReservation, startReservation, storeData]);
 
     // storeData 디버깅을 위한 useEffect
     useEffect(() => {
         console.log('=== storeData 상태 변경 디버깅 ===');
         console.log('storeData:', storeData);
         console.log('storeData 타입:', typeof storeData);
+        console.log('isReserving:', isReserving);
+        console.log('showPiAgreement:', showPiAgreement);
+        console.log('selectedSpaceId:', selectedSpaceId);
+        console.log('현재 URL:', location.pathname);
         
         if (storeData) {
             console.log('=== storeData 상세 분석 ===');
@@ -151,7 +350,7 @@ const ShopDetailPage = () => {
         } else {
             console.log('storeData가 null입니다.');
         }
-    }, [storeData, spaceCount, selectedSpaceId, loading, error]);
+    }, [storeData, spaceCount, selectedSpaceId, loading, error, isReserving, showPiAgreement, location.pathname]);
 
     // 현재 가게의 Zustand 상태에서 좋아요 상태 가져오기
     const currentStore = stores.find(store => store.id === parseInt(id));
@@ -200,6 +399,9 @@ const ShopDetailPage = () => {
                 console.log('Time 파라미터:', time);
                 console.log('AccessToken 존재:', !!accessToken);
                 console.log('URL 상태:', urlState);
+                console.log('현재 URL:', location.pathname);
+                console.log('히스토리 길이:', window.history.length);
+                console.log('히스토리 상태:', window.history.state);
                 
                 // 1. Space 개수 조회
                 console.log('Space 개수 조회 시작...');
@@ -233,7 +435,9 @@ const ShopDetailPage = () => {
                     if (urlState.type === 'entry-point') {
                         // /shop/:id로 접근한 경우 - /shop/:id/spaces로 리다이렉트
                         console.log('Space가 2개 이상인 경우: /shop/:id/spaces로 리다이렉트');
+                        console.log('리다이렉트 전 히스토리 길이:', window.history.length);
                         navigate(`/shop/${storeId}/spaces`);
+                        console.log('리다이렉트 후 히스토리 길이:', window.history.length);
                     } else if (urlState.type === 'spaces-list') {
                         // /shop/:id/spaces로 접근한 경우 - 정상 처리
                         console.log('=== Space가 2개 이상인 경우: Space 목록 조회 ===');
@@ -305,6 +509,7 @@ const ShopDetailPage = () => {
                 console.log('=== ShopDetailPage 데이터 로드 완료 ===');
                 console.log('최종 spaceCount:', spacesData.count);
                 console.log('최종 storeData 설정됨');
+                console.log('최종 히스토리 길이:', window.history.length);
                 
             } catch (error) {
                 console.error('ShopDetailPage: 데이터 로드 실패', error);
@@ -344,27 +549,59 @@ const ShopDetailPage = () => {
 
     // 이미지 처리 함수
     const getImageSrc = (imageUrl) => {
+        console.log('=== getImageSrc 함수 실행 ===');
+        console.log('입력된 imageUrl:', imageUrl);
+        console.log('imageUrl 타입:', typeof imageUrl);
+        
         if (imageUrl && imageUrl !== '') {
+            console.log('이미지 URL 반환:', imageUrl);
             return imageUrl;
         }
         // 이미지가 없을 경우 기본 이미지 사용
+        console.log('기본 placeholder 이미지 반환:', placeholderImage);
         return placeholderImage;
     };
 
     // 대표 메뉴 선택 (최대 할인율 기준)
     const getFeaturedMenu = () => {
-        if (!storeData || !storeData.menus) return null;
-        return storeData.menus.reduce((prev, curr) => 
+        console.log('=== getFeaturedMenu 함수 실행 ===');
+        console.log('storeData:', storeData);
+        console.log('storeData.menus:', storeData?.menus);
+        
+        if (!storeData || !storeData.menus) {
+            console.log('메뉴 데이터가 없음 - null 반환');
+            return null;
+        }
+        
+        const featured = storeData.menus.reduce((prev, curr) => 
             prev.discount_rate > curr.discount_rate ? prev : curr
         );
+        console.log('대표 메뉴:', featured);
+        return featured;
     };
 
     // 나머지 메뉴 목록
     const getOtherMenus = () => {
-        if (!storeData || !storeData.menus) return [];
+        console.log('=== getOtherMenus 함수 실행 ===');
+        console.log('storeData:', storeData);
+        console.log('storeData.menus:', storeData?.menus);
+        
+        if (!storeData || !storeData.menus) {
+            console.log('메뉴 데이터가 없음 - 빈 배열 반환');
+            return [];
+        }
+        
         const featured = getFeaturedMenu();
-        if (!featured) return storeData.menus;
-        return storeData.menus.filter(menu => menu.menu_id !== featured.menu_id);
+        console.log('대표 메뉴:', featured);
+        
+        if (!featured) {
+            console.log('대표 메뉴가 없음 - 전체 메뉴 반환');
+            return storeData.menus;
+        }
+        
+        const otherMenus = storeData.menus.filter(menu => menu.menu_id !== featured.menu_id);
+        console.log('나머지 메뉴 개수:', otherMenus.length);
+        return otherMenus;
     };
 
     // 예약 가능한 메뉴가 있는지 확인
@@ -393,32 +630,62 @@ const ShopDetailPage = () => {
 
     // 뒤로 가기 처리 (URL 기반 네비게이션)
     const handleBack = () => {
+        console.log('=== handleBack 함수 실행 ===');
+        console.log('showPiAgreement:', showPiAgreement);
+        console.log('isReserving:', isReserving);
+        console.log('spaceCount:', spaceCount);
+        console.log('selectedSpaceId:', selectedSpaceId);
+        console.log('storeData:', storeData);
+        console.log('id:', id);
+        console.log('현재 URL:', location.pathname);
+        console.log('히스토리 길이:', window.history.length);
+        console.log('히스토리 상태:', window.history.state);
+        console.log('현재 시간:', new Date().toISOString());
+        
         if (showPiAgreement) {
+            console.log('개인정보 동의서 숨김 처리');
             togglePiAgreement(); // 동의서 숨김
         } else if (isReserving) {
             // 예약 페이지에서 뒤로가기: 선택된 Space의 메뉴 페이지로
+            console.log('예약 페이지에서 뒤로가기 처리');
+            console.log('예약 상태 초기화 전 isReserving:', isReserving);
             cancelReservation(); // 예약 상태 초기화
+            console.log('예약 상태 초기화 후 isReserving:', isReserving);
+            
             if (spaceCount >= 2 && selectedSpaceId) {
+                console.log(`예약 페이지 -> Space 메뉴 페이지로 이동: /shop/${id}/space/${selectedSpaceId}`);
                 navigate(`/shop/${id}/space/${selectedSpaceId}`);
             } else if (spaceCount === 1) {
+                console.log(`예약 페이지 -> 단일 메뉴 페이지로 이동: /shop/${id}/menu`);
                 navigate(`/shop/${id}/menu`);
             } else {
+                console.log(`예약 페이지 -> Space 목록 페이지로 이동: /shop/${id}/spaces`);
                 navigate(`/shop/${id}/spaces`);
             }
         } else if (spaceCount >= 2 && selectedSpaceId) {
             // 특정 Space 메뉴 페이지에서 뒤로가기: Space 목록으로
+            console.log('Space 메뉴 페이지에서 Space 목록으로 뒤로가기');
             setSelectedSpaceId(null);
             navigate(`/shop/${id}/spaces`);
         } else if (spaceCount >= 2 && !selectedSpaceId) {
             // Space 목록에서 뒤로가기: 홈페이지로
+            console.log('Space 목록에서 홈페이지로 뒤로가기');
+            console.log('이동 전 히스토리 길이:', window.history.length);
             navigate('/');
+            console.log('이동 후 히스토리 길이:', window.history.length);
         } else if (spaceCount === 1) {
             // 단일 Space 메뉴 페이지에서 뒤로가기: 홈페이지로
+            console.log('단일 Space 메뉴 페이지에서 홈페이지로 뒤로가기');
             navigate('/');
         } else {
             // 기본: 브라우저 히스토리 뒤로가기
+            console.log('기본 브라우저 히스토리 뒤로가기');
+            console.log('이동 전 히스토리 길이:', window.history.length);
             navigate(-1);
+            console.log('이동 후 히스토리 길이:', window.history.length);
         }
+        
+        console.log('=== handleBack 함수 실행 완료 ===');
     };
 
     // 예약 버튼 클릭 시
@@ -431,9 +698,14 @@ const ShopDetailPage = () => {
         console.log('메뉴 이름:', menu?.menu_name);
         console.log('Space 개수:', spaceCount);
         console.log('선택된 Space ID:', selectedSpaceId);
+        console.log('예약 상태 설정 전 isReserving:', isReserving);
+        
         startReservation(menu, null);
+        console.log('예약 상태 설정 후 isReserving:', isReserving);
+        
         // 예약 페이지로 URL 변경
         navigate(`/shop/${id}/reservation`);
+        console.log('예약 페이지로 네비게이션 완료');
     };
 
     // Space 선택 (디자이너 선택과 동일한 역할)
@@ -443,18 +715,61 @@ const ShopDetailPage = () => {
 
     // 대표 메뉴 이름 (전문 분야로 사용)
     const getSpecialty = () => {
+        console.log('=== getSpecialty 함수 실행 ===');
         const featured = getFeaturedMenu();
-        return featured ? featured.menu_name : 'N/A';
+        console.log('대표 메뉴:', featured);
+        
+        if (featured) {
+            const specialty = `${featured.menu_name} 전문`;
+            console.log('전문 분야:', specialty);
+            return specialty;
+        }
+        
+        console.log('전문 분야: N/A (대표 메뉴 없음)');
+        return 'N/A';
     };
 
     // 페이지 제목 결정
     const getPageTitle = () => {
-        if (showPiAgreement) return '개인정보 제3자 제공 동의서';
-        if (isReserving) return '예약하기';
-        if (spaceCount >= 2 && selectedSpaceId && storeData) {
-            return `${storeData.store_name} / ${storeData.space_name}`;
+        console.log('=== getPageTitle 함수 실행 ===');
+        console.log('showPiAgreement:', showPiAgreement);
+        console.log('isReserving:', isReserving);
+        console.log('spaceCount:', spaceCount);
+        console.log('selectedSpaceId:', selectedSpaceId);
+        console.log('storeData:', storeData);
+        
+        if (showPiAgreement) {
+            console.log('페이지 제목: 개인정보 제3자 제공 동의서');
+            return '개인정보 제3자 제공 동의서';
         }
-        if (storeData) return storeData.store_name;
+        if (isReserving) {
+            console.log('페이지 제목: 예약하기');
+            return '예약하기';
+        }
+        if (spaceCount >= 2 && selectedSpaceId && storeData) {
+            // Space 상세 페이지인 경우
+            if (storeData.space_name) {
+                const title = `${storeData.store_name} / ${storeData.space_name}`;
+                console.log('페이지 제목 (Space 상세):', title);
+                return title;
+            } else {
+                // space_name이 없는 경우 (Space 목록 데이터에서 특정 Space 찾기)
+                const selectedSpace = storeData.spaces?.find(space => space.space_id === parseInt(selectedSpaceId));
+                if (selectedSpace) {
+                    const title = `${storeData.store_name} / ${selectedSpace.space_name}`;
+                    console.log('페이지 제목 (Space 상세 - 찾은 Space):', title);
+                    return title;
+                } else {
+                    console.log('페이지 제목 (Space 상세 - Space를 찾을 수 없음):', storeData.store_name);
+                    return storeData.store_name;
+                }
+            }
+        }
+        if (storeData) {
+            console.log('페이지 제목:', storeData.store_name);
+            return storeData.store_name;
+        }
+        console.log('페이지 제목: 가게 상세 (기본값)');
         return '가게 상세';
     };
 
@@ -491,14 +806,32 @@ const ShopDetailPage = () => {
                     {/* Space가 1개이거나(메뉴목록) Space space 화면일 때(디자이너목록)만 이미지 표시 */}
                     {(spaceCount === 1 || (spaceCount >= 2 && !selectedSpaceId)) && !isReserving ? (
                         <IntroductionSection>
-                            <ShopImage 
-                                src={getImageSrc(storeData?.store_image_url || storeData?.space_image_url)} 
-                                alt={storeData?.store_name || storeData?.space_name}
-                                onError={(e) => {
-                                    console.warn('가게 이미지 로드 실패, placeholder 이미지로 대체');
-                                    e.target.src = placeholderImage;
-                                }}
-                            />
+                            {(() => {
+                                console.log('=== 이미지 렌더링 디버깅 ===');
+                                console.log('spaceCount:', spaceCount);
+                                console.log('selectedSpaceId:', selectedSpaceId);
+                                console.log('isReserving:', isReserving);
+                                console.log('storeData:', storeData);
+                                console.log('storeData?.store_image_url:', storeData?.store_image_url);
+                                console.log('storeData?.space_image_url:', storeData?.space_image_url);
+                                
+                                const imageUrl = getImageSrc(storeData?.store_image_url || storeData?.space_image_url);
+                                const imageAlt = storeData?.store_name || storeData?.space_name;
+                                
+                                console.log('최종 imageUrl:', imageUrl);
+                                console.log('최종 imageAlt:', imageAlt);
+                                
+                                return (
+                                    <ShopImage 
+                                        src={imageUrl} 
+                                        alt={imageAlt}
+                                        onError={(e) => {
+                                            console.warn('가게 이미지 로드 실패, placeholder 이미지로 대체');
+                                            e.target.src = placeholderImage;
+                                        }}
+                                    />
+                                );
+                            })()}
                             <ShopInfo
                                 name={storeData?.store_name}
                                 address={storeData?.store_address}
@@ -545,39 +878,76 @@ const ShopDetailPage = () => {
                             </>
                         ) : (
                             /* Space 상세 화면: 메뉴 목록 */
-                            <>
-                                <Line />
-                                <MenuSection>
-                                    <SectionTitle>가장 할인율이 큰 대표 메뉴!</SectionTitle>
-                                    <MenuCard
-                                        menu={getFeaturedMenu()}
-                                        onReserve={() => handleReserve(getFeaturedMenu())}
-                                    />
-                                </MenuSection>
-                                <Line />
-                                <MenuSection>
-                                    <SectionTitle>다른 할인 메뉴</SectionTitle>
-                                    <MenuList menus={getOtherMenus()} onReserve={handleReserve} />
-                                </MenuSection>
-                            </>
+                            (() => {
+                                console.log('=== Space 상세 화면 렌더링 ===');
+                                console.log('selectedSpaceId:', selectedSpaceId);
+                                console.log('storeData:', storeData);
+                                console.log('storeData.menus:', storeData?.menus);
+                                
+                                const featuredMenu = getFeaturedMenu();
+                                const otherMenus = getOtherMenus();
+                                
+                                console.log('featuredMenu:', featuredMenu);
+                                console.log('otherMenus:', otherMenus);
+                                
+                                return (
+                                    <>
+                                        <Line />
+                                        <MenuSection>
+                                            <SectionTitle>가장 할인율이 큰 대표 메뉴!</SectionTitle>
+                                            {featuredMenu ? (
+                                                <MenuCard
+                                                    menu={featuredMenu}
+                                                    onReserve={() => handleReserve(featuredMenu)}
+                                                />
+                                            ) : (
+                                                <div>메뉴를 불러오는 중...</div>
+                                            )}
+                                        </MenuSection>
+                                        <Line />
+                                        <MenuSection>
+                                            <SectionTitle>다른 할인 메뉴</SectionTitle>
+                                            <MenuList menus={otherMenus} onReserve={handleReserve} />
+                                        </MenuSection>
+                                    </>
+                                );
+                            })()
                         )
                     ) : (
                         /* Space가 1개인 경우: 바로 메뉴 목록 */
-                        <>
-                            <Line />
-                            <MenuSection>
-                                <SectionTitle>가장 할인율이 큰 대표 메뉴!</SectionTitle>
-                                <MenuCard
-                                    menu={getFeaturedMenu()}
-                                    onReserve={() => handleReserve(getFeaturedMenu())}
-                                />
-                            </MenuSection>
-                            <Line />
-                            <MenuSection>
-                                <SectionTitle>다른 할인 메뉴</SectionTitle>
-                                <MenuList menus={getOtherMenus()} onReserve={handleReserve} />
-                            </MenuSection>
-                        </>
+                        (() => {
+                            console.log('=== 단일 Space 메뉴 목록 렌더링 ===');
+                            console.log('storeData:', storeData);
+                            console.log('storeData.menus:', storeData?.menus);
+                            
+                            const featuredMenu = getFeaturedMenu();
+                            const otherMenus = getOtherMenus();
+                            
+                            console.log('featuredMenu:', featuredMenu);
+                            console.log('otherMenus:', otherMenus);
+                            
+                            return (
+                                <>
+                                    <Line />
+                                    <MenuSection>
+                                        <SectionTitle>가장 할인율이 큰 대표 메뉴!</SectionTitle>
+                                        {featuredMenu ? (
+                                            <MenuCard
+                                                menu={featuredMenu}
+                                                onReserve={() => handleReserve(featuredMenu)}
+                                            />
+                                        ) : (
+                                            <div>메뉴를 불러오는 중...</div>
+                                        )}
+                                    </MenuSection>
+                                    <Line />
+                                    <MenuSection>
+                                        <SectionTitle>다른 할인 메뉴</SectionTitle>
+                                        <MenuList menus={otherMenus} onReserve={handleReserve} />
+                                    </MenuSection>
+                                </>
+                            );
+                        })()
                     )}
                     </>
                 )}
