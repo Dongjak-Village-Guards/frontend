@@ -363,14 +363,17 @@ const ShopDetailPage = () => {
   return (
     <Layout currentPage="shop-detail">
         <PageContainer>
-            <TopNavBar
-                onBack={handleBack}
-                title={getPageTitle()}
-                showLike={!isReserving && !showPiAgreement && !(spaceCount >= 2 && selectedSpaceId)}
-                storeId={parseInt(id)}
-                isLiked={isLiked}
-                onLikeToggle={handleLikeToggle}
-            />
+            {/* 네브 바 영역 */}
+            <NavBarContainer>
+                <TopNavBar
+                    onBack={handleBack}
+                    title={getPageTitle()}
+                    showLike={!isReserving && !showPiAgreement && !(spaceCount >= 2 && selectedSpaceId)}
+                    storeId={parseInt(id)}
+                    isLiked={isLiked}
+                    onLikeToggle={handleLikeToggle}
+                />
+            </NavBarContainer>
     
             {/* 콘텐츠 영역 */}
             <ContentContainer>
@@ -389,7 +392,7 @@ const ShopDetailPage = () => {
                     <>
                     {/* Space가 1개이거나(메뉴목록) Space space 화면일 때(디자이너목록)만 이미지 표시 */}
                     {spaceCount === 1 || (spaceCount >= 2 && !selectedSpaceId) ? (
-                        <>
+                        <IntroductionSection>
                             <ShopImage 
                                 src={getImageSrc(storeData?.store_image_url || storeData?.space_image_url)} 
                                 alt={storeData?.store_name || storeData?.space_name}
@@ -404,18 +407,12 @@ const ShopDetailPage = () => {
                                 distance={`${storeData?.distance}m`}
                                 reservationTime={`${time} 예약`}
                             />
-                        </>
+                        </IntroductionSection>
                     ) : null}
                     
                     {/* Space가 1개인 경우: 가게 정보 표시 */}
                     {spaceCount === 1 ? (
                         <></>
-                        //<ShopInfo
-                        //    name={storeData?.store_name}
-                        //    address={storeData?.store_address}
-                        //    distance={`${storeData?.distance}m`}
-                        //    reservationTime={`${time} 예약`}
-                        ///>
                     ) : spaceCount >= 2 && selectedSpaceId ? (
                         /* Space 상세 화면: Space 정보 표시 */
                         <DesignerInfo
@@ -500,15 +497,20 @@ const PageContainer = styled.div`
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    height: 100vh;
     background: #fff;
+`;
+
+/* 네브 바 영역 */
+const NavBarContainer = styled.div`
 `;
 
 /* 콘텐츠 영역 (스크롤 가능) */
 const ContentContainer = styled.div`
-    flex: 1;
-    //overflow-y: auto;
-    //position: relative;
-    //top: 100px;
+    overflow-y: visible;
+    position: relative;
+    padding-top: 72px;
+    min-height: calc(100vh - 72px);
 `;
 
 /* 가게 이미지 */
@@ -520,9 +522,14 @@ const ShopImage = styled.img`
     opacity: 0.65;
 `;
 
+const IntroductionSection = styled.div`
+    display: flex;
+    flex-direction: column;
+`;
+
 /* 디자이너 선택 섹션 */
 const DesignerSection = styled.div`
-    padding: 16px;
+    padding: 16px 16px 0px 16px;
 `;
 
 /* 섹션 제목 (대표 메뉴, 다른 메뉴) */
