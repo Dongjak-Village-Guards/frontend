@@ -71,23 +71,35 @@ const TermsPage = () => {
           </TermsSection>
 
           <TermsSection>
-            <SectionTitle>환불 정책</SectionTitle>
+            <SectionTitle>예약 부도(No-Show) 정책 안내</SectionTitle>
             <SectionContent>
               <Paragraph>
-                1. 환불 조건
+                1. 예약 부도(No-Show)의 정의
               </Paragraph>
               <Paragraph>
-                - 서비스 이용 전: 전액 환불
-                - 서비스 이용 후: 환불 불가
-                - 예약 취소: 예약 시간 2시간 전까지 가능
+                예약 시간으로부터 15분이 지날 때까지 매장에 방문하지 않거나, 사전 연락 없이 예약을 이행하지 않는 경우.<br /><br />
               </Paragraph>
-              
-              <Paragraph>
-                2. 환불 방법
-              </Paragraph>
-              <Paragraph>
-                환불 신청은 고객센터를 통해 접수하시며, 신청 후 3-5일 내에 처리됩니다.
-              </Paragraph>
+            </SectionContent>
+
+            <SectionContent>
+                <Paragraph>
+                    2. 패널티 적용
+                </Paragraph>
+                <Paragraph>
+                    최근 30일 이내 1회 발생 시: 7일 동안 서비스 이용(예약)이 제한됩니다.
+                    최근 30일 이내 2회 발생 시: 14일 동안 서비스 이용(예약)이 제한됩니다.
+                    최근 30일 이내 3회 이상 발생 시: 영구적으로 서비스 이용(예약)이 제한됩니다.<br /><br />
+                </Paragraph>
+            </SectionContent>
+            <SectionContent>
+                <Paragraph>
+                    [예약 취소 안내]
+                </Paragraph>
+                <Paragraph>
+                    부득이하게 예약을 지키기 어려운 경우, 예약 시간 30분 전까지는 '일정' 탭에서 직접 취소가 가능합니다. 30분 이내로 남은 시점에는 취소가 불가하오니, 신중한 예약을 부탁드립니다.
+                    '지금 살래'는 사장님과 사용자 여러분 모두가 웃을 수 있는 건강한 지역 상생 플랫폼이 될 수 있도록 최선을 다하겠습니다.
+                    감사합니다. '지금 살래' 팀 드림.
+                </Paragraph>
             </SectionContent>
           </TermsSection>
         </ContentContainer>
