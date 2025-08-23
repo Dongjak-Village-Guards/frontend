@@ -3,12 +3,21 @@ import { TimeList, TimeItem } from './TimeFilter.styles';
 
 // 현재 시간의 다음 정각을 계산하는 함수
 export const getNearestHour = (currentTime) => {
+  console.log('=== getNearestHour 호출 ===');
+  console.log('입력 currentTime:', currentTime);
+  
   const [currentHour, currentMinute] = String(currentTime).split(':').map(Number);
+  console.log('파싱 결과 - currentHour:', currentHour, 'currentMinute:', currentMinute);
   
   // 현재가 정각이면 다음 시간, 아니면 다음 정각
   const nextHour = currentMinute === 0 ? (currentHour + 1) % 24 : (currentHour + 1) % 24;
+  console.log('계산된 nextHour:', nextHour);
   
-  return `${String(nextHour).padStart(2, '0')}:00`;
+  const result = `${String(nextHour).padStart(2, '0')}:00`;
+  console.log('getNearestHour 결과:', result);
+  console.log('=== getNearestHour 종료 ===');
+  
+  return result;
 };
 
 // 현재 시간부터 12시간, 1시간 단위로 생성
