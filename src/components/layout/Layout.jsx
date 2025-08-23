@@ -35,7 +35,7 @@ const Container = styled.div`
   padding: 10px;
 
   /* 모바일에서는 전체 화면 */
-  @media (max-width: 768px) {
+  @media (max-width: 500px) {
     padding: 0;
     background: #fff;
   }
@@ -54,7 +54,7 @@ const PhoneFrame = styled.div`
   overflow: hidden;
 
   /* 모바일에서는 프레임 제거하고 전체 화면 */
-  @media (max-width: 768px) {
+  @media (max-width: 500px) {
     max-width: 100%;
     height: 100vh;
     box-shadow: none;
@@ -91,7 +91,7 @@ const ContentArea = styled.div`
   }
   
   /* 반응형 웹 수정: 모바일에서 스크롤바 숨김 */
-  @media (max-width: 768px) {
+  @media (max-width: 500px) {
     &::-webkit-scrollbar {
       width: 0;
     }
