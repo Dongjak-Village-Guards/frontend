@@ -38,6 +38,57 @@ const ReservationPage = ({ shop }) => {
   const [reserving, setReserving] = useState(false);
   const [isAgreed, setIsAgreed] = useState(false);
 
+  // menuData 디버깅을 위한 useEffect
+  useEffect(() => {
+    console.log('=== menuData 상태 변경 디버깅 ===');
+    console.log('menuData:', menuData);
+    console.log('menuData 타입:', typeof menuData);
+    
+    if (menuData) {
+      console.log('=== menuData 상세 분석 ===');
+      console.log('전체 menuData 객체:', JSON.stringify(menuData, null, 2));
+      console.log('menuData 키들:', Object.keys(menuData));
+      
+      // 메뉴 기본 정보
+      console.log('메뉴 ID:', menuData.menu_id);
+      console.log('메뉴 이름:', menuData.menu_name);
+      console.log('아이템 ID:', menuData.item_id);
+      console.log('메뉴 이미지:', menuData.menu_image_url);
+      
+      // 가격 정보
+      console.log('할인율:', menuData.discount_rate);
+      console.log('원래 가격:', menuData.menu_price);
+      console.log('할인 가격:', menuData.discounted_price);
+      
+      // 예약 관련 정보
+      console.log('예약 가능 여부:', menuData.is_available);
+      console.log('선택된 시간:', menuData.selected_time);
+      
+      // 가게 정보
+      console.log('가게 ID:', menuData.store_id);
+      console.log('가게 이름:', menuData.store_name);
+      console.log('가게 주소:', menuData.store_address);
+      console.log('거리:', menuData.distance);
+      
+      // Space 정보 (있다면)
+      if (menuData.space_id) {
+        console.log('=== Space 정보 ===');
+        console.log('Space ID:', menuData.space_id);
+        console.log('Space 이름:', menuData.space_name);
+        console.log('Space 이미지:', menuData.space_image_url);
+      }
+      
+      console.log('=== 현재 상태 ===');
+      console.log('loading:', loading);
+      console.log('error:', error);
+      console.log('reserving:', reserving);
+      console.log('isAgreed:', isAgreed);
+      console.log('---');
+    } else {
+      console.log('menuData가 null입니다.');
+    }
+  }, [menuData, loading, error, reserving, isAgreed]);
+
   // 메뉴 상세 데이터 로드
   useEffect(() => {
     const loadMenuData = async () => {
@@ -204,10 +255,10 @@ const ReservationPage = ({ shop }) => {
                     discountRate: menuData.discount_rate,
                     originalPrice: menuData.menu_price,
                     discountPrice: menuData.discounted_price,
-                    isReserved: false
+                    isReserved: false,
+                    menuImage: menuData.menu_image_url,
                   }}
                   onReserve={() => {}}
-                  hideButton={true} // 버튼 숨김
                 />
             </MenuCardDiv>
           )}
