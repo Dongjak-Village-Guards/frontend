@@ -8,7 +8,7 @@
  */
 
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import useStore from '../hooks/store/useStore';
 import useUserInfo from '../hooks/user/useUserInfo';
 import MenuCard from '../components/sections/shop-detail/MenuCard/MenuCard';
@@ -52,22 +52,34 @@ const ShopDetailPage = () => {
         const pathParts = location.pathname.split('/');
         const storeId = pathParts[2]; // /shop/:id
         
+        console.log('=== getShopDetailStateFromUrl 함수 실행 ===');
+        console.log('전체 pathname:', location.pathname);
+        console.log('pathParts:', pathParts);
+        console.log('pathParts.length:', pathParts.length);
+        console.log('storeId:', storeId);
+        
         if (pathParts.length === 3) {
+            console.log('결과: entry-point');
             return { type: 'entry-point', storeId }; // 기본 진입점
         }
         if (pathParts.length === 4 && pathParts[3] === 'menu') {
+            console.log('결과: single-space-menu');
             return { type: 'single-space-menu', storeId }; // Space가 1개인 메뉴 페이지
         }
         if (pathParts.length === 4 && pathParts[3] === 'spaces') {
+            console.log('결과: spaces-list');
             return { type: 'spaces-list', storeId }; // Space 목록 페이지
         }
         if (pathParts.length === 5 && pathParts[3] === 'space') {
+            console.log('결과: space-menu, spaceId:', pathParts[4]);
             return { type: 'space-menu', storeId, spaceId: pathParts[4] }; // 특정 Space의 메뉴 페이지
         }
         if (pathParts.length === 4 && pathParts[3] === 'reservation') {
+            console.log('결과: reservation');
             return { type: 'reservation', storeId }; // 예약 페이지
         }
         
+        console.log('결과: entry-point (기본값)');
         return { type: 'entry-point', storeId };
     };
 
@@ -77,6 +89,10 @@ const ShopDetailPage = () => {
     const [error, setError] = useState(null);
     const [spaceCount, setSpaceCount] = useState(null);
     const [selectedSpaceId, setSelectedSpaceId] = useState(null);
+    
+    // 이전 URL 추적을 위한 ref
+    const previousPathnameRef = useRef(location.pathname);
+    const isBackNavigationRef = useRef(false);
 
     // URL 상태 파악 디버깅
     useEffect(() => {
@@ -115,10 +131,16 @@ const ShopDetailPage = () => {
 
     // 브라우저 뒤로가기/앞으로가기 감지 및 상태 동기화
     useEffect(() => {
+        let previousPathname = location.pathname;
+        let isBackNavigation = false;
+        
         const handlePopState = () => {
-            console.log('=== 브라우저 뒤로가기/앞으로가기 감지 ===');
+            console.log('=== 브라우저 뒤로가기/앞으로가기 감지 (popstate) ===');
             console.log('새로운 URL:', window.location.pathname);
             console.log('현재 selectedSpaceId:', selectedSpaceId);
+            console.log('히스토리 길이:', window.history.length);
+            console.log('히스토리 상태:', window.history.state);
+            console.log('현재 시간:', new Date().toISOString());
             
             // URL 상태에 따라 selectedSpaceId 동기화
             const urlState = getShopDetailStateFromUrl();
@@ -135,20 +157,138 @@ const ShopDetailPage = () => {
                     setSelectedSpaceId(null);
                 }
             }
+            
+            // 브라우저 뒤로가기로 entry-point 상태가 되었을 때 홈페이지로 이동
+            if (urlState.type === 'entry-point') {
+                console.log('=== 브라우저 뒤로가기로 entry-point 상태 감지 ===');
+                console.log('홈페이지로 이동합니다.');
+                
+                // 약간의 지연을 두고 홈페이지로 이동 (무한 루프 방지)
+                setTimeout(() => {
+                    navigate('/', { replace: true });
+                }, 50);
+            }
+            
+            console.log('=== 브라우저 네비게이션 처리 완료 ===');
         };
 
+        console.log('=== popstate 이벤트 리스너 등록 ===');
+        console.log('등록 시점의 URL:', window.location.pathname);
+        console.log('등록 시점의 히스토리 길이:', window.history.length);
+        
         window.addEventListener('popstate', handlePopState);
         
         return () => {
+            console.log('=== popstate 이벤트 리스너 제거 ===');
             window.removeEventListener('popstate', handlePopState);
         };
-    }, [selectedSpaceId]);
+    }, [selectedSpaceId, navigate]);
+
+    // URL 변경 감지 및 브라우저 뒤로가기 처리
+    useEffect(() => {
+        console.log('=== URL 변경 감지 ===');
+        console.log('이전 URL:', previousPathnameRef.current);
+        console.log('현재 URL:', location.pathname);
+        console.log('히스토리 길이:', window.history.length);
+        console.log('히스토리 상태:', window.history.state);
+        console.log('isReserving 상태:', isReserving);
+        console.log('showPiAgreement 상태:', showPiAgreement);
+        
+        // URL이 변경되었을 때
+        if (previousPathnameRef.current !== location.pathname) {
+            console.log('URL이 변경되었습니다.');
+            
+            const urlState = getShopDetailStateFromUrl();
+            console.log('현재 URL 상태:', urlState);
+            console.log('이전 URL에 /spaces 포함 여부:', previousPathnameRef.current.includes('/spaces'));
+            console.log('이전 URL에 /reservation 포함 여부:', previousPathnameRef.current.includes('/reservation'));
+            console.log('이전 URL에 /space/ 포함 여부:', previousPathnameRef.current.includes('/space/'));
+            
+            // Space 목록 페이지에서 entry-point로 이동한 경우 (브라우저 뒤로가기로 추정)
+            if (previousPathnameRef.current.includes('/spaces') && urlState.type === 'entry-point') {
+                console.log('=== Space 목록에서 entry-point로 이동 감지 (브라우저 뒤로가기로 추정) ===');
+                console.log('홈페이지로 이동합니다.');
+                
+                // 약간의 지연을 두고 홈페이지로 이동
+                setTimeout(() => {
+                    navigate('/', { replace: true });
+                }, 50);
+            }
+            
+            // 예약 페이지에서 다른 페이지로 이동한 경우 (앞으로가기/뒤로가기)
+            if (previousPathnameRef.current.includes('/reservation')) {
+                console.log('=== 예약 페이지에서 다른 페이지로 이동 감지 ===');
+                console.log('이동 전 URL:', previousPathnameRef.current);
+                console.log('이동 후 URL:', location.pathname);
+                console.log('이동 후 URL 상태:', urlState);
+                
+                // 예약 페이지에서 Space 메뉴 페이지로 이동해야 하는 경우
+                if (urlState.type === 'space-menu' && selectedSpaceId) {
+                    console.log('예약 페이지에서 Space 메뉴 페이지로 이동해야 함');
+                    console.log('selectedSpaceId:', selectedSpaceId);
+                    // 예약 상태 초기화
+                    cancelReservation();
+                } else if (urlState.type === 'single-space-menu') {
+                    console.log('예약 페이지에서 단일 메뉴 페이지로 이동해야 함');
+                    // 예약 상태 초기화
+                    cancelReservation();
+                } else if (urlState.type === 'spaces-list') {
+                    console.log('예약 페이지에서 Space 목록 페이지로 이동해야 함');
+                    // 예약 상태 초기화
+                    cancelReservation();
+                }
+            }
+            
+            // Space 메뉴 페이지에서 예약 페이지로 이동한 경우 (앞으로가기)
+            if (previousPathnameRef.current.includes('/space/') && urlState.type === 'reservation') {
+                console.log('=== Space 메뉴 페이지에서 예약 페이지로 이동 감지 (앞으로가기) ===');
+                console.log('예약 페이지로 이동합니다.');
+                
+                // storeData에서 메뉴 정보 찾기
+                const menuFromStoreData = storeData?.menus?.[0];
+                if (menuFromStoreData) {
+                    console.log('storeData에서 메뉴 정보 찾음:', menuFromStoreData);
+                    // 예약 페이지 상태로 설정 (올바른 메뉴 데이터 전달)
+                    startReservation(menuFromStoreData, null);
+                } else {
+                    console.log('storeData에서 메뉴 정보를 찾을 수 없음');
+                    // 예약 페이지 상태로 설정 (기본값)
+                    startReservation(null, null);
+                }
+            }
+            
+            // 단일 메뉴 페이지에서 예약 페이지로 이동한 경우 (앞으로가기)
+            if (previousPathnameRef.current.includes('/menu') && urlState.type === 'reservation') {
+                console.log('=== 단일 메뉴 페이지에서 예약 페이지로 이동 감지 (앞으로가기) ===');
+                console.log('예약 페이지로 이동합니다.');
+                
+                // storeData에서 메뉴 정보 찾기
+                const menuFromStoreData = storeData?.menus?.[0];
+                if (menuFromStoreData) {
+                    console.log('storeData에서 메뉴 정보 찾음:', menuFromStoreData);
+                    // 예약 페이지 상태로 설정 (올바른 메뉴 데이터 전달)
+                    startReservation(menuFromStoreData, null);
+                } else {
+                    console.log('storeData에서 메뉴 정보를 찾을 수 없음');
+                    // 예약 페이지 상태로 설정 (기본값)
+                    startReservation(null, null);
+                }
+            }
+            
+            // 이전 URL 업데이트
+            previousPathnameRef.current = location.pathname;
+        }
+    }, [location.pathname, navigate, isReserving, showPiAgreement, selectedSpaceId, cancelReservation, startReservation, storeData]);
 
     // storeData 디버깅을 위한 useEffect
     useEffect(() => {
         console.log('=== storeData 상태 변경 디버깅 ===');
         console.log('storeData:', storeData);
         console.log('storeData 타입:', typeof storeData);
+        console.log('isReserving:', isReserving);
+        console.log('showPiAgreement:', showPiAgreement);
+        console.log('selectedSpaceId:', selectedSpaceId);
+        console.log('현재 URL:', location.pathname);
         
         if (storeData) {
             console.log('=== storeData 상세 분석 ===');
@@ -210,7 +350,7 @@ const ShopDetailPage = () => {
         } else {
             console.log('storeData가 null입니다.');
         }
-    }, [storeData, spaceCount, selectedSpaceId, loading, error]);
+    }, [storeData, spaceCount, selectedSpaceId, loading, error, isReserving, showPiAgreement, location.pathname]);
 
     // 현재 가게의 Zustand 상태에서 좋아요 상태 가져오기
     const currentStore = stores.find(store => store.id === parseInt(id));
@@ -259,6 +399,9 @@ const ShopDetailPage = () => {
                 console.log('Time 파라미터:', time);
                 console.log('AccessToken 존재:', !!accessToken);
                 console.log('URL 상태:', urlState);
+                console.log('현재 URL:', location.pathname);
+                console.log('히스토리 길이:', window.history.length);
+                console.log('히스토리 상태:', window.history.state);
                 
                 // 1. Space 개수 조회
                 console.log('Space 개수 조회 시작...');
@@ -292,7 +435,9 @@ const ShopDetailPage = () => {
                     if (urlState.type === 'entry-point') {
                         // /shop/:id로 접근한 경우 - /shop/:id/spaces로 리다이렉트
                         console.log('Space가 2개 이상인 경우: /shop/:id/spaces로 리다이렉트');
+                        console.log('리다이렉트 전 히스토리 길이:', window.history.length);
                         navigate(`/shop/${storeId}/spaces`);
+                        console.log('리다이렉트 후 히스토리 길이:', window.history.length);
                     } else if (urlState.type === 'spaces-list') {
                         // /shop/:id/spaces로 접근한 경우 - 정상 처리
                         console.log('=== Space가 2개 이상인 경우: Space 목록 조회 ===');
@@ -364,6 +509,7 @@ const ShopDetailPage = () => {
                 console.log('=== ShopDetailPage 데이터 로드 완료 ===');
                 console.log('최종 spaceCount:', spacesData.count);
                 console.log('최종 storeData 설정됨');
+                console.log('최종 히스토리 길이:', window.history.length);
                 
             } catch (error) {
                 console.error('ShopDetailPage: 데이터 로드 실패', error);
@@ -492,6 +638,9 @@ const ShopDetailPage = () => {
         console.log('storeData:', storeData);
         console.log('id:', id);
         console.log('현재 URL:', location.pathname);
+        console.log('히스토리 길이:', window.history.length);
+        console.log('히스토리 상태:', window.history.state);
+        console.log('현재 시간:', new Date().toISOString());
         
         if (showPiAgreement) {
             console.log('개인정보 동의서 숨김 처리');
@@ -499,7 +648,10 @@ const ShopDetailPage = () => {
         } else if (isReserving) {
             // 예약 페이지에서 뒤로가기: 선택된 Space의 메뉴 페이지로
             console.log('예약 페이지에서 뒤로가기 처리');
+            console.log('예약 상태 초기화 전 isReserving:', isReserving);
             cancelReservation(); // 예약 상태 초기화
+            console.log('예약 상태 초기화 후 isReserving:', isReserving);
+            
             if (spaceCount >= 2 && selectedSpaceId) {
                 console.log(`예약 페이지 -> Space 메뉴 페이지로 이동: /shop/${id}/space/${selectedSpaceId}`);
                 navigate(`/shop/${id}/space/${selectedSpaceId}`);
@@ -518,7 +670,9 @@ const ShopDetailPage = () => {
         } else if (spaceCount >= 2 && !selectedSpaceId) {
             // Space 목록에서 뒤로가기: 홈페이지로
             console.log('Space 목록에서 홈페이지로 뒤로가기');
+            console.log('이동 전 히스토리 길이:', window.history.length);
             navigate('/');
+            console.log('이동 후 히스토리 길이:', window.history.length);
         } else if (spaceCount === 1) {
             // 단일 Space 메뉴 페이지에서 뒤로가기: 홈페이지로
             console.log('단일 Space 메뉴 페이지에서 홈페이지로 뒤로가기');
@@ -526,8 +680,12 @@ const ShopDetailPage = () => {
         } else {
             // 기본: 브라우저 히스토리 뒤로가기
             console.log('기본 브라우저 히스토리 뒤로가기');
+            console.log('이동 전 히스토리 길이:', window.history.length);
             navigate(-1);
+            console.log('이동 후 히스토리 길이:', window.history.length);
         }
+        
+        console.log('=== handleBack 함수 실행 완료 ===');
     };
 
     // 예약 버튼 클릭 시
@@ -540,9 +698,14 @@ const ShopDetailPage = () => {
         console.log('메뉴 이름:', menu?.menu_name);
         console.log('Space 개수:', spaceCount);
         console.log('선택된 Space ID:', selectedSpaceId);
+        console.log('예약 상태 설정 전 isReserving:', isReserving);
+        
         startReservation(menu, null);
+        console.log('예약 상태 설정 후 isReserving:', isReserving);
+        
         // 예약 페이지로 URL 변경
         navigate(`/shop/${id}/reservation`);
+        console.log('예약 페이지로 네비게이션 완료');
     };
 
     // Space 선택 (디자이너 선택과 동일한 역할)
