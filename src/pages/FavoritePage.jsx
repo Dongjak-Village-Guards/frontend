@@ -27,13 +27,18 @@ const FavoritePage = () => {
     time,
     setTime,
     setFilters,
-    fetchStores
+    fetchStores,
+    checkAndUpdateTimeIfExpired, // 새로 추가
   } = useStore();
 
   // 컴포넌트 마운트 시 초기 로딩 처리
   useEffect(() => {
     const initializePage = async () => {
       setIsLoading(true);
+      
+      // 시간 만료 체크 및 자동 업데이트
+      checkAndUpdateTimeIfExpired();
+      
       console.log("FavoritePage 렌더링함 updateCurrentTime호출됨",updateCurrentTime);
       updateCurrentTime();
       
@@ -43,7 +48,7 @@ const FavoritePage = () => {
     };
 
     initializePage();
-  }, [updateCurrentTime]);
+  }, [updateCurrentTime, checkAndUpdateTimeIfExpired, currentTime]); // currentTime 의존성 추가
 
   // 찜한 가게만 필터링
   const favoriteStores = stores.filter(store => store.isLiked);
