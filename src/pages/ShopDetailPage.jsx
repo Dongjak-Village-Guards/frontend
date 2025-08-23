@@ -83,27 +83,47 @@ const ShopDetailPage = () => {
 
     // 초기 데이터 로드
     useEffect(() => {
+        cancelReservation(); // 무한 츠쿠요미 막기용(렌더식 캐시 초기화)
         const loadStoreData = async () => {
             try {
                 setLoading(true);
                 setError(null);
                 
                 const storeId = parseInt(id);
-                console.log('ShopDetailPage: 초기 데이터 로드 시작', { storeId, time });
+                console.log('=== ShopDetailPage 초기 데이터 로드 시작 ===');
+                console.log('Store ID:', storeId);
+                console.log('Time 파라미터:', time);
+                console.log('AccessToken 존재:', !!accessToken);
                 
                 // 1. Space 개수 조회
+                console.log('Space 개수 조회 시작...');
                 const spacesData = await fetchStoreSpacesCount(storeId);
+                console.log('Space 개수 조회 결과:', spacesData);
+                console.log('Space 개수:', spacesData.count);
                 setSpaceCount(spacesData.count);
                 
                 const timeParam = convertTimeToParam(time);
+                console.log('변환된 시간 파라미터:', timeParam);
                 
                 if (spacesData.count === 1) {
+                    console.log('=== Space가 1개인 경우: 바로 메뉴 조회 ===');
                     // Space가 1개인 경우: 바로 메뉴 조회
                     const menuData = await fetchStoreMenus(storeId, timeParam, accessToken);
+                    console.log('메뉴 조회 결과:', menuData);
                     setStoreData(menuData);
                 } else if (spacesData.count >= 2) {
+                    console.log('=== Space가 2개 이상인 경우: Space 목록 조회 ===');
                     // Space가 2개 이상인 경우: Space 목록 조회
                     const spacesListData = await fetchStoreSpacesList(storeId, timeParam, accessToken);
+                    console.log('Space 목록 조회 결과:', spacesListData);
+                    console.log('=== API 응답 전체 구조 분석 ===');
+                    console.log('전체 응답 객체:', JSON.stringify(spacesListData, null, 2));
+                    console.log('spaces 배열:', spacesListData.spaces);
+                    console.log('spaces 배열 길이:', spacesListData.spaces?.length);
+                    if (spacesListData.spaces && spacesListData.spaces.length > 0) {
+                        console.log('첫 번째 Space 객체 전체:', JSON.stringify(spacesListData.spaces[0], null, 2));
+                        console.log('첫 번째 Space의 모든 키:', Object.keys(spacesListData.spaces[0]));
+                    }
                     
                     // 각 Space의 메뉴 정보를 확인하여 is_possible 계산
                     const spacesWithCorrectedInfo = spacesListData.spaces.map(space => {
@@ -144,16 +164,25 @@ const ShopDetailPage = () => {
                     });
                 }
                 
+                console.log('=== ShopDetailPage 데이터 로드 완료 ===');
+                console.log('최종 spaceCount:', spacesData.count);
+                console.log('최종 storeData 설정됨');
+                
             } catch (error) {
                 console.error('ShopDetailPage: 데이터 로드 실패', error);
                 setError(error.message);
             } finally {
                 setLoading(false);
+                console.log('ShopDetailPage 로딩 상태: false');
             }
         };
 
         if (id && time !== null) {
             loadStoreData();
+        } else {
+            console.log('ShopDetailPage: id 또는 time이 없어서 데이터 로드 건너뜀');
+            console.log('id:', id);
+            console.log('time:', time);
         }
     }, [id, time, accessToken]);
 
