@@ -20,7 +20,7 @@ export const FilterRow = styled.div`
   }
   
   /* 모바일에서는 바로 붙도록 */
-  @media (max-width: 768px) {
+  @media (max-width: 500px) {
     top: 0;
   }
   
