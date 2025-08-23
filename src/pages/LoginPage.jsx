@@ -2,7 +2,7 @@
  * 로그인 페이지
  */
 
-import Logo from '../assets/images/logo.png';
+import Logo from '../assets/images/logo_login.png';
 import { ReactComponent as Bubble } from '../assets/images/bubble.svg';
 import Google from '../components/features/auth/Google/Google';
 import styled from 'styled-components';
@@ -13,14 +13,12 @@ const Login = () => {
       <img src={Logo} alt="지금살래 로고" className="logo-icon" />
 
       <FirstTitle>
-        <p className='main-title'>위기의 지갑을 구하는 3시간의 기적</p>
+        <p className='main-title'>살래? 지금 이 순간만의 Sale</p>
       </FirstTitle>
 
       <SecondTitle>
         <p className='sub-title'>
-          우리 동네 할인 정보
-          <br />
-          놓치지 마세요
+          우리 동네 할인 정보 놓치지 마세요
         </p>
       </SecondTitle>
 
@@ -48,9 +46,8 @@ const Container = styled.div`
   align-items: center;
 
   .logo-icon {
-    width: 104px;
-    height: 104px;
-    margin-bottom: 24px;
+    width: 180px;
+    margin-bottom: 86px;
   }
 `;
 
@@ -58,13 +55,12 @@ const FirstTitle = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 4px;
 
   .main-title {
     color: #282828;
     font-size: 20px;
     font-weight: 700;
-    line-height: 14px;
     white-space: nowrap;
   }
 `;
@@ -79,7 +75,6 @@ const SecondTitle = styled.div`
     color: #000000;
     font-size: 16px;
     font-weight: 500;
-    line-height: 20px;
     text-align: center;
     white-space: nowrap;
   }
