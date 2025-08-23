@@ -15,7 +15,7 @@ export const NavBarWrapper = styled.nav`
   z-index: 20;
 
   /* 모바일에서는 fixed로 하단에 고정 */
-  @media (max-width: 768px) {
+  @media (max-width: 500px) {
     position: fixed;
   }
 `;

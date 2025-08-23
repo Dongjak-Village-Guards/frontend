@@ -225,8 +225,7 @@ const LogoSection = styled.div`
   align-items: center;
 
   .logo-icon {
-    width: 104px;
-    height: 104px;
+    width: 120px;
     flex-shrink: 0;
   }
 `;
