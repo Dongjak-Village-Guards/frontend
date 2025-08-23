@@ -27,6 +27,7 @@ export default Layout;
 
 // 전체 Layout: 반응형으로 수정
 const Container = styled.div`
+  height: 100%;
   min-height: 100vh;
   background: #f8f8f8;
   display: flex;
