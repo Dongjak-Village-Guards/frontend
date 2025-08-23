@@ -13,6 +13,9 @@ import useUserInfo from './hooks/user/useUserInfo';
 import ShopDetailPage from './pages/ShopDetailPage';
 import LoginTest from './components/test/LoginTest/LoginTest';
 import StoreTest from './components/test/StoreTest/StoreTest';
+import NoticePage from './pages/mypageDescription/NoticePage';
+import FAQPage from './pages/mypageDescription/FAQPage';
+import TermsPage from './pages/mypageDescription/TermsPage';
 import GlobalStyle from './styles/GlobalStyle';
 
 function App() {
@@ -81,6 +84,10 @@ function App() {
             <Route path="/" element={<MainPageApp />} />
             { /* 가게 상세 페이지: 디자이너 유무에 따라 동적 렌더링 */}
             <Route path="/shop/:id" element={<ShopDetailPage />} />
+            {/* 마이페이지 관련 페이지들 */}
+            <Route path="/notice" element={<NoticePage />} />
+            <Route path="/faq" element={<FAQPage />} />
+            <Route path="/terms" element={<TermsPage />} />
             {/* 백서버 로그인 테스트 페이지 */}
             <Route path="/test" element={<LoginTest />} />
             {/* 가게 API 테스트 페이지 */}

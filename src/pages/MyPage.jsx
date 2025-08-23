@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
 import useUserInfo from '../hooks/user/useUserInfo';
 import { fetchUserInfo } from '../apis/authAPI';
 import Logo from '../assets/images/logo.png';
 
 const MyPage = () => {
+  const navigate = useNavigate();
   const { authUser, logoutUser, accessToken, isTokenValid, refreshTokens } = useUserInfo();
   const [userInfo, setUserInfo] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -44,6 +46,10 @@ const MyPage = () => {
     logoutUser();
   };
 
+  const handleMenuClick = (path) => {
+    navigate(path);
+  };
+
   return (
     <PageContainer>
       {/* 상단 헤더 */}
@@ -71,13 +77,13 @@ const MyPage = () => {
 
       {/* 메뉴 목록 */}
       <MenuSection>
-        <MenuItem>
+        <MenuItem onClick={() => handleMenuClick('/notice')}>
           <MenuText>공지사항</MenuText>
         </MenuItem>
-        <MenuItem>
+        <MenuItem onClick={() => handleMenuClick('/faq')}>
           <MenuText>자주 묻는 질문</MenuText>
         </MenuItem>
-        <MenuItem>
+        <MenuItem onClick={() => handleMenuClick('/terms')}>
           <MenuText>약관 및 정책</MenuText>
         </MenuItem>
       </MenuSection>
