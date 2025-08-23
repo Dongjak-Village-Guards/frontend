@@ -1,7 +1,7 @@
 import styled from "styled-components";
 
 export const NavBarWrapper = styled.nav`
-  position: fixed;
+  position: absolute;
   left: 0; right: 0; bottom: 0;
   display: flex;
   width: 100%;
@@ -13,6 +13,11 @@ export const NavBarWrapper = styled.nav`
   border-top: 2px solid #DA2538;
   background: #FFF;
   z-index: 20;
+
+  /* 모바일에서는 fixed로 하단에 고정 */
+  @media (max-width: 768px) {
+    position: fixed;
+  }
 `;
 
 export const NavItem = styled.button`
