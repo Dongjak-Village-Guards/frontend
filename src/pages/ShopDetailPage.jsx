@@ -334,14 +334,17 @@ const ShopDetailPage = () => {
   return (
     <Layout currentPage="shop-detail">
         <PageContainer>
-            <TopNavBar
-                onBack={handleBack}
-                title={getPageTitle()}
-                showLike={!isReserving && !showPiAgreement && !(spaceCount >= 2 && selectedSpaceId)}
-                storeId={parseInt(id)}
-                isLiked={isLiked}
-                onLikeToggle={handleLikeToggle}
-            />
+            {/* 네브 바 영역 */}
+            <NavBarContainer>
+                <TopNavBar
+                    onBack={handleBack}
+                    title={getPageTitle()}
+                    showLike={!isReserving && !showPiAgreement && !(spaceCount >= 2 && selectedSpaceId)}
+                    storeId={parseInt(id)}
+                    isLiked={isLiked}
+                    onLikeToggle={handleLikeToggle}
+                />
+            </NavBarContainer>
     
             {/* 콘텐츠 영역 */}
             <ContentContainer>
@@ -474,12 +477,15 @@ const PageContainer = styled.div`
     background: #fff;
 `;
 
+/* 네브 바 영역 */
+const NavBarContainer = styled.div`
+`;
+
 /* 콘텐츠 영역 (스크롤 가능) */
 const ContentContainer = styled.div`
-    flex: 1;
-    //overflow-y: auto;
-    //position: relative;
-    //top: 100px;
+    overflow-y: auto;
+    position: relative;
+    padding-top: 72px;
 `;
 
 /* 가게 이미지 */
