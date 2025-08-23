@@ -4,7 +4,7 @@ import NavBar from './BottomNavBar/BottomNavBar';
 
 const Layout = forwardRef(({ children, currentPage = "home", onPageChange }, contentAreaRef) => {
   // 로그인/주소검색/상세 페이지에서는 NavBar 숨김
-  const showNavBar = !['login', 'search-address', 'shop-detail'].includes(currentPage);
+  const showNavBar = !['login', 'search-address', 'shop-detail', 'notice', 'faq', 'terms'].includes(currentPage);
 
   return (
     <Container>
