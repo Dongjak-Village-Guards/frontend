@@ -42,7 +42,8 @@ const ShopDetailPage = () => {
         startReservation,
         cancelReservation,
         togglePiAgreement,
-        toggleLikeWithAPI
+        toggleLikeWithAPI,
+        restoreReservationState
     } = useStore();
 
     const { accessToken } = useUserInfo();
@@ -93,6 +94,7 @@ const ShopDetailPage = () => {
     // 이전 URL 추적을 위한 ref
     const previousPathnameRef = useRef(location.pathname);
     const isBackNavigationRef = useRef(false);
+    const isNavigatingToHomeRef = useRef(false);
 
     // URL 상태 파악 디버깅
     useEffect(() => {
@@ -163,6 +165,9 @@ const ShopDetailPage = () => {
                 console.log('=== 브라우저 뒤로가기로 entry-point 상태 감지 ===');
                 console.log('홈페이지로 이동합니다.');
                 
+                // 홈페이지로 이동 중임을 표시
+                isNavigatingToHomeRef.current = true;
+                
                 // 약간의 지연을 두고 홈페이지로 이동 (무한 루프 방지)
                 setTimeout(() => {
                     navigate('/', { replace: true });
@@ -208,6 +213,25 @@ const ShopDetailPage = () => {
             if (previousPathnameRef.current.includes('/spaces') && urlState.type === 'entry-point') {
                 console.log('=== Space 목록에서 entry-point로 이동 감지 (브라우저 뒤로가기로 추정) ===');
                 console.log('홈페이지로 이동합니다.');
+                
+                // 홈페이지로 이동 중임을 표시
+                isNavigatingToHomeRef.current = true;
+                
+                // 약간의 지연을 두고 홈페이지로 이동
+                setTimeout(() => {
+                    navigate('/', { replace: true });
+                }, 50);
+            }
+            
+            // 단일 메뉴 페이지에서 entry-point로 이동한 경우 (브라우저 뒤로가기로 추정)
+            if (previousPathnameRef.current.includes('/menu') && urlState.type === 'entry-point') {
+                console.log('=== 단일 메뉴 페이지에서 entry-point로 이동 감지 (브라우저 뒤로가기로 추정) ===');
+                console.log('이전 URL:', previousPathnameRef.current);
+                console.log('현재 URL 상태:', urlState);
+                console.log('홈페이지로 이동합니다.');
+                
+                // 홈페이지로 이동 중임을 표시
+                isNavigatingToHomeRef.current = true;
                 
                 // 약간의 지연을 두고 홈페이지로 이동
                 setTimeout(() => {
@@ -416,25 +440,83 @@ const ShopDetailPage = () => {
                 if (spacesData.count === 1) {
                     // Space가 1개인 경우
                     if (urlState.type === 'entry-point') {
-                        // /shop/:id로 접근한 경우 - /shop/:id/menu로 리다이렉트
-                        console.log('Space가 1개인 경우: /shop/:id/menu로 리다이렉트');
+                        // /shop/:id로 접근한 경우
+                        console.log('=== Space가 1개인 경우: entry-point 상태 ===');
+                        console.log('Space 개수:', spacesData.count);
+                        console.log('현재 URL 상태:', urlState);
+                        console.log('홈페이지로 이동 중인지 확인:', isNavigatingToHomeRef.current);
+                        
+                        // 홈페이지로 이동 중인지 확인
+                        if (isNavigatingToHomeRef.current) {
+                            console.log('홈페이지로 이동 중이므로 리다이렉트하지 않음');
+                            isNavigatingToHomeRef.current = false; // 플래그 초기화
+                            return;
+                        }
+                        
+                        // 일반적인 entry-point 접근인 경우 /shop/:id/menu로 리다이렉트
+                        console.log('일반적인 entry-point 접근: /shop/:id/menu로 리다이렉트');
+                        console.log('리다이렉트 전 히스토리 길이:', window.history.length);
                         navigate(`/shop/${storeId}/menu`);
+                        console.log('리다이렉트 후 히스토리 길이:', window.history.length);
                     } else if (urlState.type === 'single-space-menu') {
                         // /shop/:id/menu로 접근한 경우 - 정상 처리
                         console.log('=== Space가 1개인 경우: 바로 메뉴 조회 ===');
-                        const menuData = await fetchStoreMenus(storeId, timeParam, accessToken);
-                        console.log('메뉴 조회 결과:', menuData);
-                        setStoreData(menuData);
+                        console.log('Space 개수:', spacesData.count);
+                        console.log('현재 URL 상태:', urlState);
+                        console.log('메뉴 조회 시작...');
+                        try {
+                            const menuData = await fetchStoreMenus(storeId, timeParam, accessToken);
+                            console.log('메뉴 조회 결과:', menuData);
+                            console.log('=== 메뉴 데이터 상세 분석 ===');
+                            if (menuData) {
+                                console.log('메뉴 데이터 키들:', Object.keys(menuData));
+                                console.log('메뉴 개수:', menuData.menus?.length);
+                                if (menuData.menus && menuData.menus.length > 0) {
+                                    console.log('첫 번째 메뉴:', JSON.stringify(menuData.menus[0], null, 2));
+                                }
+                            }
+                            setStoreData(menuData);
+                        } catch (error) {
+                            console.error('메뉴 조회 실패:', error);
+                            setError(error.message || '메뉴 조회에 실패했습니다.');
+                        }
+                    } else if (urlState.type === 'reservation') {
+                        // /shop/:id/reservation으로 접근한 경우 - 리다이렉트하지 않음
+                        console.log('=== Space가 1개인 경우: 예약 페이지 상태 - 리다이렉트하지 않음 ===');
+                        console.log('예약 페이지에서 리다이렉트하지 않고 현재 상태 유지');
+                        // 예약 페이지에서는 리다이렉트하지 않고 현재 상태를 유지
+                        // storeData가 이미 설정되어 있다면 그대로 사용
+                        if (!storeData) {
+                            console.log('storeData가 없으므로 메뉴 데이터 로드');
+                            try {
+                                const menuData = await fetchStoreMenus(storeId, timeParam, accessToken);
+                                setStoreData(menuData);
+                            } catch (error) {
+                                console.error('예약 페이지 메뉴 조회 실패:', error);
+                                setError(error.message || '메뉴 조회에 실패했습니다.');
+                            }
+                        }
                     } else {
                         // 다른 URL로 접근한 경우 - /shop/:id/menu로 리다이렉트
                         console.log('Space가 1개인 경우: 다른 URL에서 /shop/:id/menu로 리다이렉트');
+                        console.log('현재 URL 상태:', urlState);
                         navigate(`/shop/${storeId}/menu`);
                     }
                 } else if (spacesData.count >= 2) {
                     // Space가 2개 이상인 경우
                     if (urlState.type === 'entry-point') {
-                        // /shop/:id로 접근한 경우 - /shop/:id/spaces로 리다이렉트
-                        console.log('Space가 2개 이상인 경우: /shop/:id/spaces로 리다이렉트');
+                        // /shop/:id로 접근한 경우
+                        console.log('=== entry-point 상태: Space 개수에 따른 리다이렉트 ===');
+                        
+                        // 홈페이지로 이동 중인지 확인
+                        if (isNavigatingToHomeRef.current) {
+                            console.log('홈페이지로 이동 중이므로 리다이렉트하지 않음');
+                            isNavigatingToHomeRef.current = false; // 플래그 초기화
+                            return;
+                        }
+                        
+                        // 일반적인 entry-point 접근인 경우 /shop/:id/spaces로 리다이렉트
+                        console.log('일반적인 entry-point 접근: /shop/:id/spaces로 리다이렉트');
                         console.log('리다이렉트 전 히스토리 길이:', window.history.length);
                         navigate(`/shop/${storeId}/spaces`);
                         console.log('리다이렉트 후 히스토리 길이:', window.history.length);
@@ -498,7 +580,29 @@ const ShopDetailPage = () => {
                     } else if (urlState.type === 'reservation') {
                         // /shop/:id/reservation으로 접근한 경우 - 리다이렉트하지 않음
                         console.log('=== 예약 페이지 상태: 리다이렉트하지 않음 ===');
-                        // 예약 페이지에서는 기존 데이터를 유지하거나 필요한 경우에만 데이터를 로드
+                        
+                        // 새로고침으로 인한 상태 초기화 확인
+                        if (!isReserving) {
+                            console.log('=== 예약 페이지 새로고침 감지 - 상태 복원 시도 ===');
+                            console.log('새로고침으로 인해 예약 상태가 초기화됨');
+                            
+                            // localStorage에서 예약 상태 복원 시도
+                            const restored = restoreReservationState();
+                            if (restored) {
+                                console.log('예약 상태 복원 성공 - 예약 페이지에 유지');
+                                return;
+                            } else {
+                                console.log('예약 상태 복원 실패 - Space 목록으로 리다이렉트');
+                                // 예약 상태 복원이 실패한 경우 Space 목록으로 리다이렉트
+                                setTimeout(() => {
+                                    navigate(`/shop/${storeId}/spaces`, { replace: true });
+                                }, 100);
+                                return;
+                            }
+                        }
+                        
+                        // 예약 상태가 있는 경우 정상 처리
+                        console.log('예약 상태가 있으므로 정상 처리');
                     } else {
                         // 다른 URL로 접근한 경우 - /shop/:id/spaces로 리다이렉트
                         console.log('Space가 2개 이상인 경우: 다른 URL에서 /shop/:id/spaces로 리다이렉트');
@@ -692,6 +796,8 @@ const ShopDetailPage = () => {
     const handleReserve = (menu) => {
         console.log('=== 메뉴 선택 디버깅 ===');
         console.log('선택된 메뉴 객체:', menu);
+        console.log('menu 타입:', typeof menu);
+        console.log('menu 구조:', JSON.stringify(menu, null, 2));
         console.log('item_id 존재 여부:', !!menu?.item_id);
         console.log('item_id 값:', menu?.item_id);
         console.log('메뉴 ID:', menu?.menu_id);
@@ -699,14 +805,77 @@ const ShopDetailPage = () => {
         console.log('Space 개수:', spaceCount);
         console.log('선택된 Space ID:', selectedSpaceId);
         console.log('예약 상태 설정 전 isReserving:', isReserving);
+        console.log('현재 URL:', location.pathname);
+        console.log('현재 storeData:', storeData);
+        console.log('storeData 타입:', typeof storeData);
+        console.log('storeData 키들:', storeData ? Object.keys(storeData) : 'null');
+        console.log('현재 URL 상태:', getShopDetailStateFromUrl());
         
+        // 단일 메뉴 페이지에서 예약하기 버튼 클릭 확인
+        if (spaceCount === 1) {
+            console.log('=== 단일 메뉴 페이지에서 예약하기 버튼 클릭 ===');
+            console.log('단일 메뉴 페이지에서 예약 시도');
+            console.log('현재 URL 상태:', getShopDetailStateFromUrl());
+        }
+        
+        // Space가 2개 이상인 경우
+        if (spaceCount >= 2) {
+            console.log('=== Space 목록에서 예약하기 버튼 클릭 ===');
+            console.log('Space 목록에서 예약 시도');
+            console.log('현재 URL 상태:', getShopDetailStateFromUrl());
+        }
+        
+        console.log('startReservation 호출 전 상태');
         startReservation(menu, null);
+        console.log('startReservation 호출 완료');
         console.log('예약 상태 설정 후 isReserving:', isReserving);
         
         // 예약 페이지로 URL 변경
+        console.log('예약 페이지로 네비게이션 시작');
+        console.log('네비게이션 전 URL:', location.pathname);
+        console.log('네비게이션할 URL:', `/shop/${id}/reservation`);
         navigate(`/shop/${id}/reservation`);
         console.log('예약 페이지로 네비게이션 완료');
+        console.log('네비게이션 후 URL:', location.pathname);
+        console.log('=== 메뉴 선택 디버깅 종료 ===');
     };
+
+    // 새로고침 시 예약 페이지 상태 복원을 위한 디버깅
+    useEffect(() => {
+        console.log('=== 새로고침 시 예약 페이지 상태 디버깅 ===');
+        console.log('현재 URL:', location.pathname);
+        console.log('URL에 /reservation 포함 여부:', location.pathname.includes('/reservation'));
+        console.log('현재 isReserving 상태:', isReserving);
+        console.log('현재 showPiAgreement 상태:', showPiAgreement);
+        console.log('현재 selectedSpaceId:', selectedSpaceId);
+        console.log('현재 storeData:', storeData);
+        console.log('현재 spaceCount:', spaceCount);
+        console.log('현재 loading:', loading);
+        console.log('현재 error:', error);
+        console.log('현재 id:', id);
+        console.log('현재 time:', time);
+        console.log('현재 accessToken 존재:', !!accessToken);
+        
+        // 예약 페이지에서 새로고침된 경우
+        if (location.pathname.includes('/reservation')) {
+            console.log('=== 예약 페이지 새로고침 감지 ===');
+            console.log('예약 페이지 URL에서 새로고침됨');
+            console.log('isReserving 상태:', isReserving);
+            
+            // 예약 상태가 없는데 예약 페이지에 있는 경우
+            if (!isReserving) {
+                console.log('경고: 예약 상태가 없는데 예약 페이지에 있음');
+                console.log('이 경우 undefined 에러가 발생할 수 있음');
+            }
+            
+            // storeData가 없는데 예약 페이지에 있는 경우
+            if (!storeData) {
+                console.log('경고: storeData가 없는데 예약 페이지에 있음');
+                console.log('이 경우 undefined 에러가 발생할 수 있음');
+            }
+        }
+    }, [location.pathname, isReserving, showPiAgreement, selectedSpaceId, storeData, spaceCount, loading, error, id, time, accessToken]);
+
 
     // Space 선택 (디자이너 선택과 동일한 역할)
     const handleSelectSpace = (spaceId) => {
