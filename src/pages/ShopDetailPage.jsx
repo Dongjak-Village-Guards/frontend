@@ -495,7 +495,7 @@ const ShopImage = styled.img`
 
 /* 디자이너 선택 섹션 */
 const DesignerSection = styled.div`
-    padding: 16px;
+    padding: 16px 16px 0px 16px;
 `;
 
 /* 섹션 제목 (대표 메뉴, 다른 메뉴) */

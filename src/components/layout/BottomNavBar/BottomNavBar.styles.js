@@ -1,7 +1,7 @@
 import styled from "styled-components";
 
 export const NavBarWrapper = styled.nav`
-  position: absolute;
+  position: fixed;
   left: 0; right: 0; bottom: 0;
   display: flex;
   width: 100%;
