@@ -2,15 +2,11 @@ import styled from 'styled-components';
 
 export const FixedHeader = styled.div`
   position: -webkit-sticky;
-  position: sticky;
+  position: fixed;
   top: 0;
   z-index: 20;
   background: #fff;
-`;
-
-export const TopSpacer = styled.div`
-//  height: 44px;
-  background: #fff;
+  width: 100%;
 `;
 
 export const NavBar = styled.div`
@@ -18,9 +14,7 @@ export const NavBar = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-//  width: 100px;
   gap: 4px;
-//  margin-bottom: 16px; // 임시...
 `;
 
 export const NavButtonArea = styled.div`

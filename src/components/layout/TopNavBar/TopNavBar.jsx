@@ -2,7 +2,6 @@ import { AiOutlineLeft } from 'react-icons/ai';
 import LikeButton from '../../features/shop/LikeButton/LikeButton';
 import {
   FixedHeader,
-  TopSpacer,
   NavBar,
   NavButtonArea,
   NavTitle
@@ -17,7 +16,6 @@ const TopNavBar = ({
   onLikeToggle
 }) => (
   <FixedHeader>
-    <TopSpacer />
     <NavBar>
       <NavButtonArea onClick={onBack}>
         <AiOutlineLeft className='back-button' size={16} />
