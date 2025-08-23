@@ -16,7 +16,7 @@ import Line from '../components/ui/Line/Line';
 import Spinner from '../components/ui/Spinner/Spinner';
 import { fetchMenuItemDetails, createReservation } from '../apis/storeAPI';
 
-const ReservationPage = ( {shop} ) => {
+const ReservationPage = () => {
   const navigate = useNavigate();
   
   const { 
@@ -158,17 +158,23 @@ const ReservationPage = ( {shop} ) => {
       const reservationResult = await createReservation(menuData.item_id, accessToken);
       console.log('예약 생성 성공:', reservationResult);
       
+      console.log('=== 예약 완료 후 리다이렉트 과정 시작 ===');
+      
       // 예약 완료 데이터를 localStorage에 저장 (SchedulePage에서 바텀시트로 표시)
       localStorage.setItem('completedReservation', JSON.stringify(reservationResult));
+      console.log('localStorage에 예약 완료 데이터 저장됨');
       
       // 예약 상태 초기화
-      //  cancelReservation();
+      console.log('예약 상태 초기화 시작');
+      cancelReservation();
+      console.log('예약 상태 초기화 완료');
       
-      // 예약 완료 후 SchedulePage로 이동 (바텀시트로 알림)
-      setCurrentPage('history');
+      // SchedulePage로 직접 이동
+      console.log('navigate("/history") 호출 시작');
+      navigate('/history');
+      console.log('navigate("/history") 호출 완료');
       
-      // 한 단계 뒤로가기 (상세페이지로)
-      navigate(-1);
+      console.log('=== 예약 완료 후 리다이렉트 과정 완료 ===');
       
     } catch (error) {
       console.log('예약 생성 실패:', error);
@@ -201,7 +207,7 @@ const ReservationPage = ( {shop} ) => {
     if (menuData) {
       return menuData.store_name;
     }
-    return selectedDesigner ? `${shop?.name} / ${selectedDesigner.name}` : shop?.name;
+    return selectedDesigner ? `${selectedDesigner.name}` : '가게 정보 없음';
   };
 
   // 로딩 중이거나 에러 상태 처리
@@ -242,8 +248,8 @@ const ReservationPage = ( {shop} ) => {
           <Line />
           <ShopInfo
             name={getShopName()}
-            address={menuData?.store_address || shop?.address}
-            distance={`${menuData?.distance || shop?.distance}m`}
+            address={menuData?.store_address || '주소 정보 없음'}
+            distance={`${menuData?.distance || 0}m`}
             reservationTime={`${menuData?.selected_time || currentTime} 예약`}
           />
           <Line />
