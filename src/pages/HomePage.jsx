@@ -47,6 +47,7 @@ export default function HomePage() {
     loading,
     time,
     setTime,
+    checkAndUpdateTimeIfExpired, // 새로 추가
   } = useStore();
 
   /** 사용자 주소 */
@@ -56,6 +57,10 @@ export default function HomePage() {
   useEffect(() => {
     const initializePage = async () => {
       setLoading(true);
+      
+      // 시간 만료 체크 및 자동 업데이트
+      checkAndUpdateTimeIfExpired();
+      
       // 초기 시간 설정 (새로고침 시에만 실행)
       console.log('updateCurrentTime 호출');
       updateCurrentTime();
@@ -77,7 +82,7 @@ export default function HomePage() {
       setLoading(false);
     };
     initializePage();
-  }, [updateCurrentTime, fetchStores, fetchUserLikes, time, filters.categories, accessToken]);
+  }, [updateCurrentTime, fetchStores, fetchUserLikes, time, filters.categories, accessToken, checkAndUpdateTimeIfExpired, currentTime]); // currentTime 의존성 추가
 
   /**
    * 정렬 변경

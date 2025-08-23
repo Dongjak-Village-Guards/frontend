@@ -8,6 +8,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { fetchStoresFromAPI, fetchUserLikes, createLike, deleteLike } from '../../apis/storeAPI';
 import useUserInfo from '../user/useUserInfo';
+import { getNearestHour } from '../../components/features/filter/TimeFilter/TimeFilter';
 
 const useStore = create(
   persist(
@@ -125,6 +126,34 @@ const useStore = create(
        */
       setTime: (newTime) => {
         set({ time: newTime });
+      },
+      
+      /**
+       * 시간 만료 체크 및 자동 업데이트
+       * 현재 설정된 time이 현재 시각의 다음 정각보다 작으면 자동으로 다음 정각으로 업데이트
+       */
+      checkAndUpdateTimeIfExpired: () => {
+        const { time, currentTime, setTime } = get();
+        
+        if (time === null) {
+          // time이 null인 경우 초기화
+          const nearestHour = getNearestHour(currentTime);
+          setTime(nearestHour);
+          console.log('checkAndUpdateTimeIfExpired: 초기 시간 설정됨:', nearestHour);
+          return;
+        }
+        
+        // 현재 설정된 time과 다음 정각 비교
+        const [timeHour] = time.split(':').map(Number);
+        const [currentHour, currentMinute] = currentTime.split(':').map(Number);
+        const nextHour = currentMinute === 0 ? (currentHour + 1) % 24 : (currentHour + 1) % 24;
+        
+        // time이 다음 정각보다 작으면 만료된 것으로 판단
+        if (timeHour < nextHour) {
+          const updatedTime = getNearestHour(currentTime);
+          setTime(updatedTime);
+          console.log('checkAndUpdateTimeIfExpired: 시간 만료로 인한 자동 업데이트:', time, '→', updatedTime);
+        }
       },
       
       
