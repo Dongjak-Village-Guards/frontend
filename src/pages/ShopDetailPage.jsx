@@ -363,7 +363,7 @@ const ShopDetailPage = () => {
                     <>
                     {/* Space가 1개이거나(메뉴목록) Space space 화면일 때(디자이너목록)만 이미지 표시 */}
                     {spaceCount === 1 || (spaceCount >= 2 && !selectedSpaceId) ? (
-                        <>
+                        <IntroductionSection>
                             <ShopImage 
                                 src={getImageSrc(storeData?.store_image_url || storeData?.space_image_url)} 
                                 alt={storeData?.store_name || storeData?.space_name}
@@ -378,7 +378,7 @@ const ShopDetailPage = () => {
                                 distance={`${storeData?.distance}m`}
                                 reservationTime={`${time} 예약`}
                             />
-                        </>
+                        </IntroductionSection>
                     ) : null}
                     
                     {/* Space가 1개인 경우: 가게 정보 표시 */}
@@ -491,6 +491,11 @@ const ShopImage = styled.img`
     padding: 0 16px;
     object-fit: cover;
     opacity: 0.65;
+`;
+
+const IntroductionSection = styled.div`
+    display: flex;
+    flex-direction: column;
 `;
 
 /* 디자이너 선택 섹션 */
