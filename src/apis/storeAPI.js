@@ -58,28 +58,41 @@ const buildHeaders = (accessToken = null) => {
  * @returns {Array} UI 구조로 변환된 데이터
  */
 const transformApiData = (apiData) => {
-  return apiData.map(store => ({
-    id: store.store_id,
-    name: store.store_name,
-    menu: store.menu_name,
-    distance: store.distance,
-    walkTime: store.on_foot,
-    time: store.time || null, // 백서버에서 받아온 time 필드 (0~36), 없으면 null
-    isLiked: store.is_liked,
-    category: store.store_category || null,
-    // 메뉴 정보를 기존 UI 구조에 맞게 변환
-    menus: [{
-      id: store.menu_id,
-      name: store.max_discount_menu,
-      discountRate: store.max_discount_rate,
-      originalPrice: store.max_discount_price_origin,
-      discountPrice: store.max_discount_price,
-      isReserved: false
-    }],
-    // 디자이너 정보는 현재 API에 없으므로 빈 배열
-    designers: [],
-    hasDesigners: false
-  }));
+  return apiData.map(store => {
+    // isAvailable 디버깅 로그 추가
+    console.log(`=== 가게 ${store.store_name} (ID: ${store.store_id}) isAvailable 디버깅 ===`);
+    console.log('원본 API 응답:', store);
+    console.log('isAvailable 필드 존재 여부:', 'isAvailable' in store);
+    console.log('isAvailable 값:', store.isAvailable);
+    console.log('is_available 필드 존재 여부:', 'is_available' in store);
+    console.log('is_available 값:', store.is_available);
+    console.log('=== isAvailable 디버깅 끝 ===');
+    
+    return {
+      id: store.store_id,
+      name: store.store_name,
+      menu: store.menu_name,
+      distance: store.distance,
+      walkTime: store.on_foot,
+      image: store.store_image_url || null, // 가게 이미지 추가
+      time: store.time || null, // 백서버에서 받아온 time 필드 (0~36), 없으면 null
+      isLiked: store.is_liked,
+      category: store.store_category || null,
+      isAvailable: store.isAvailable || store.is_available || true, // isAvailable 필드 추가
+      // 메뉴 정보를 기존 UI 구조에 맞게 변환
+      menus: [{
+        id: store.menu_id,
+        name: store.max_discount_menu,
+        discountRate: store.max_discount_rate,
+        originalPrice: store.max_discount_price_origin,
+        discountPrice: store.max_discount_price,
+        isReserved: false
+      }],
+      // 디자이너 정보는 현재 API에 없으므로 빈 배열
+      designers: [],
+      hasDesigners: false
+    };
+  });
 };
 
 /**
@@ -124,6 +137,13 @@ export const fetchStoresFromAPI = async (time, category = null, accessToken = nu
     
     const stores = await response.json();
     console.log('가게 목록 조회 성공:', stores.length, '개');
+    
+    // API 응답 전체 디버깅 로그 추가
+    console.log('=== API 응답 전체 디버깅 ===');
+    console.log('API 응답 전체:', stores);
+    console.log('첫 번째 가게 데이터:', stores[0]);
+    console.log('모든 가게의 키 목록:', stores.map(store => Object.keys(store)));
+    console.log('=== API 응답 디버깅 끝 ===');
     
     // 백엔드 응답을 UI 구조로 변환
     const transformedStores = transformApiData(stores);

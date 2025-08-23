@@ -159,7 +159,7 @@ export default function HomePage() {
    * 매장 클릭
    * @param {number} storeId - 가게 ID
    */
-  const handleCardClick = (storeId) => navigate(`/shop/${storeId}`);
+  const handleCardClick = (storeId) => navigate(`/store/${storeId}`);
 
   /** 주소 표시
    * 등록된 주소가 있으면 사용, 없으면 기본 주소
@@ -246,13 +246,15 @@ export default function HomePage() {
             <Spinner />
           </LoadingContainer>
         ) : sortedStores.length > 0 ? (
-          sortedStores.map(store => (
-            <Card 
-              key={store.id} 
-              store={store} 
-              onClick={() => handleCardClick(store.id)}
-            />
-          ))
+          sortedStores
+            .filter(store => store && store.id) // undefined나 id가 없는 store 제거
+            .map(store => (
+              <Card 
+                key={store.id} 
+                store={store} 
+                onClick={() => handleCardClick(store.id)}
+              />
+            ))
         ) : (
           <EmptyState>
             <EmptyText>해당 조건의 가게가 없어요</EmptyText>

@@ -3,6 +3,7 @@
  * 대표 메뉴와 다른 메뉴 목록에 모두 사용
  */
 
+import { useParams } from 'react-router-dom';
 import menuImage from '../../../../assets/images/menu.png';
 import useStore from '../../../../hooks/store/useStore';
 import ReservationButton from '../../../ui/ReservationButton/ReservationButton';
@@ -20,7 +21,8 @@ import { Card, Div, MenuImage, Detail, MenuName, PriceInfo, DiscountRate, Origin
  */
 
 const MenuCard = ({ menu, onReserve = false }) => {
-    const { startReservation, selectedDesigner, isReserving } = useStore();
+    const { startReservation } = useStore();
+    const { id } = useParams();
 
     // menu가 없거나 필수 필드가 없을 경우 처리
     if (!menu) {
@@ -30,30 +32,24 @@ const MenuCard = ({ menu, onReserve = false }) => {
 
     const handleReserve = (e) => {
         e.stopPropagation();
-        startReservation(menu, selectedDesigner);
+        startReservation(menu, null);
         onReserve();
     };
-
-    // 예약 페이지에서 메뉴 카드 속 '예약하기' 버튼 숨김
-    const hideButton = isReserving;
 
     // API 응답 구조에 맞게 필드 매핑
     const menuName = menu.menu_name || menu.name || '메뉴명 없음';
     const discountRate = menu.discount_rate || menu.discountRate || 0;
     const originalPrice = menu.menu_price || menu.originalPrice || 0;
     const discountPrice = menu.discounted_price || menu.discountPrice || 0;
-    const isReserved = !menu.is_available || menu.isReserved || false;
+    const isAvailable = menu.is_available || menu.isReserved || false;
 
     // 예약 불가능 상태에 따른 버튼 텍스트 결정
     const getButtonText = () => {
-        if (isReserved) {
+        if (!isAvailable) {
             return "예약 마감";
         }
         return "예약하기";
     };
-
-    // 예약 불가능 상태에 따른 카드 스타일 결정
-    const isUnavailable = isReserved;
 
     // 이미지 로드 실패 시 임시 이미지로 대체
     const handleImageError = (e) => {
@@ -63,7 +59,7 @@ const MenuCard = ({ menu, onReserve = false }) => {
     };
 
   return (
-    <Card isUnavailable={isUnavailable}>
+    <Card isUnavailable={!isAvailable}>
         <Div>
             <MenuImage 
                 src={menu.menu_image_url || menuImage} 
@@ -71,20 +67,18 @@ const MenuCard = ({ menu, onReserve = false }) => {
                 onError={handleImageError}
             />
             <Detail>
-                <MenuName isUnavailable={isUnavailable}>{menuName.length > 7 ? `${menuName.slice(0, 7)}...` : menuName}</MenuName>
+                <MenuName isUnavailable={!isAvailable}>{menuName.length > 7 ? `${menuName.slice(0, 7)}...` : menuName}</MenuName>
                 <PriceInfo>
-                    <DiscountRate isUnavailable={isUnavailable}>{discountRate}%</DiscountRate>
-                    <OriginalPrice isUnavailable={isUnavailable}>{originalPrice.toLocaleString()}원</OriginalPrice>
+                    <DiscountRate isUnavailable={!isAvailable}>{discountRate}%</DiscountRate>
+                    <OriginalPrice isUnavailable={!isAvailable}>{originalPrice.toLocaleString()}원</OriginalPrice>
                 </PriceInfo>
-                <DiscountPrice isUnavailable={isUnavailable}>{discountPrice.toLocaleString()}원</DiscountPrice>
+                <DiscountPrice isUnavailable={!isAvailable}>{discountPrice.toLocaleString()}원</DiscountPrice>
             </Detail>
         </Div>
         <ButtonContainer>
-            {!hideButton && (
-                <ReservationButton onClick={handleReserve} disabled={isReserved}>
-                    {getButtonText()}
-                </ReservationButton>
-            )}
+            <ReservationButton onClick={handleReserve} disabled={!isAvailable}>
+                {getButtonText()}
+            </ReservationButton>
         </ButtonContainer>
     </Card>
   );

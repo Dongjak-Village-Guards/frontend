@@ -26,7 +26,8 @@ const AddressSearch = () => {
   const handleSearch = async () => {
     if (!keyword.trim()) return;
 
-    console.log('주소 검색 시작:', keyword); // 디버깅 로그 추가
+    console.log('=== 주소 검색 시작 ===');
+    console.log('원본 검색 키워드:', keyword);
     setHasSearched(true);
     setLoading(true);
     setError('');
@@ -34,14 +35,16 @@ const AddressSearch = () => {
 
     try {
       const res = await fetchAddressResults(keyword);
-      console.log('주소 검색 결과:', res); // 디버깅 로그 추가
+      console.log('주소 검색 결과 개수:', res.length);
+      console.log('주소 검색 결과 샘플:', res.slice(0, 3)); // 처음 3개만 로그
       setResults(res);
     } catch (err) {
-      console.error('주소 검색 오류:', err); // 디버깅 로그 추가
+      console.error('주소 검색 오류:', err);
       setError(err.message);
       setResults([]);
     } finally {
       setLoading(false);
+      console.log('=== 주소 검색 완료 ===');
     }
   };
 

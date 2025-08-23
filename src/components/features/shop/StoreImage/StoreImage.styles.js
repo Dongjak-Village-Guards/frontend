@@ -6,8 +6,6 @@ export const CardImageContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  height: clamp(120px, 35vh, 148px);
   flex-shrink: 0;
 `;
 
@@ -33,8 +31,8 @@ export const ImageGroup = styled.div`
 */
 export const MainCardImage = styled.img`
   /* 반응형 웹 수정: 고정 크기 대신 반응형 크기 사용 */
-  width: 100%;
-  height: clamp(120px, 35vh, 148px);
+  width: ${props => props.variant === 'detailpage' ? props.width : '100%'};
+  height: ${props => props.variant === 'detailpage' ? props.height : 'clamp(120px, 35vh, 148px)'};
   object-fit: cover;
   flex-shrink: 0;
 `; 

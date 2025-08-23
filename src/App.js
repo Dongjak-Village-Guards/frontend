@@ -10,9 +10,16 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import MainPageApp from './pages/MainPageApp';
 import useUserInfo from './hooks/user/useUserInfo';
-import ShopDetailPage from './pages/ShopDetailPage';
+// Store 페이지들
+import StoreRedirect from './pages/store/StoreRedirect';
+import MenuPage from './pages/store/MenuPage';
+import SpacesListPage from './pages/store/SpacesListPage';
+import SpaceDetailPage from './pages/store/SpaceDetailPage';
+import ReservationPage from './pages/store/ReservationPage';
 import LoginTest from './components/test/LoginTest/LoginTest';
 import StoreTest from './components/test/StoreTest/StoreTest';
+import AddressValidator from './components/test/AddressValidator/AddressValidator';
+import DongjakAddressGenerator from './components/test/DongjakAddressGenerator/DongjakAddressGenerator';
 import GlobalStyle from './styles/GlobalStyle';
 
 function App() {
@@ -79,12 +86,23 @@ function App() {
           <Routes>
             {/* 모든 페이지를 MainPageApp으로 통합 */}
             <Route path="/" element={<MainPageApp />} />
-            { /* 가게 상세 페이지: 디자이너 유무에 따라 동적 렌더링 */}
-            <Route path="/shop/:id" element={<ShopDetailPage />} />
+            
+            {/* 새로운 Store 라우트들 */}
+            <Route path="/store/:id" element={<StoreRedirect />} />
+            <Route path="/store/:id/menu" element={<MenuPage />} />
+            <Route path="/store/:id/spaces" element={<SpacesListPage />} />
+            <Route path="/store/:id/space/:spaceId" element={<SpaceDetailPage />} />
+            <Route path="/store/:id/reservation" element={<ReservationPage />} />
+            
+
             {/* 백서버 로그인 테스트 페이지 */}
             <Route path="/test" element={<LoginTest />} />
             {/* 가게 API 테스트 페이지 */}
             <Route path="/store-test" element={<StoreTest />} />
+            {/* 주소 검증 크롤링 테스트 페이지 */}
+            <Route path="/address-test" element={<AddressValidator />} />
+            {/* 동작구 주소 176개 생성기 테스트 페이지 */}
+            <Route path="/dongjak-generator" element={<DongjakAddressGenerator />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Router>

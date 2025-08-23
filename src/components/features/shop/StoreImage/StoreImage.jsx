@@ -3,12 +3,6 @@
  * 메인 이미지를 담당함
  */
 
-import chickenImage from "../../../../assets/images/chicken.png";
-import pizzaImage from "../../../../assets/images/pizza.png";
-import saladImage from "../../../../assets/images/salad.png";
-import steakImage from "../../../../assets/images/steak.png";
-import koreanImage from "../../../../assets/images/korean.png";
-import hairImage from "../../../../assets/images/hair.png";
 import placeholderImage from "../../../../assets/images/placeholder.svg";
 import {
   CardImageContainer,
@@ -22,28 +16,21 @@ import {
  * @param {string} store.id - 가게 ID
  * @param {string} store.name - 가게 이름 (alt 텍스트용)
  */
-const StoreCard = ({ store }) => {
-  // 가게 ID에 따라 이미지 매핑 (임시)
-  const imageMap = {
-    1: chickenImage,
-    2: pizzaImage,
-    3: saladImage,
-    4: steakImage,
-    5: koreanImage,
-    6: hairImage,
-    7: hairImage,
-  };
+const StoreImage = ({ storeSrc, storeName, storeId, variant, width, height }) => {
 
-  const imageSrc = imageMap[store.id] || placeholderImage;
+//  const imageSrc = store.image || placeholderImage; // 누락된 store image 필드 추가
 
   return (
-    <CardImageContainer>
+    <CardImageContainer variant={variant} width={width} height={height}>
       <ImageGroup>
         <MainCardImage
-          src={imageSrc}
-          alt={`${store.name} 메인 이미지`}
+          src={storeSrc}
+          alt={`${storeName} 메인 이미지`}
+          variant={variant}
+          width={width}
+          height={height}
           onError={(e) => {
-            console.warn(`이미지 로드 실패: ${store.id}, using fallback`);
+            console.warn(`이미지 로드 실패: ${storeId}, using fallback`);
             e.target.src = placeholderImage;
           }}
         />
@@ -51,4 +38,4 @@ const StoreCard = ({ store }) => {
     </CardImageContainer>
   );
 };
-export default StoreCard; 
+export default StoreImage; 

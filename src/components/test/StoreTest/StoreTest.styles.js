@@ -14,6 +14,46 @@ export const TestTitle = styled.h1`
   margin-bottom: 30px;
 `;
 
+// CDN 이미지 테스트 스타일
+export const CdnTestSection = styled.div`
+  margin-bottom: 30px;
+  padding: 20px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  background: #f8f9fa;
+  
+  h3 {
+    color: #333;
+    margin-bottom: 15px;
+    text-align: center;
+  }
+`;
+
+export const CdnTestImage = styled.img`
+  display: block;
+  margin: 0 auto 15px auto;
+  max-width: 300px;
+  max-height: 200px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+`;
+
+export const CdnTestInfo = styled.div`
+  text-align: center;
+  
+  p {
+    margin: 8px 0;
+    color: #666;
+    font-size: 14px;
+  }
+  
+  strong {
+    color: #333;
+  }
+`;
+
 export const ButtonGroup = styled.div`
   display: flex;
   flex-direction: column;

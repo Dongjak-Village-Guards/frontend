@@ -6,15 +6,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import useStore from '../hooks/store/useStore';
-import useUserInfo from '../hooks/user/useUserInfo';
-import ShopInfo from '../components/sections/shop-detail/ShopInfo/ShopInfo';
-import MenuCard from '../components/sections/shop-detail/MenuCard/MenuCard';
-import PiAgreement from '../components/sections/shop-detail/PiAgreement/PiAgreement';
-import { ReactComponent as ArrowButton } from '../assets/images/piArrow.svg';
-import Line from '../components/ui/Line/Line';
-import Spinner from '../components/ui/Spinner/Spinner';
-import { fetchMenuItemDetails, createReservation } from '../apis/storeAPI';
+import Layout from '../../components/layout/Layout';
+import TopNavBar from '../../components/layout/TopNavBar/TopNavBar';
+import useStore from '../../hooks/store/useStore';
+import useUserInfo from '../../hooks/user/useUserInfo';
+import ShopInfo from '../../components/sections/shop-detail/ShopInfo/ShopInfo';
+import MenuCard from '../../components/sections/shop-detail/MenuCard/MenuCard';
+import PiAgreement from '../../components/sections/shop-detail/PiAgreement/PiAgreement';
+import { ReactComponent as ArrowButton } from '../../assets/images/piArrow.svg';
+import Line from '../../components/ui/Line/Line';
+import Spinner from '../../components/ui/Spinner/Spinner';
+import { fetchMenuItemDetails, createReservation } from '../../apis/storeAPI';
 
 const ReservationPage = ({ shop }) => {
   const navigate = useNavigate();
@@ -59,6 +61,7 @@ const ReservationPage = ({ shop }) => {
         
         const data = await fetchMenuItemDetails(selectedMenu.item_id, accessToken);
         setMenuData(data);
+        console.log('ReservationPage: 메뉴 상세 데이터 로드 완료', { menuData: data });
         
       } catch (error) {
         console.error('ReservationPage: 메뉴 상세 데이터 로드 실패', error);
@@ -73,8 +76,18 @@ const ReservationPage = ({ shop }) => {
       }
     };
 
-    if (selectedMenu && accessToken) {
+    if (selectedMenu && selectedMenu.item_id && accessToken) {
       loadMenuData();
+    } else {
+      console.log('=== ReservationPage 조건 체크 실패 ===');
+      console.log('selectedMenu 존재:', !!selectedMenu);
+      console.log('selectedMenu.item_id 존재:', !!selectedMenu?.item_id);
+      console.log('accessToken 존재:', !!accessToken);
+      console.log('selectedMenu 객체:', selectedMenu);
+      console.log('=== ReservationPage 조건 체크 실패 끝 ===');
+      
+      setError(new Error('메뉴 정보가 없습니다.'));
+      setLoading(false);
     }
   }, [selectedMenu, accessToken, setCurrentPage]);
 
@@ -111,13 +124,16 @@ const ReservationPage = ({ shop }) => {
       localStorage.setItem('completedReservation', JSON.stringify(reservationResult));
       
       // 예약 상태 초기화
-      //  cancelReservation();
+    //  cancelReservation();
+
+      // 한 단계 뒤로가기 (상세페이지로)
+    //  navigate('/');
+
+    //  setCurrentPage('home');
       
       // 예약 완료 후 SchedulePage로 이동 (바텀시트로 알림)
       setCurrentPage('history');
-      
-      // 한 단계 뒤로가기 (상세페이지로)
-      navigate(-1);
+      console.log("setCurrentPage('history) 후");
       
     } catch (error) {
       console.log('예약 생성 실패:', error);
@@ -156,88 +172,121 @@ const ReservationPage = ({ shop }) => {
   // 로딩 중이거나 에러 상태 처리
   if (loading) {
     return (
-      <ReservationContainer>
-        <LoadingContainer>
-          <Spinner />
-        </LoadingContainer>
-      </ReservationContainer>
+      <Layout>
+        <PageContainer>
+          <TopNavBar
+            onBack={cancelReservation}
+            title="예약 확인"
+            showLike={false}
+          />
+          <ContentContainer>
+            <ReservationContainer>
+              <LoadingContainer>
+                <Spinner />
+              </LoadingContainer>
+            </ReservationContainer>
+          </ContentContainer>
+        </PageContainer>
+      </Layout>
     );
   }
 
   if (error) {
     return (
-      <ReservationContainer>
-        <ErrorContainer>
-          <ErrorText>
-            {error.status === 404 ? '해당 메뉴를 찾을 수 없습니다.' : '데이터를 불러오는데 실패했습니다.'}
-          </ErrorText>
-          <BackButton onClick={cancelReservation}>뒤로가기</BackButton>
-        </ErrorContainer>
-      </ReservationContainer>
+      <Layout>
+        <PageContainer>
+          <TopNavBar
+            onBack={cancelReservation}
+            title="예약 확인"
+            showLike={false}
+          />
+          <ContentContainer>
+            <ReservationContainer>
+              <ErrorContainer>
+                <ErrorText>
+                  {error.status === 404 ? '해당 메뉴를 찾을 수 없습니다.' : '데이터를 불러오는데 실패했습니다.'}
+                </ErrorText>
+                <BackButton onClick={navigate(-1)}>뒤로가기</BackButton>
+              </ErrorContainer>
+            </ReservationContainer>
+          </ContentContainer>
+        </PageContainer>
+      </Layout>
     );
   }
 
   return (
-    <ReservationContainer>
-      {showPiAgreement ? (
-        <PiAgreementContainer>
-          <SectionTitle>개인정보 제3자 제공 동의서</SectionTitle>
-          <PiAgreement />
-          <CloseButton onClick={togglePiAgreement}>닫기</CloseButton>
-        </PiAgreementContainer>
-      ) : (
-        <>
-          <SectionTitle>아래 내용이 맞는지 꼼꼼히 확인해주세요</SectionTitle>
-          <Line />
-          <ShopInfo
-            name={getShopName()}
-            address={menuData?.store_address || shop?.address}
-            distance={`${menuData?.distance || shop?.distance}m`}
-            reservationTime={`${menuData?.selected_time || currentTime} 예약`}
-          />
-          <Line />
-          {menuData && (
-            <MenuCardDiv>
-                <MenuCard
-                  menu={{
-                    name: menuData.menu_name,
-                    discountRate: menuData.discount_rate,
-                    originalPrice: menuData.menu_price,
-                    discountPrice: menuData.discounted_price,
-                    isReserved: false
-                  }}
-                  onReserve={() => {}}
-                  hideButton={true} // 버튼 숨김
+    <Layout>
+      <PageContainer>
+        <TopNavBar
+          onBack={cancelReservation}
+          title="예약 확인"
+          showLike={false}
+        />
+        <ContentContainer>
+          <ReservationContainer>
+            {showPiAgreement ? (
+              <PiAgreementContainer>
+                <SectionTitle>개인정보 제3자 제공 동의서</SectionTitle>
+                <PiAgreement />
+                <CloseButton onClick={togglePiAgreement}>닫기</CloseButton>
+              </PiAgreementContainer>
+            ) : (
+              <>
+                <SectionTitle>아래 내용이 맞는지 꼼꼼히 확인해주세요</SectionTitle>
+                <Line />
+                <ShopInfo
+                  name={getShopName()}
+                  address={menuData?.store_address || shop?.address}
+                  distance={`${menuData?.distance || shop?.distance}m`}
+                  reservationTime={`${menuData?.selected_time || currentTime} 예약`}
                 />
-            </MenuCardDiv>
-          )}
-          <Line />
-          <CheckboxContainer>
-            <Checkbox
-              type="checkbox"
-              checked={isAgreed}
-              onChange={handleCheckboxChange}
-            />
-            <CheckboxLabel>개인정보 제3자 제공 동의</CheckboxLabel>
-            <ArrowIcon onClick={handleArrowClick}>
-                <ArrowButton />
-            </ArrowIcon>
-          </CheckboxContainer>
-          <Line />
-          {error && (
-            <ErrorContainer>
-              <ErrorText>{error}</ErrorText>
-            </ErrorContainer>
-          )}
-          <ReserveButton 
-            disabled={!isAgreed || reserving} 
-            onClick={handleConfirm}
-          >
-            {reserving ? '예약 중...' : '예약하기'}
-          </ReserveButton>
-        </>
-      )}
-    </ReservationContainer>
+                <Line />
+                {menuData && (
+                  <MenuCardDiv>
+                      <MenuCard
+                        menu={{
+                          name: menuData.menu_name,
+                          discountRate: menuData.discount_rate,
+                          originalPrice: menuData.menu_price,
+                          discountPrice: menuData.discounted_price,
+                          isReserved: false
+                        }}
+                        onReserve={() => {}}
+                        hideButton={true} // 버튼 숨김
+                      />
+                  </MenuCardDiv>
+                )}
+                <Line />
+                <CheckboxContainer>
+                  <Checkbox
+                    type="checkbox"
+                    checked={isAgreed}
+                    onChange={handleCheckboxChange}
+                  />
+                  <CheckboxLabel>개인정보 제3자 제공 동의</CheckboxLabel>
+                  <ArrowIcon onClick={handleArrowClick}>
+                      <ArrowButton />
+                  </ArrowIcon>
+                </CheckboxContainer>
+                <Line />
+                {error && (
+                  <ErrorContainer>
+                    <ErrorText>{error}</ErrorText>
+                  </ErrorContainer>
+                )}
+                <ReserveButton 
+                  disabled={!isAgreed || reserving} 
+                  onClick={handleConfirm}
+                >
+                  {reserving ? '예약 중...' : '예약하기'}
+                </ReserveButton>
+              </>
+            )}
+          </ReservationContainer>
+        </ContentContainer>
+      </PageContainer>
+    </Layout>
   );
 };
 
@@ -359,4 +408,15 @@ const BackButton = styled.button`
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
+`;
+
+const PageContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #fff;
+`;
+
+const ContentContainer = styled.div`
+  flex: 1;
 `;

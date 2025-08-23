@@ -47,6 +47,15 @@ const FavoritePage = () => {
 
   // 찜한 가게만 필터링
   const favoriteStores = stores.filter(store => store.isLiked);
+  
+  // isAvailable 디버깅 로그 추가
+  console.log('=== FavoritePage isAvailable 디버깅 ===');
+  console.log('전체 stores:', stores);
+  console.log('찜한 가게 목록:', favoriteStores);
+  favoriteStores.forEach(store => {
+    console.log(`가게 ${store.name} (ID: ${store.id}) isAvailable:`, store.isAvailable);
+  });
+  console.log('=== FavoritePage isAvailable 디버깅 끝 ===');
 
   // 시간 선택 핸들러
   const handleTimeSelect = async (selectedTime) => {
@@ -87,7 +96,7 @@ const FavoritePage = () => {
 
   // 가게 카드 클릭 시 상세 페이지로 이동
   const handleCardClick = (storeId) => {
-    navigate(`/shop/${storeId}`);
+            navigate(`/store/${storeId}`);
   };
 
   return (
@@ -116,13 +125,15 @@ const FavoritePage = () => {
           </LoadingContainer>
         ) : favoriteStores.length > 0 ? (
           <StoreList>
-            {favoriteStores.map(store => (
-              <Card 
-                key={store.id} 
-                store={store} 
-                onClick={() => handleCardClick(store.id)}
-              />
-            ))}
+            {favoriteStores
+              .filter(store => store && store.id) // undefined나 id가 없는 store 제거
+              .map(store => (
+                <Card 
+                  key={store.id} 
+                  store={store} 
+                  onClick={() => handleCardClick(store.id)}
+                />
+              ))}
           </StoreList>
         ) : (
           <EmptyState>

@@ -9,6 +9,7 @@ import useUserInfo from '../hooks/user/useUserInfo';
 import Spinner from '../components/ui/Spinner/Spinner';
 import { getNearestHour } from '../components/features/filter/TimeFilter/TimeFilter';
 import { fetchUserReservations, cancelReservation } from '../apis/reservationAPI';
+import { fetchStoreSpacesCount } from '../apis/storeAPI';
 import placeholderImage from '../assets/images/placeholder.svg';
 
 const SchedulePage = () => {
@@ -207,7 +208,7 @@ const SchedulePage = () => {
   };
 
   // 가게 제목 클릭 핸들러
-  const handleSalonClick = (storeId, visitTime) => {
+  const handleSalonClick = async (storeId, visitTime) => {
     console.log('=== 가게 클릭 디버깅 ===');
     console.log('가게 ID:', storeId);
     console.log('방문 시간:', visitTime);
@@ -217,8 +218,25 @@ const SchedulePage = () => {
       return;
     }
     
-    // ShopDetailPage로 라우팅
-    navigate(`/shop/${storeId}`);
+    try {
+      // Space 개수 확인
+      const spacesData = await fetchStoreSpacesCount(storeId);
+      
+      if (spacesData.count === 1) {
+        // Space가 1개인 경우: 메뉴 페이지로 이동
+        navigate(`/store/${storeId}/menu`);
+      } else if (spacesData.count >= 2) {
+        // Space가 2개 이상인 경우: Space 목록 페이지로 이동
+        navigate(`/store/${storeId}/spaces`);
+      } else {
+        // 기본 페이지로 이동
+        navigate(`/store/${storeId}`);
+      }
+    } catch (error) {
+      console.error('Space 개수 확인 실패:', error);
+      // 에러 시 기본 페이지로 이동
+      navigate(`/store/${storeId}`);
+    }
   };
 
   return (

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fetchStoresFromAPI } from '../../../apis/storeAPI';
-import { TestContainer, TestTitle, ButtonGroup, TestButton, CategoryGroup, CategoryLabel, CategoryButton, ErrorMessage, StoreList, StoreItem, StoreInfo, StoreName, StoreCategory, StoreAddress, StoreActions, DetailButton, StoreDetail, DetailCard, DetailImage, DetailContent, DetailName, DetailCategory, DetailOwner, DetailAddress, DetailDescription, DetailStatus, DetailDates, CloseButton } from './StoreTest.styles';
+import { TestContainer, TestTitle, ButtonGroup, TestButton, CategoryGroup, CategoryLabel, CategoryButton, ErrorMessage, StoreList, StoreItem, StoreInfo, StoreName, StoreCategory, StoreAddress, StoreActions, DetailButton, StoreDetail, DetailCard, DetailImage, DetailContent, DetailName, DetailCategory, DetailOwner, DetailAddress, DetailDescription, DetailStatus, DetailDates, CloseButton, CdnTestSection, CdnTestImage, CdnTestInfo } from './StoreTest.styles';
 
 const StoreTest = () => {
   const [stores, setStores] = useState([]);
@@ -8,6 +8,26 @@ const StoreTest = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [cdnImageStatus, setCdnImageStatus] = useState('loading'); // 'loading', 'success', 'error'
+
+  // CDN 이미지 로드 테스트
+  const testCdnImage = () => {
+    setCdnImageStatus('loading');
+    const img = new Image();
+    const cdnUrl = 'https://ifh.cc/v-qK2t3t';
+    
+    img.onload = () => {
+      console.log('CDN 이미지 로드 성공:', cdnUrl);
+      setCdnImageStatus('success');
+    };
+    
+    img.onerror = () => {
+      console.error('CDN 이미지 로드 실패:', cdnUrl);
+      setCdnImageStatus('error');
+    };
+    
+    img.src = cdnUrl;
+  };
 
   // 가게 목록 조회
   const handleFetchStores = async () => {
@@ -63,9 +83,10 @@ const StoreTest = () => {
     }
   };
 
-  // 컴포넌트 마운트 시 가게 목록 조회
+  // 컴포넌트 마운트 시 가게 목록 조회 및 CDN 이미지 테스트
   useEffect(() => {
     handleFetchStores();
+    testCdnImage();
   }, []);
 
   const categories = ['스터디카페', '스포츠시설', '미용실', 'PT/필라테스', '사진 스튜디오'];
@@ -73,6 +94,28 @@ const StoreTest = () => {
   return (
     <TestContainer>
       <TestTitle>가게 API 테스트 (백엔드 연동)</TestTitle>
+      
+      {/* CDN 이미지 테스트 섹션 */}
+      <CdnTestSection>
+        <h3>CDN 이미지 로드 테스트</h3>
+        <CdnTestImage 
+          src="https://ifh.cc/g/qK2t3t.png" 
+          alt="CDN 테스트 이미지"
+          onLoad={() => setCdnImageStatus('success')}
+          onError={() => setCdnImageStatus('error')}
+        />
+        <CdnTestInfo>
+          <p><strong>이미지 URL:</strong> https://ifh.cc/v-qK2t3t</p>
+          <p><strong>상태:</strong> 
+            {cdnImageStatus === 'loading' && '🔄 로딩 중...'}
+            {cdnImageStatus === 'success' && '✅ 로드 성공'}
+            {cdnImageStatus === 'error' && '❌ 로드 실패'}
+          </p>
+          <TestButton onClick={testCdnImage} disabled={cdnImageStatus === 'loading'}>
+            다시 테스트
+          </TestButton>
+        </CdnTestInfo>
+      </CdnTestSection>
       
       {/* 테스트 버튼들 */}
       <ButtonGroup>

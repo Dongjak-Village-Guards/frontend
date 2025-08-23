@@ -63,7 +63,6 @@ const useStore = create(
       likeLoading: false,
 
       // ===== 예약 상태 관리 =====
-      isReserving: false,
       selectedMenu: null,
       selectedDesigner: null,
 
@@ -88,7 +87,6 @@ const useStore = create(
           currentPage: 'login',
           stores: [],
           likedStoreIds: [],
-          isReserving: false,
           selectedMenu: null,
           selectedDesigner: null,
           showPiAgreement: false,
@@ -235,6 +233,13 @@ const useStore = create(
             ...store,
             isLiked: get().likedStoreIds.includes(store.id)
           }));
+          
+          // isAvailable 디버깅 로그 추가
+          console.log('=== useStore fetchStores isAvailable 디버깅 ===');
+          storesWithLikeStatus.forEach(store => {
+            console.log(`가게 ${store.name} (ID: ${store.id}) isAvailable:`, store.isAvailable);
+          });
+          console.log('=== useStore fetchStores isAvailable 디버깅 끝 ===');
           
           set({ stores: storesWithLikeStatus, loading: false });
           console.log('가게 목록 가져오기 성공:', storesWithLikeStatus.length, '개');
@@ -435,7 +440,6 @@ const useStore = create(
        * @param {Object} designer - 선택된 디자이너 (선택 사항)
        */
       startReservation: (menu, designer = null) => set({
-        isReserving: true,
         selectedMenu: menu,
         selectedDesigner: designer,
         isAgreed: false,  // 초기화
@@ -446,7 +450,6 @@ const useStore = create(
        * 예약 취소
        */
       cancelReservation: () => set({
-        isReserving: false,
         selectedMenu: null,
         selectedDesigner: null,
         showPiAgreement: false,
@@ -469,9 +472,11 @@ const useStore = create(
        */
       getSortedStores: () => {
         const { stores, sortOption, filters, time } = get();
-        const sortedStores = [...stores];
+        // stores 배열에서 undefined나 null 값 제거
+        const validStores = stores.filter(store => store && store.id);
+        const sortedStores = [...validStores];
         console.log('getSortedStores 호출, 현재 store 상태:', get());
-        let filteredStores = [...stores];
+        let filteredStores = [...validStores];
         
         // 1) 업종 필터 적용
         if (filters.categories.length > 0) {
