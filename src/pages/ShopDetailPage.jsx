@@ -384,12 +384,6 @@ const ShopDetailPage = () => {
                     {/* Space가 1개인 경우: 가게 정보 표시 */}
                     {spaceCount === 1 ? (
                         <></>
-                        //<ShopInfo
-                        //    name={storeData?.store_name}
-                        //    address={storeData?.store_address}
-                        //    distance={`${storeData?.distance}m`}
-                        //    reservationTime={`${time} 예약`}
-                        ///>
                     ) : spaceCount >= 2 && selectedSpaceId ? (
                         /* Space 상세 화면: Space 정보 표시 */
                         <DesignerInfo
@@ -474,6 +468,7 @@ const PageContainer = styled.div`
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    height: 100vh;
     background: #fff;
 `;
 
@@ -483,9 +478,10 @@ const NavBarContainer = styled.div`
 
 /* 콘텐츠 영역 (스크롤 가능) */
 const ContentContainer = styled.div`
-    overflow-y: auto;
+    overflow-y: visible;
     position: relative;
     padding-top: 72px;
+    min-height: calc(100vh - 72px);
 `;
 
 /* 가게 이미지 */

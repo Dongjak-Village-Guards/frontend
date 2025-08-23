@@ -379,7 +379,6 @@ const ContentContainer = styled.div`
   flex: 1;
   overflow-y: auto;
   padding-top: 16px;
-  padding-bottom: 52px;
 `;
 
 const LoadingContainer = styled.div`
