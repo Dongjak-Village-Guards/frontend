@@ -72,9 +72,6 @@ const ContentArea = styled.div`
   /* 반응형 웹 수정: 모바일에서 스크롤 최적화 */
   -webkit-overflow-scrolling: touch;
   
-  /* sticky 포지션이 제대로 작동하도록 설정 */
-  position: relative;
-  
   /* 스크롤바 스타일링 */
   &::-webkit-scrollbar {
     width: 4px;
