@@ -42,7 +42,8 @@ const ShopDetailPage = () => {
         startReservation,
         cancelReservation,
         togglePiAgreement,
-        toggleLikeWithAPI
+        toggleLikeWithAPI,
+        restoreReservationState
     } = useStore();
 
     const { accessToken } = useUserInfo();
@@ -498,7 +499,29 @@ const ShopDetailPage = () => {
                     } else if (urlState.type === 'reservation') {
                         // /shop/:id/reservation으로 접근한 경우 - 리다이렉트하지 않음
                         console.log('=== 예약 페이지 상태: 리다이렉트하지 않음 ===');
-                        // 예약 페이지에서는 기존 데이터를 유지하거나 필요한 경우에만 데이터를 로드
+                        
+                        // 새로고침으로 인한 상태 초기화 확인
+                        if (!isReserving) {
+                            console.log('=== 예약 페이지 새로고침 감지 - 상태 복원 시도 ===');
+                            console.log('새로고침으로 인해 예약 상태가 초기화됨');
+                            
+                            // localStorage에서 예약 상태 복원 시도
+                            const restored = restoreReservationState();
+                            if (restored) {
+                                console.log('예약 상태 복원 성공 - 예약 페이지에 유지');
+                                return;
+                            } else {
+                                console.log('예약 상태 복원 실패 - Space 목록으로 리다이렉트');
+                                // 예약 상태 복원이 실패한 경우 Space 목록으로 리다이렉트
+                                setTimeout(() => {
+                                    navigate(`/shop/${storeId}/spaces`, { replace: true });
+                                }, 100);
+                                return;
+                            }
+                        }
+                        
+                        // 예약 상태가 있는 경우 정상 처리
+                        console.log('예약 상태가 있으므로 정상 처리');
                     } else {
                         // 다른 URL로 접근한 경우 - /shop/:id/spaces로 리다이렉트
                         console.log('Space가 2개 이상인 경우: 다른 URL에서 /shop/:id/spaces로 리다이렉트');
@@ -699,6 +722,14 @@ const ShopDetailPage = () => {
         console.log('Space 개수:', spaceCount);
         console.log('선택된 Space ID:', selectedSpaceId);
         console.log('예약 상태 설정 전 isReserving:', isReserving);
+        console.log('현재 URL:', location.pathname);
+        console.log('현재 storeData:', storeData);
+        
+        // 단일 메뉴 페이지에서 예약하기 버튼 클릭 확인
+        if (spaceCount === 1) {
+            console.log('=== 단일 메뉴 페이지에서 예약하기 버튼 클릭 ===');
+            console.log('단일 메뉴 페이지에서 예약 시도');
+        }
         
         startReservation(menu, null);
         console.log('예약 상태 설정 후 isReserving:', isReserving);
@@ -706,7 +737,45 @@ const ShopDetailPage = () => {
         // 예약 페이지로 URL 변경
         navigate(`/shop/${id}/reservation`);
         console.log('예약 페이지로 네비게이션 완료');
+        console.log('네비게이션 후 URL:', location.pathname);
     };
+
+    // 새로고침 시 예약 페이지 상태 복원을 위한 디버깅
+    useEffect(() => {
+        console.log('=== 새로고침 시 예약 페이지 상태 디버깅 ===');
+        console.log('현재 URL:', location.pathname);
+        console.log('URL에 /reservation 포함 여부:', location.pathname.includes('/reservation'));
+        console.log('현재 isReserving 상태:', isReserving);
+        console.log('현재 showPiAgreement 상태:', showPiAgreement);
+        console.log('현재 selectedSpaceId:', selectedSpaceId);
+        console.log('현재 storeData:', storeData);
+        console.log('현재 spaceCount:', spaceCount);
+        console.log('현재 loading:', loading);
+        console.log('현재 error:', error);
+        console.log('현재 id:', id);
+        console.log('현재 time:', time);
+        console.log('현재 accessToken 존재:', !!accessToken);
+        
+        // 예약 페이지에서 새로고침된 경우
+        if (location.pathname.includes('/reservation')) {
+            console.log('=== 예약 페이지 새로고침 감지 ===');
+            console.log('예약 페이지 URL에서 새로고침됨');
+            console.log('isReserving 상태:', isReserving);
+            
+            // 예약 상태가 없는데 예약 페이지에 있는 경우
+            if (!isReserving) {
+                console.log('경고: 예약 상태가 없는데 예약 페이지에 있음');
+                console.log('이 경우 undefined 에러가 발생할 수 있음');
+            }
+            
+            // storeData가 없는데 예약 페이지에 있는 경우
+            if (!storeData) {
+                console.log('경고: storeData가 없는데 예약 페이지에 있음');
+                console.log('이 경우 undefined 에러가 발생할 수 있음');
+            }
+        }
+    }, [location.pathname, isReserving, showPiAgreement, selectedSpaceId, storeData, spaceCount, loading, error, id, time, accessToken]);
+
 
     // Space 선택 (디자이너 선택과 동일한 역할)
     const handleSelectSpace = (spaceId) => {
