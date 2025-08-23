@@ -29,6 +29,7 @@ import {
   fetchSpaceDetails,
   convertTimeToParam
 } from '../apis/storeAPI';
+import ScrollContainer from '../components/layout/ScrollContainer';
 
 const ShopDetailPage = () => {
     const navigate = useNavigate();
@@ -443,78 +444,97 @@ const ShopDetailPage = () => {
                 />
             </NavBarContainer>
     
-            {/* 콘텐츠 영역 */}
-            <ContentContainer>
-                {loading ? (
-                    <LoadingContainer>
-                        <Spinner />
-                    </LoadingContainer>
-                ) : error ? (
-                    <ErrorContainer>
-                        <ErrorText>데이터를 불러오는데 실패했습니다.</ErrorText>
-                        <ErrorSubText>{error}</ErrorSubText>
-                    </ErrorContainer>
-                ) : isReserving ? (
-                    <ReservationPage shop={storeData} />
-                ) : (
-                    <>
-                    {/* Space가 1개이거나(메뉴목록) Space space 화면일 때(디자이너목록)만 이미지 표시 */}
-                    {spaceCount === 1 || (spaceCount >= 2 && !selectedSpaceId) ? (
-                        <IntroductionSection>
-                            <ShopImage 
-                                src={getImageSrc(storeData?.store_image_url || storeData?.space_image_url)} 
-                                alt={storeData?.store_name || storeData?.space_name}
-                                onError={(e) => {
-                                    console.warn('가게 이미지 로드 실패, placeholder 이미지로 대체');
-                                    e.target.src = placeholderImage;
-                                }}
+            <ScrollContainer offsetTop={72}>
+                {/* 콘텐츠 영역 */}
+                <ContentContainer>
+                    {loading ? (
+                        <LoadingContainer>
+                            <Spinner />
+                        </LoadingContainer>
+                    ) : error ? (
+                        <ErrorContainer>
+                            <ErrorText>데이터를 불러오는데 실패했습니다.</ErrorText>
+                            <ErrorSubText>{error}</ErrorSubText>
+                        </ErrorContainer>
+                    ) : isReserving ? (
+                        <ReservationPage shop={storeData} />
+                    ) : (
+                        <>
+                        {/* Space가 1개이거나(메뉴목록) Space space 화면일 때(디자이너목록)만 이미지 표시 */}
+                        {spaceCount === 1 || (spaceCount >= 2 && !selectedSpaceId) ? (
+                            <IntroductionSection>
+                                <ShopImage 
+                                    src={getImageSrc(storeData?.store_image_url || storeData?.space_image_url)} 
+                                    alt={storeData?.store_name || storeData?.space_name}
+                                    onError={(e) => {
+                                        console.warn('가게 이미지 로드 실패, placeholder 이미지로 대체');
+                                        e.target.src = placeholderImage;
+                                    }}
+                                />
+                                <ShopInfo
+                                    name={storeData?.store_name}
+                                    address={storeData?.store_address}
+                                    distance={`${storeData?.distance}m`}
+                                    reservationTime={`${time} 예약`}
+                                />
+                            </IntroductionSection>
+                        ) : null}
+                        
+                        {/* Space가 1개인 경우: 가게 정보 표시 */}
+                        {spaceCount === 1 ? (
+                            <></>
+                        ) : spaceCount >= 2 && selectedSpaceId ? (
+                            /* Space 상세 화면: Space 정보 표시 */
+                            <DesignerInfo
+                                name={storeData?.space_name}
+                                specialty={`${getSpecialty()} 전문`}
+                                reservationTime={`${time} 방문`}
+                                designerImage={storeData?.space_image_url}
                             />
-                            <ShopInfo
-                                name={storeData?.store_name}
-                                address={storeData?.store_address}
-                                distance={`${storeData?.distance}m`}
-                                reservationTime={`${time} 예약`}
-                            />
-                        </IntroductionSection>
-                    ) : null}
-                    
-                    {/* Space가 1개인 경우: 가게 정보 표시 */}
-                    {spaceCount === 1 ? (
-                        <></>
-                    ) : spaceCount >= 2 && selectedSpaceId ? (
-                        /* Space 상세 화면: Space 정보 표시 */
-                        <DesignerInfo
-                            name={storeData?.space_name}
-                            specialty={`${getSpecialty()} 전문`}
-                            reservationTime={`${time} 방문`}
-                            designerImage={storeData?.space_image_url}
-                        />
-                    ) : null}
-                    
-                    {/* Space가 2개 이상인 경우 */}
-                    {spaceCount >= 2 ? (
-                        !selectedSpaceId ? (
-                            /* Space 목록 화면 */
-                            <>
-                                <Line />
-                                <DesignerSection>
-                                    {storeData?.spaces?.map(space => (
-                                        <SpaceCard
-                                            key={space.space_id}
-                                            space={{
-                                                id: space.space_id,
-                                                name: space.space_name,
-                                                image: space.space_image_url,
-                                                maxDiscountRate: space.max_discount_rate,
-                                                isPossible: space.is_possible
-                                            }}
-                                            onSelect={handleSelectSpace}
+                        ) : null}
+                        
+                        {/* Space가 2개 이상인 경우 */}
+                        {spaceCount >= 2 ? (
+                            !selectedSpaceId ? (
+                                /* Space 목록 화면 */
+                                <>
+                                    <Line />
+                                    <DesignerSection>
+                                        {storeData?.spaces?.map(space => (
+                                            <SpaceCard
+                                                key={space.space_id}
+                                                space={{
+                                                    id: space.space_id,
+                                                    name: space.space_name,
+                                                    image: space.space_image_url,
+                                                    maxDiscountRate: space.max_discount_rate,
+                                                    isPossible: space.is_possible
+                                                }}
+                                                onSelect={handleSelectSpace}
+                                            />
+                                        ))}
+                                    </DesignerSection>
+                                </>
+                            ) : (
+                                /* Space 상세 화면: 메뉴 목록 */
+                                <>
+                                    <Line />
+                                    <MenuSection>
+                                        <SectionTitle>가장 할인율이 큰 대표 메뉴!</SectionTitle>
+                                        <MenuCard
+                                            menu={getFeaturedMenu()}
+                                            onReserve={() => handleReserve(getFeaturedMenu())}
                                         />
-                                    ))}
-                                </DesignerSection>
-                            </>
+                                    </MenuSection>
+                                    <Line />
+                                    <MenuSection>
+                                        <SectionTitle>다른 할인 메뉴</SectionTitle>
+                                        <MenuList menus={getOtherMenus()} onReserve={handleReserve} />
+                                    </MenuSection>
+                                </>
+                            )
                         ) : (
-                            /* Space 상세 화면: 메뉴 목록 */
+                            /* Space가 1개인 경우: 바로 메뉴 목록 */
                             <>
                                 <Line />
                                 <MenuSection>
@@ -530,28 +550,11 @@ const ShopDetailPage = () => {
                                     <MenuList menus={getOtherMenus()} onReserve={handleReserve} />
                                 </MenuSection>
                             </>
-                        )
-                    ) : (
-                        /* Space가 1개인 경우: 바로 메뉴 목록 */
-                        <>
-                            <Line />
-                            <MenuSection>
-                                <SectionTitle>가장 할인율이 큰 대표 메뉴!</SectionTitle>
-                                <MenuCard
-                                    menu={getFeaturedMenu()}
-                                    onReserve={() => handleReserve(getFeaturedMenu())}
-                                />
-                            </MenuSection>
-                            <Line />
-                            <MenuSection>
-                                <SectionTitle>다른 할인 메뉴</SectionTitle>
-                                <MenuList menus={getOtherMenus()} onReserve={handleReserve} />
-                            </MenuSection>
+                        )}
                         </>
                     )}
-                    </>
-                )}
-                </ContentContainer>
+                    </ContentContainer>
+            </ScrollContainer>
         </PageContainer>
     </Layout>
   );
@@ -578,7 +581,6 @@ const NavBarContainer = styled.div`
 const ContentContainer = styled.div`
     overflow-y: visible;
     position: relative;
-    padding-top: 72px;
     min-height: calc(100vh - 72px);
 `;
 
