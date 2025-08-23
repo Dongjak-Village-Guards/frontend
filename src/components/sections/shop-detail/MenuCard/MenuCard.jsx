@@ -3,7 +3,7 @@
  * 대표 메뉴와 다른 메뉴 목록에 모두 사용
  */
 
-import menuImage from '../../../../assets/images/menu.png';
+//import menuImage from '../../../../assets/images/menu.png';
 import useStore from '../../../../hooks/store/useStore';
 import ReservationButton from '../../../ui/ReservationButton/ReservationButton';
 import { Card, Div, MenuImage, Detail, MenuName, PriceInfo, DiscountRate, OriginalPrice, DiscountPrice, ButtonContainer } from './MenuCard.styles';
@@ -39,6 +39,7 @@ const MenuCard = ({ menu, onReserve = false }) => {
 
     // API 응답 구조에 맞게 필드 매핑
     const menuName = menu.menu_name || menu.name || '메뉴명 없음';
+    const menuImage = menu.menu_image_url  || menu.menuImage || '이미지없음';
     const discountRate = menu.discount_rate || menu.discountRate || 0;
     const originalPrice = menu.menu_price || menu.originalPrice || 0;
     const discountPrice = menu.discounted_price || menu.discountPrice || 0;
@@ -58,7 +59,7 @@ const MenuCard = ({ menu, onReserve = false }) => {
     // 이미지 로드 실패 시 임시 이미지로 대체
     const handleImageError = (e) => {
         console.warn(`메뉴 이미지 로드 실패: ${menuName}, using fallback`);
-        e.target.src = menuImage;
+        e.target.src = menu.menu_image_url;
         e.target.alt = '임시 메뉴 이미지';
     };
 
@@ -66,7 +67,7 @@ const MenuCard = ({ menu, onReserve = false }) => {
     <Card isUnavailable={isUnavailable}>
         <Div>
             <MenuImage 
-                src={menu.menu_image_url || menuImage} 
+                src={menuImage} 
                 alt={menuName}
                 onError={handleImageError}
             />
