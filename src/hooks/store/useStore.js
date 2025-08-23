@@ -19,7 +19,7 @@ const useStore = create(
       
       // ===== 페이지 상태 관리 =====
       /** 현재 활성화된 페이지 */
-      currentPage: 'login',
+      currentPage: 'home',
       
       /** 주소 설정 페이지 접근 경로 추적 */
       fromHomePage: false,
@@ -102,7 +102,15 @@ const useStore = create(
        * @param {string} page - 변경할 페이지명
        */
       setCurrentPage: (page) => {
+        console.log('=== useStore setCurrentPage 호출 ===');
+        console.log('이전 currentPage:', get().currentPage);
+        console.log('새로운 page:', page);
+        console.log('호출 스택:', new Error().stack);
+        
         set({ currentPage: page });
+        
+        console.log('setCurrentPage 완료, 새로운 currentPage:', get().currentPage);
+        console.log('=== useStore setCurrentPage 완료 ===');
       },
       
       /**
@@ -576,7 +584,6 @@ const useStore = create(
       name: 'app-storage', // localStorage 키
       partialize: (state) => ({
         // persist할 상태만 선택 (로그아웃까지 유지)
-        currentPage: state.currentPage,
         filters: state.filters,
         time: state.time,
         sortOption: state.sortOption,

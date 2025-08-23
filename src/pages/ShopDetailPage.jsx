@@ -7,7 +7,7 @@
  * 예약 페이지 및 개인정보 동의서 표시 추가
  */
 
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import useStore from '../hooks/store/useStore';
 import useUserInfo from '../hooks/user/useUserInfo';
@@ -33,6 +33,7 @@ import {
 const ShopDetailPage = () => {
     const navigate = useNavigate();
     const { id } = useParams();
+    const location = useLocation();
     const { 
         stores,
         time,
@@ -46,12 +47,43 @@ const ShopDetailPage = () => {
 
     const { accessToken } = useUserInfo();
 
+    // URL에서 shop-detail 상태 파악 함수 추가
+    const getShopDetailStateFromUrl = () => {
+        const pathParts = location.pathname.split('/');
+        const storeId = pathParts[2]; // /shop/:id
+        
+        if (pathParts.length === 3) {
+            return { type: 'entry-point', storeId }; // 기본 진입점
+        }
+        if (pathParts.length === 4 && pathParts[3] === 'menu') {
+            return { type: 'single-space-menu', storeId }; // Space가 1개인 메뉴 페이지
+        }
+        if (pathParts.length === 4 && pathParts[3] === 'spaces') {
+            return { type: 'spaces-list', storeId }; // Space 목록 페이지
+        }
+        if (pathParts.length === 5 && pathParts[3] === 'space') {
+            return { type: 'space-menu', storeId, spaceId: pathParts[4] }; // 특정 Space의 메뉴 페이지
+        }
+        if (pathParts.length === 4 && pathParts[3] === 'reservation') {
+            return { type: 'reservation', storeId }; // 예약 페이지
+        }
+        
+        return { type: 'entry-point', storeId };
+    };
+
     // 상태 관리
     const [storeData, setStoreData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [spaceCount, setSpaceCount] = useState(null);
     const [selectedSpaceId, setSelectedSpaceId] = useState(null);
+
+    // URL 상태 파악 디버깅
+    useEffect(() => {
+        console.log('=== ShopDetailPage URL 상태 파악 디버깅 ===');
+        console.log('현재 URL:', location.pathname);
+        console.log('URL 상태:', getShopDetailStateFromUrl());
+    }, [location.pathname]);
 
     // storeData 디버깅을 위한 useEffect
     useEffect(() => {
@@ -151,17 +183,23 @@ const ShopDetailPage = () => {
 
     // 초기 데이터 로드
     useEffect(() => {
-        cancelReservation(); // 무한 츠쿠요미 막기용(렌더식 캐시 초기화)
+        const urlState = getShopDetailStateFromUrl();
+        // 예약 페이지 상태가 아닐 때만 예약 상태 초기화
+        if (urlState.type !== 'reservation') {
+            cancelReservation(); // 무한 츠쿠요미 막기용(렌더식 캐시 초기화)
+        }
         const loadStoreData = async () => {
             try {
                 setLoading(true);
                 setError(null);
                 
                 const storeId = parseInt(id);
+                const urlState = getShopDetailStateFromUrl();
                 console.log('=== ShopDetailPage 초기 데이터 로드 시작 ===');
                 console.log('Store ID:', storeId);
                 console.log('Time 파라미터:', time);
                 console.log('AccessToken 존재:', !!accessToken);
+                console.log('URL 상태:', urlState);
                 
                 // 1. Space 개수 조회
                 console.log('Space 개수 조회 시작...');
@@ -174,62 +212,94 @@ const ShopDetailPage = () => {
                 console.log('변환된 시간 파라미터:', timeParam);
                 
                 if (spacesData.count === 1) {
-                    console.log('=== Space가 1개인 경우: 바로 메뉴 조회 ===');
-                    // Space가 1개인 경우: 바로 메뉴 조회
-                    const menuData = await fetchStoreMenus(storeId, timeParam, accessToken);
-                    console.log('메뉴 조회 결과:', menuData);
-                    setStoreData(menuData);
-                } else if (spacesData.count >= 2) {
-                    console.log('=== Space가 2개 이상인 경우: Space 목록 조회 ===');
-                    // Space가 2개 이상인 경우: Space 목록 조회
-                    const spacesListData = await fetchStoreSpacesList(storeId, timeParam, accessToken);
-                    console.log('Space 목록 조회 결과:', spacesListData);
-                    console.log('=== API 응답 전체 구조 분석 ===');
-                    console.log('전체 응답 객체:', JSON.stringify(spacesListData, null, 2));
-                    console.log('spaces 배열:', spacesListData.spaces);
-                    console.log('spaces 배열 길이:', spacesListData.spaces?.length);
-                    if (spacesListData.spaces && spacesListData.spaces.length > 0) {
-                        console.log('첫 번째 Space 객체 전체:', JSON.stringify(spacesListData.spaces[0], null, 2));
-                        console.log('첫 번째 Space의 모든 키:', Object.keys(spacesListData.spaces[0]));
+                    // Space가 1개인 경우
+                    if (urlState.type === 'entry-point') {
+                        // /shop/:id로 접근한 경우 - /shop/:id/menu로 리다이렉트
+                        console.log('Space가 1개인 경우: /shop/:id/menu로 리다이렉트');
+                        navigate(`/shop/${storeId}/menu`);
+                    } else if (urlState.type === 'single-space-menu') {
+                        // /shop/:id/menu로 접근한 경우 - 정상 처리
+                        console.log('=== Space가 1개인 경우: 바로 메뉴 조회 ===');
+                        const menuData = await fetchStoreMenus(storeId, timeParam, accessToken);
+                        console.log('메뉴 조회 결과:', menuData);
+                        setStoreData(menuData);
+                    } else {
+                        // 다른 URL로 접근한 경우 - /shop/:id/menu로 리다이렉트
+                        console.log('Space가 1개인 경우: 다른 URL에서 /shop/:id/menu로 리다이렉트');
+                        navigate(`/shop/${storeId}/menu`);
                     }
-                    
-                    // 각 Space의 메뉴 정보를 확인하여 is_possible 계산
-                    const spacesWithCorrectedInfo = spacesListData.spaces.map(space => {
-                        // 디버깅 로그
-                        console.log(`=== Space ${space.space_id} 디버깅 ===`);
-                        console.log('Space 이름:', space.space_name);
-                        console.log('원본 is_possible:', space.is_possible);
-                        console.log('Space의 메뉴들:', space.menus); // API 응답에 메뉴 정보가 포함되어 있다면
+                } else if (spacesData.count >= 2) {
+                    // Space가 2개 이상인 경우
+                    if (urlState.type === 'entry-point') {
+                        // /shop/:id로 접근한 경우 - /shop/:id/spaces로 리다이렉트
+                        console.log('Space가 2개 이상인 경우: /shop/:id/spaces로 리다이렉트');
+                        navigate(`/shop/${storeId}/spaces`);
+                    } else if (urlState.type === 'spaces-list') {
+                        // /shop/:id/spaces로 접근한 경우 - 정상 처리
+                        console.log('=== Space가 2개 이상인 경우: Space 목록 조회 ===');
+                        const spacesListData = await fetchStoreSpacesList(storeId, timeParam, accessToken);
+                        console.log('Space 목록 조회 결과:', spacesListData);
+                        console.log('=== API 응답 전체 구조 분석 ===');
+                        console.log('전체 응답 객체:', JSON.stringify(spacesListData, null, 2));
+                        console.log('spaces 배열:', spacesListData.spaces);
+                        console.log('spaces 배열 길이:', spacesListData.spaces?.length);
+                        if (spacesListData.spaces && spacesListData.spaces.length > 0) {
+                            console.log('첫 번째 Space 객체 전체:', JSON.stringify(spacesListData.spaces[0], null, 2));
+                            console.log('첫 번째 Space의 모든 키:', Object.keys(spacesListData.spaces[0]));
+                        }
                         
-                        // 시간 만료 체크
-                        const timeExpired = isTimeExpired();
-                        console.log('시간 만료 여부:', timeExpired);
+                        // 각 Space의 메뉴 정보를 확인하여 is_possible 계산
+                        const spacesWithCorrectedInfo = spacesListData.spaces.map(space => {
+                            // 디버깅 로그
+                            console.log(`=== Space ${space.space_id} 디버깅 ===`);
+                            console.log('Space 이름:', space.space_name);
+                            console.log('원본 is_possible:', space.is_possible);
+                            console.log('Space의 메뉴들:', space.menus); // API 응답에 메뉴 정보가 포함되어 있다면
+                            
+                            // 시간 만료 체크
+                            const timeExpired = isTimeExpired();
+                            console.log('시간 만료 여부:', timeExpired);
+                            
+                            // 해당 Space의 메뉴들 중 하나라도 예약 불가능한지 확인
+                            const hasUnavailableMenu = space.menus && space.menus.some(menu => !menu.is_available);
+                            console.log('예약 불가능한 메뉴 존재 여부:', hasUnavailableMenu);
+                            console.log('각 메뉴의 is_available:', space.menus?.map(menu => ({ 
+                                menu_id: menu.menu_id, 
+                                menu_name: menu.menu_name, 
+                                is_available: menu.is_available 
+                            })));
+                            
+                            // 최종 is_possible 계산
+                            const finalIsPossible = space.is_possible && !timeExpired && !hasUnavailableMenu;
+                            console.log('최종 is_possible:', finalIsPossible);
+                            console.log('---');
+                            
+                            return {
+                                ...space,
+                                is_possible: finalIsPossible
+                            };
+                        });
                         
-                        // 해당 Space의 메뉴들 중 하나라도 예약 불가능한지 확인
-                        const hasUnavailableMenu = space.menus && space.menus.some(menu => !menu.is_available);
-                        console.log('예약 불가능한 메뉴 존재 여부:', hasUnavailableMenu);
-                        console.log('각 메뉴의 is_available:', space.menus?.map(menu => ({ 
-                            menu_id: menu.menu_id, 
-                            menu_name: menu.menu_name, 
-                            is_available: menu.is_available 
-                        })));
-                        
-                        // 최종 is_possible 계산
-                        const finalIsPossible = space.is_possible && !timeExpired && !hasUnavailableMenu;
-                        console.log('최종 is_possible:', finalIsPossible);
-                        console.log('---');
-                        
-                        return {
-                            ...space,
-                            is_possible: finalIsPossible
-                        };
-                    });
-                    
-                    // 수정된 Space 목록으로 storeData 설정
-                    setStoreData({
-                        ...spacesListData,
-                        spaces: spacesWithCorrectedInfo
-                    });
+                        // 수정된 Space 목록으로 storeData 설정
+                        setStoreData({
+                            ...spacesListData,
+                            spaces: spacesWithCorrectedInfo
+                        });
+                    } else if (urlState.type === 'space-menu') {
+                        // /shop/:id/space/:spaceId로 접근한 경우 - 정상 처리
+                        console.log('=== 특정 Space의 메뉴 페이지 ===');
+                        const spaceData = await fetchSpaceDetails(urlState.spaceId, timeParam, accessToken);
+                        setStoreData(spaceData);
+                        setSelectedSpaceId(urlState.spaceId);
+                    } else if (urlState.type === 'reservation') {
+                        // /shop/:id/reservation으로 접근한 경우 - 리다이렉트하지 않음
+                        console.log('=== 예약 페이지 상태: 리다이렉트하지 않음 ===');
+                        // 예약 페이지에서는 기존 데이터를 유지하거나 필요한 경우에만 데이터를 로드
+                    } else {
+                        // 다른 URL로 접근한 경우 - /shop/:id/spaces로 리다이렉트
+                        console.log('Space가 2개 이상인 경우: 다른 URL에서 /shop/:id/spaces로 리다이렉트');
+                        navigate(`/shop/${storeId}/spaces`);
+                    }
                 }
                 
                 console.log('=== ShopDetailPage 데이터 로드 완료 ===');
@@ -252,56 +322,12 @@ const ShopDetailPage = () => {
             console.log('id:', id);
             console.log('time:', time);
         }
-    }, [id, time, accessToken]);
+    }, [id, time, accessToken, location.pathname, navigate]); // navigate 의존성 추가
 
     // 특정 Space 선택 시 상세 데이터 로드
     const handleSpaceSelect = async (spaceId) => {
-        try {
-            setLoading(true);
-            setError(null);
-            
-            const timeParam = convertTimeToParam(time);
-            const spaceData = await fetchSpaceDetails(spaceId, timeParam, accessToken);
-            
-            // 디버깅 로그: Space 상세 정보와 메뉴들의 is_available 값들
-            console.log('=== Space 상세 정보 디버깅 ===');
-            console.log('Space ID:', spaceId);
-            console.log('Space 이름:', spaceData.space_name);
-            console.log('전체 Space 데이터:', spaceData);
-            console.log('메뉴 개수:', spaceData.menus?.length);
-            
-            if (spaceData.menus && spaceData.menus.length > 0) {
-                console.log('=== 각 메뉴의 is_available 상태 ===');
-                spaceData.menus.forEach((menu, index) => {
-                    console.log(`메뉴 ${index + 1}:`, {
-                        menu_id: menu.menu_id,
-                        menu_name: menu.menu_name,
-                        is_available: menu.is_available,
-                        discount_rate: menu.discount_rate,
-                        item_id: menu.item_id
-                    });
-                });
-                
-                // 예약 가능한 메뉴 개수 확인
-                const availableMenus = spaceData.menus.filter(menu => menu.is_available);
-                const unavailableMenus = spaceData.menus.filter(menu => !menu.is_available);
-                console.log('예약 가능한 메뉴 개수:', availableMenus.length);
-                console.log('예약 불가능한 메뉴 개수:', unavailableMenus.length);
-                console.log('예약 불가능한 메뉴들:', unavailableMenus.map(menu => menu.menu_name));
-            } else {
-                console.log('메뉴 정보가 없습니다.');
-            }
-            console.log('---');
-            
-            setStoreData(spaceData);
-            setSelectedSpaceId(spaceId);
-            
-        } catch (error) {
-            console.error('Space 상세 데이터 로드 실패', error);
-            setError(error.message);
-        } finally {
-            setLoading(false);
-        }
+        // URL 변경으로 Space 선택
+        navigate(`/shop/${id}/space/${spaceId}`);
     };
 
     // 좋아요 토글 처리 - Zustand 스토어만 업데이트
@@ -365,31 +391,33 @@ const ShopDetailPage = () => {
         return '예약 가능한 메뉴가 있습니다.';
     };
 
-    // 뒤로 가기 처리
+    // 뒤로 가기 처리 (URL 기반 네비게이션)
     const handleBack = () => {
         if (showPiAgreement) {
             togglePiAgreement(); // 동의서 숨김
         } else if (isReserving) {
+            // 예약 페이지에서 뒤로가기: 선택된 Space의 메뉴 페이지로
             cancelReservation(); // 예약 상태 초기화
+            if (spaceCount >= 2 && selectedSpaceId) {
+                navigate(`/shop/${id}/space/${selectedSpaceId}`);
+            } else if (spaceCount === 1) {
+                navigate(`/shop/${id}/menu`);
+            } else {
+                navigate(`/shop/${id}/spaces`);
+            }
         } else if (spaceCount >= 2 && selectedSpaceId) {
-            // Space 선택 해제하고 Space 목록으로 돌아가기
+            // 특정 Space 메뉴 페이지에서 뒤로가기: Space 목록으로
             setSelectedSpaceId(null);
-            const loadSpacesList = async () => {
-                try {
-                    setLoading(true);
-                    const storeId = parseInt(id);
-                    const timeParam = convertTimeToParam(time);
-                    const spacesListData = await fetchStoreSpacesList(storeId, timeParam, accessToken);
-                    setStoreData(spacesListData);
-                } catch (error) {
-                    console.error('Space 목록 재로드 실패', error);
-                } finally {
-                    setLoading(false);
-                }
-            };
-            loadSpacesList();
+            navigate(`/shop/${id}/spaces`);
+        } else if (spaceCount >= 2 && !selectedSpaceId) {
+            // Space 목록에서 뒤로가기: 홈페이지로
+            navigate('/');
+        } else if (spaceCount === 1) {
+            // 단일 Space 메뉴 페이지에서 뒤로가기: 홈페이지로
+            navigate('/');
         } else {
-            navigate('-1');
+            // 기본: 브라우저 히스토리 뒤로가기
+            navigate(-1);
         }
     };
 
@@ -404,6 +432,8 @@ const ShopDetailPage = () => {
         console.log('Space 개수:', spaceCount);
         console.log('선택된 Space ID:', selectedSpaceId);
         startReservation(menu, null);
+        // 예약 페이지로 URL 변경
+        navigate(`/shop/${id}/reservation`);
     };
 
     // Space 선택 (디자이너 선택과 동일한 역할)
@@ -459,7 +489,7 @@ const ShopDetailPage = () => {
                 ) : (
                     <>
                     {/* Space가 1개이거나(메뉴목록) Space space 화면일 때(디자이너목록)만 이미지 표시 */}
-                    {spaceCount === 1 || (spaceCount >= 2 && !selectedSpaceId) ? (
+                    {(spaceCount === 1 || (spaceCount >= 2 && !selectedSpaceId)) && !isReserving ? (
                         <IntroductionSection>
                             <ShopImage 
                                 src={getImageSrc(storeData?.store_image_url || storeData?.space_image_url)} 

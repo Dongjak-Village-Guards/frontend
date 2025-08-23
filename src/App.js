@@ -22,6 +22,8 @@ function App() {
   // useUserInfo에서 사용자 상태 가져오기
   const { authUser, logoutUser, refreshTokens, isTokenValid } = useUserInfo();
 
+
+
   // 토큰 만료 체크 및 자동 갱신
 //  useEffect(() => {
 //    const checkTokenAndRefresh = async () => {
@@ -74,6 +76,8 @@ function App() {
     checkTokenAndRefresh();
     }, [authUser, isTokenValid, refreshTokens, logoutUser]);
 
+
+  
   return (
     <>
       <GlobalStyle />
@@ -82,8 +86,19 @@ function App() {
           <Routes>
             {/* 모든 페이지를 MainPageApp으로 통합 */}
             <Route path="/" element={<MainPageApp />} />
+            {/* MainPageApp 세부 라우트들 */}
+            <Route path="/favorites" element={<MainPageApp />} />
+            <Route path="/history" element={<MainPageApp />} />
+            <Route path="/mypage" element={<MainPageApp />} />
+            <Route path="/search-address" element={<MainPageApp />} />
+            <Route path="/login" element={<MainPageApp />} />
             { /* 가게 상세 페이지: 디자이너 유무에 따라 동적 렌더링 */}
             <Route path="/shop/:id" element={<ShopDetailPage />} />
+            {/* 가게 상세 페이지 세부 라우트들 */}
+            <Route path="/shop/:id/menu" element={<ShopDetailPage />} />
+            <Route path="/shop/:id/spaces" element={<ShopDetailPage />} />
+            <Route path="/shop/:id/space/:spaceId" element={<ShopDetailPage />} />
+            <Route path="/shop/:id/reservation" element={<ShopDetailPage />} />
             {/* 마이페이지 관련 페이지들 */}
             <Route path="/notice" element={<NoticePage />} />
             <Route path="/faq" element={<FAQPage />} />

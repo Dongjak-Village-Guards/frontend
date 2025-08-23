@@ -17,7 +17,7 @@ const ShopInfo = ({ name, address, distance, reservationTime }) => {
   return (
     <InfoContainer>
         <Title>
-            <ShopName>{name.length > 15 ? `${name.slice(0, 15)}...` : name}</ShopName>
+            <ShopName>{name && name.length > 15 ? `${name.slice(0, 15)}...` : name || '가게명 없음'}</ShopName>
             <ReservationTime>{reservationTime}</ReservationTime>
         </Title>
         <InfoText className='address'>{address}</InfoText>
