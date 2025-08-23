@@ -7,6 +7,7 @@ export const FixedHeader = styled.div`
   z-index: 20;
   background: #fff;
   width: 100%;
+  height: 72px;
 `;
 
 export const NavBar = styled.div`
