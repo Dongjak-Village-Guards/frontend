@@ -208,17 +208,21 @@ const SchedulePage = () => {
 
   // 가게 제목 클릭 핸들러
   const handleSalonClick = (storeId, visitTime) => {
-    console.log('=== 가게 클릭 디버깅 ===');
-    console.log('가게 ID:', storeId);
+    console.log('=== SchedulePage 가게 클릭 디버깅 ===');
+    console.log('클릭된 가게 ID:', storeId);
+    console.log('클릭된 가게 이름:', appointments.find(apt => apt.storeId === storeId)?.salonName);
     console.log('방문 시간:', visitTime);
+    console.log('현재 예약 목록 개수:', appointments.length);
     
     if (!storeId) {
       console.warn('가게 ID가 없습니다.');
       return;
     }
     
+    console.log('ShopDetailPage로 네비게이션 시작...');
     // ShopDetailPage로 라우팅
     navigate(`/shop/${storeId}`);
+    console.log('ShopDetailPage로 네비게이션 완료');
   };
 
   return (
