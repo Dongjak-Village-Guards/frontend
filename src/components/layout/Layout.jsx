@@ -9,9 +9,9 @@ const Layout = forwardRef(({ children, currentPage = "home", onPageChange }, con
   return (
     <Container>
       <PhoneFrame>
-        <ContentArea ref={contentAreaRef} className="content-area">
+        <ContentArea currentPage={currentPage} ref={contentAreaRef} className="content-area">
           {children}
-                </ContentArea>
+        </ContentArea>
         {showNavBar && <NavBar current={currentPage} onSelect={onPageChange} />}
         
         {/* 바텀시트 포털 마운트 지점 */}
@@ -27,7 +27,8 @@ export default Layout;
 
 // 전체 Layout: 반응형으로 수정
 const Container = styled.div`
-  min-height: 100vh;
+  height: 100%;
+  max-height: 100vh;
   background: #f8f8f8;
   display: flex;
   align-items: center;
@@ -67,7 +68,8 @@ const PhoneFrame = styled.div`
 // 콘텐츠 영역: 반응형으로 수정
 const ContentArea = styled.div`
   flex: 1;
-  overflow-y: auto;
+  position: relative;
+  overflow-y: ${({ currentPage }) => currentPage === 'home' ? 'auto' : 'hidden'};
 
   /* 반응형 웹 수정: 모바일에서 스크롤 최적화 */
   -webkit-overflow-scrolling: touch;

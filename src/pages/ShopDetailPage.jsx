@@ -29,6 +29,7 @@ import {
   fetchSpaceDetails,
   convertTimeToParam
 } from '../apis/storeAPI';
+import ScrollContainer from '../components/layout/ScrollContainer';
 
 const ShopDetailPage = () => {
     const navigate = useNavigate();
@@ -957,99 +958,136 @@ const ShopDetailPage = () => {
                 />
             </NavBarContainer>
     
-            {/* 콘텐츠 영역 */}
-            <ContentContainer>
-                {loading ? (
-                    <LoadingContainer>
-                        <Spinner />
-                    </LoadingContainer>
-                ) : error ? (
-                    <ErrorContainer>
-                        <ErrorText>데이터를 불러오는데 실패했습니다.</ErrorText>
-                        <ErrorSubText>{error}</ErrorSubText>
-                    </ErrorContainer>
-                ) : isReserving ? (
-                    <ReservationPage shop={storeData} />
-                ) : (
-                    <>
-                    {/* Space가 1개이거나(메뉴목록) Space space 화면일 때(디자이너목록)만 이미지 표시 */}
-                    {(spaceCount === 1 || (spaceCount >= 2 && !selectedSpaceId)) && !isReserving ? (
-                        <IntroductionSection>
-                            {(() => {
-                                console.log('=== 이미지 렌더링 디버깅 ===');
-                                console.log('spaceCount:', spaceCount);
-                                console.log('selectedSpaceId:', selectedSpaceId);
-                                console.log('isReserving:', isReserving);
-                                console.log('storeData:', storeData);
-                                console.log('storeData?.store_image_url:', storeData?.store_image_url);
-                                console.log('storeData?.space_image_url:', storeData?.space_image_url);
-                                
-                                const imageUrl = getImageSrc(storeData?.store_image_url || storeData?.space_image_url);
-                                const imageAlt = storeData?.store_name || storeData?.space_name;
-                                
-                                console.log('최종 imageUrl:', imageUrl);
-                                console.log('최종 imageAlt:', imageAlt);
-                                
-                                return (
-                                    <ShopImage 
-                                        src={imageUrl} 
-                                        alt={imageAlt}
-                                        onError={(e) => {
-                                            console.warn('가게 이미지 로드 실패, placeholder 이미지로 대체');
-                                            e.target.src = placeholderImage;
-                                        }}
-                                    />
-                                );
-                            })()}
-                            <ShopInfo
-                                name={storeData?.store_name}
-                                address={storeData?.store_address}
-                                distance={`${storeData?.distance}m`}
-                                reservationTime={`${time} 예약`}
-                            />
-                        </IntroductionSection>
-                    ) : null}
-                    
-                    {/* Space가 1개인 경우: 가게 정보 표시 */}
-                    {spaceCount === 1 ? (
-                        <></>
-                    ) : spaceCount >= 2 && selectedSpaceId ? (
-                        /* Space 상세 화면: Space 정보 표시 */
-                        <DesignerInfo
-                            name={storeData?.space_name}
-                            specialty={`${getSpecialty()} 전문`}
-                            reservationTime={`${time} 방문`}
-                            designerImage={storeData?.space_image_url}
-                        />
-                    ) : null}
-                    
-                    {/* Space가 2개 이상인 경우 */}
-                    {spaceCount >= 2 ? (
-                        !selectedSpaceId ? (
-                            /* Space 목록 화면 */
-                            <>
-                                <Line />
-                                <DesignerSection>
-                                    {storeData?.spaces?.map(space => (
-                                        <SpaceCard
-                                            key={space.space_id}
-                                            space={{
-                                                id: space.space_id,
-                                                name: space.space_name,
-                                                image: space.space_image_url,
-                                                maxDiscountRate: space.max_discount_rate,
-                                                isPossible: space.is_possible
+            <ScrollContainer offsetTop={72}>
+                {/* 콘텐츠 영역 */}
+                <ContentContainer>
+                    {loading ? (
+                        <LoadingContainer>
+                            <Spinner />
+                        </LoadingContainer>
+                    ) : error ? (
+                        <ErrorContainer>
+                            <ErrorText>데이터를 불러오는데 실패했습니다.</ErrorText>
+                            <ErrorSubText>{error}</ErrorSubText>
+                        </ErrorContainer>
+                    ) : isReserving ? (
+                        <ReservationPage shop={storeData} />
+                    ) : (
+                        <>
+                        {/* Space가 1개이거나(메뉴목록) Space space 화면일 때(디자이너목록)만 이미지 표시 */}
+                        {(spaceCount === 1 || (spaceCount >= 2 && !selectedSpaceId)) && !isReserving ? (
+                            <IntroductionSection>
+                                {(() => {
+                                    console.log('=== 이미지 렌더링 디버깅 ===');
+                                    console.log('spaceCount:', spaceCount);
+                                    console.log('selectedSpaceId:', selectedSpaceId);
+                                    console.log('isReserving:', isReserving);
+                                    console.log('storeData:', storeData);
+                                    console.log('storeData?.store_image_url:', storeData?.store_image_url);
+                                    console.log('storeData?.space_image_url:', storeData?.space_image_url);
+                                    
+                                    const imageUrl = getImageSrc(storeData?.store_image_url || storeData?.space_image_url);
+                                    const imageAlt = storeData?.store_name || storeData?.space_name;
+                                    
+                                    console.log('최종 imageUrl:', imageUrl);
+                                    console.log('최종 imageAlt:', imageAlt);
+                                    
+                                    return (
+                                        <ShopImage 
+                                            src={imageUrl} 
+                                            alt={imageAlt}
+                                            onError={(e) => {
+                                                console.warn('가게 이미지 로드 실패, placeholder 이미지로 대체');
+                                                e.target.src = placeholderImage;
                                             }}
-                                            onSelect={handleSelectSpace}
                                         />
-                                    ))}
-                                </DesignerSection>
-                            </>
+                                    );
+                                })()}
+                                <ShopInfo
+                                    name={storeData?.store_name}
+                                    address={storeData?.store_address}
+                                    distance={`${storeData?.distance}m`}
+                                    reservationTime={`${time} 예약`}
+                                />
+                            </IntroductionSection>
+                        ) : null}
+                        
+                        {/* Space가 1개인 경우: 가게 정보 표시 */}
+                        {spaceCount === 1 ? (
+                            <></>
+                        ) : spaceCount >= 2 && selectedSpaceId ? (
+                            /* Space 상세 화면: Space 정보 표시 */
+                            <DesignerInfo
+                                name={storeData?.space_name}
+                                specialty={`${getSpecialty()} 전문`}
+                                reservationTime={`${time} 방문`}
+                                designerImage={storeData?.space_image_url}
+                            />
+                        ) : null}
+                        
+                        {/* Space가 2개 이상인 경우 */}
+                        {spaceCount >= 2 ? (
+                            !selectedSpaceId ? (
+                                /* Space 목록 화면 */
+                                <>
+                                    <Line />
+                                    <DesignerSection>
+                                        {storeData?.spaces?.map(space => (
+                                            <SpaceCard
+                                                key={space.space_id}
+                                                space={{
+                                                    id: space.space_id,
+                                                    name: space.space_name,
+                                                    image: space.space_image_url,
+                                                    maxDiscountRate: space.max_discount_rate,
+                                                    isPossible: space.is_possible
+                                                }}
+                                                onSelect={handleSelectSpace}
+                                            />
+                                        ))}
+                                    </DesignerSection>
+                                </>
+                            ) : (
+                                /* Space 상세 화면: 메뉴 목록 */
+                                (() => {
+                                    console.log('=== Space 상세 화면 렌더링 ===');
+                                    console.log('selectedSpaceId:', selectedSpaceId);
+                                    console.log('storeData:', storeData);
+                                    console.log('storeData.menus:', storeData?.menus);
+                                    
+                                    const featuredMenu = getFeaturedMenu();
+                                    const otherMenus = getOtherMenus();
+                                    
+                                    console.log('featuredMenu:', featuredMenu);
+                                    console.log('otherMenus:', otherMenus);
+                                    
+                                    return (
+                                        <>
+                                            <Line />
+                                            <MenuSection>
+                                                <SectionTitle>가장 할인율이 큰 대표 메뉴!</SectionTitle>
+                                                {featuredMenu ? (
+                                                    <MenuCard
+                                                        menu={featuredMenu}
+                                                        onReserve={() => handleReserve(featuredMenu)}
+                                                    />
+                                                ) : (
+                                                    <div>메뉴를 불러오는 중...</div>
+                                                )}
+                                            </MenuSection>
+                                            <Line />
+                                            <MenuSection>
+                                                <SectionTitle>다른 할인 메뉴</SectionTitle>
+                                                <MenuList menus={otherMenus} onReserve={handleReserve} />
+                                            </MenuSection>
+                                        </>
+                                    );
+                                })()
+                            )
                         ) : (
-                            /* Space 상세 화면: 메뉴 목록 */
+                            /* Space가 1개인 경우: 바로 메뉴 목록 */
                             (() => {
-                                console.log('=== Space 상세 화면 렌더링 ===');
-                                console.log('selectedSpaceId:', selectedSpaceId);
+                                console.log('=== 단일 Space 메뉴 목록 렌더링 ===');
                                 console.log('storeData:', storeData);
                                 console.log('storeData.menus:', storeData?.menus);
                                 
@@ -1058,7 +1096,7 @@ const ShopDetailPage = () => {
                                 
                                 console.log('featuredMenu:', featuredMenu);
                                 console.log('otherMenus:', otherMenus);
-                                
+                            
                                 return (
                                     <>
                                         <Line />
@@ -1081,46 +1119,11 @@ const ShopDetailPage = () => {
                                     </>
                                 );
                             })()
-                        )
-                    ) : (
-                        /* Space가 1개인 경우: 바로 메뉴 목록 */
-                        (() => {
-                            console.log('=== 단일 Space 메뉴 목록 렌더링 ===');
-                            console.log('storeData:', storeData);
-                            console.log('storeData.menus:', storeData?.menus);
-                            
-                            const featuredMenu = getFeaturedMenu();
-                            const otherMenus = getOtherMenus();
-                            
-                            console.log('featuredMenu:', featuredMenu);
-                            console.log('otherMenus:', otherMenus);
-                            
-                            return (
-                                <>
-                                    <Line />
-                                    <MenuSection>
-                                        <SectionTitle>가장 할인율이 큰 대표 메뉴!</SectionTitle>
-                                        {featuredMenu ? (
-                                            <MenuCard
-                                                menu={featuredMenu}
-                                                onReserve={() => handleReserve(featuredMenu)}
-                                            />
-                                        ) : (
-                                            <div>메뉴를 불러오는 중...</div>
-                                        )}
-                                    </MenuSection>
-                                    <Line />
-                                    <MenuSection>
-                                        <SectionTitle>다른 할인 메뉴</SectionTitle>
-                                        <MenuList menus={otherMenus} onReserve={handleReserve} />
-                                    </MenuSection>
-                                </>
-                            );
-                        })()
-                    )}
+                        )}
                     </>
                 )}
                 </ContentContainer>
+            </ScrollContainer>
         </PageContainer>
     </Layout>
   );
@@ -1134,8 +1137,8 @@ export default ShopDetailPage;
 const PageContainer = styled.div`
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
-    height: 100vh;
+    height: 100%;
+    max-height: 100vh;
     background: #fff;
 `;
 
@@ -1147,7 +1150,6 @@ const NavBarContainer = styled.div`
 const ContentContainer = styled.div`
     overflow-y: visible;
     position: relative;
-    padding-top: 72px;
     min-height: calc(100vh - 72px);
 `;
 

@@ -10,6 +10,7 @@ import Spinner from '../components/ui/Spinner/Spinner';
 import { getNearestHour } from '../components/features/filter/TimeFilter/TimeFilter';
 import { fetchUserReservations, cancelReservation } from '../apis/reservationAPI';
 import placeholderImage from '../assets/images/placeholder.svg';
+import ScrollContainer from '../components/layout/ScrollContainer';
 
 const SchedulePage = () => {
   const navigate = useNavigate();
@@ -232,55 +233,57 @@ const SchedulePage = () => {
         <HeaderTitle>방문 예정</HeaderTitle>
       </Header>
 
-      {/* 예약 목록 */}
-      <ContentContainer>
-        {loading ? (
-          <LoadingContainer>
-            <Spinner />
-          </LoadingContainer>
-        ) : appointments.length > 0 ? (
-          <AppointmentList>
-            {appointments.map(appointment => (
-              <AppointmentCard key={appointment.id}>
-                <CardContent>
-                  <ProfileImage>
-                    <ProfileImageSrc 
-                      src={appointment.profileImage} 
-                      alt={appointment.salonName}
-                      onError={(e) => {
-                        e.target.src = placeholderImage;
-                      }}
-                    />
-                  </ProfileImage>
-                  <AppointmentDetails>
-                    <SalonName onClick={() => handleSalonClick(appointment.storeId, appointment.visitTime)}>
-                      <SalonNameText>{appointment.salonName}</SalonNameText>
-                      <ChevronIcon />
-                    </SalonName>
-                    <VisitTime>{appointment.visitTime} 방문</VisitTime>
-                    <ServiceInfo>
-                      {appointment.designer}
-                      {appointment.service && ` / ${appointment.service}`}
-                    </ServiceInfo>
-                  </AppointmentDetails>
-                </CardContent>
-                <ReservationButton 
-                    variant={appointment.isCancellable ? "secondary" : "primary"}
-                    disabled={!appointment.isCancellable}
-                    onClick={appointment.isCancellable ? () => handleCancelClick(appointment.id) : undefined}
-                    >
-                    {appointment.isCancellable ? "예약 취소" : "취소 불가"}
-                </ReservationButton>
-              </AppointmentCard>
-            ))}
-          </AppointmentList>
-        ) : (
-          <EmptyState>
-            <EmptyText>방문 예정인 일정이 없어요</EmptyText>
-            <EmptySubText>새로운 예약을 해보세요!</EmptySubText>
-          </EmptyState>
-        )}
-      </ContentContainer>
+      <ScrollContainer offsetTop={60}>
+        {/* 예약 목록 */}
+        <ContentContainer>
+          {loading ? (
+            <LoadingContainer>
+              <Spinner />
+            </LoadingContainer>
+          ) : appointments.length > 0 ? (
+            <AppointmentList>
+              {appointments.map(appointment => (
+                <AppointmentCard key={appointment.id}>
+                  <CardContent>
+                    <ProfileImage>
+                      <ProfileImageSrc 
+                        src={appointment.profileImage} 
+                        alt={appointment.salonName}
+                        onError={(e) => {
+                          e.target.src = placeholderImage;
+                        }}
+                      />
+                    </ProfileImage>
+                    <AppointmentDetails>
+                      <SalonName onClick={() => handleSalonClick(appointment.storeId, appointment.visitTime)}>
+                        <SalonNameText>{appointment.salonName}</SalonNameText>
+                        <ChevronIcon />
+                      </SalonName>
+                      <VisitTime>{appointment.visitTime} 방문</VisitTime>
+                      <ServiceInfo>
+                        {appointment.designer}
+                        {appointment.service && ` / ${appointment.service}`}
+                      </ServiceInfo>
+                    </AppointmentDetails>
+                  </CardContent>
+                  <ReservationButton 
+                      variant={appointment.isCancellable ? "secondary" : "primary"}
+                      disabled={!appointment.isCancellable}
+                      onClick={appointment.isCancellable ? () => handleCancelClick(appointment.id) : undefined}
+                      >
+                      {appointment.isCancellable ? "예약 취소" : "취소 불가"}
+                  </ReservationButton>
+                </AppointmentCard>
+              ))}
+            </AppointmentList>
+          ) : (
+            <EmptyState>
+              <EmptyText>방문 예정인 일정이 없어요</EmptyText>
+              <EmptySubText>새로운 예약을 해보세요!</EmptySubText>
+            </EmptyState>
+          )}
+        </ContentContainer>
+      </ScrollContainer>
 
       {/* 예약 취소 확인 바텀시트 */}
       <BottomSheet
@@ -382,7 +385,7 @@ const HeaderTitle = styled.h1`
 const ContentContainer = styled.div`
   flex: 1;
   overflow-y: auto;
-  padding-top: 16px;
+  padding: 16px 16px 52px 16px;
 `;
 
 const LoadingContainer = styled.div`
