@@ -385,8 +385,7 @@ const HeaderTitle = styled.h1`
 const ContentContainer = styled.div`
   flex: 1;
   overflow-y: auto;
-  padding-top: 16px;
-  padding-bottom: 52px;
+  padding: 16px 16px 52px 16px;
 `;
 
 const LoadingContainer = styled.div`

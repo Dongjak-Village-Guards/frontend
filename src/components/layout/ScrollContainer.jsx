@@ -6,7 +6,6 @@ const ScrollContainer = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 0 16px;
   overflow-y: auto;
   box-sizing: border-box;
 

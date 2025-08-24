@@ -67,7 +67,7 @@ const NavBarContainer = styled.div`
 `;
 
 const ContentContainer = styled.div`
-  padding: 72px 0px 0px 0px;
+  padding: 72px 16px 0px 16px;
 `;
 
 const NoticeList = styled.div`
