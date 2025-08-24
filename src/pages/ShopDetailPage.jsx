@@ -39,6 +39,7 @@ const ShopDetailPage = () => {
         stores,
         time,
         isReserving,
+        selectedMenu,
         showPiAgreement,
         startReservation,
         cancelReservation,
@@ -91,6 +92,45 @@ const ShopDetailPage = () => {
     const [error, setError] = useState(null);
     const [spaceCount, setSpaceCount] = useState(null);
     const [selectedSpaceId, setSelectedSpaceId] = useState(null);
+    
+    // 브라우저 히스토리 상태 추적 함수
+    const logHistoryState = (context = '') => {
+        console.log(`=== 📈 히스토리 상태 추적 ${context} ===`);
+        console.log('📍 현재 URL:', window.location.href);
+        console.log('📊 현재 pathname:', window.location.pathname);
+        console.log('📈 히스토리 길이:', window.history.length);
+        console.log('📋 히스토리 상태:', window.history.state);
+        console.log('🔄 히스토리 스크롤 복원:', window.history.scrollRestoration);
+        console.log('🕐 현재 시간:', new Date().toISOString());
+        
+        // 현재 페이지의 상태 정보
+        console.log('📊 현재 페이지 상태:');
+        console.log('  - isReserving:', isReserving);
+        console.log('  - selectedMenu:', selectedMenu ? '있음' : '없음');
+        console.log('  - selectedMenu_item_id:', selectedMenu?.item_id);
+        console.log('  - showPiAgreement:', showPiAgreement);
+        console.log('  - selectedSpaceId:', selectedSpaceId);
+        console.log('  - storeData:', storeData ? '있음' : '없음');
+        console.log('  - spaceCount:', spaceCount);
+        
+        // localStorage 상태 확인
+        const reservationData = localStorage.getItem('reservationData');
+        console.log('💾 localStorage 예약 데이터:', reservationData ? '있음' : '없음');
+        if (reservationData) {
+            try {
+                const data = JSON.parse(reservationData);
+                console.log('📋 localStorage 예약 데이터 상세:', {
+                    menu_item_id: data.menu?.item_id,
+                    timestamp: new Date(data.timestamp).toISOString(),
+                    age: Date.now() - data.timestamp
+                });
+            } catch (error) {
+                console.log('❌ localStorage 데이터 파싱 실패:', error);
+            }
+        }
+        
+        console.log('=== 히스토리 상태 추적 완료 ===');
+    };
     
     // 이전 URL 추적을 위한 ref
     const previousPathnameRef = useRef(location.pathname);
@@ -149,7 +189,7 @@ const ShopDetailPage = () => {
         
         console.log('최종 selectedSpaceId:', selectedSpaceId);
         console.log('=== URL 상태 파악 디버깅 완료 ===');
-    }, [location.pathname, selectedSpaceId]);
+    }, [location.pathname]); // selectedSpaceId 의존성 제거
 
     // 브라우저 뒤로가기/앞으로가기 감지 및 상태 동기화
     useEffect(() => {
@@ -168,17 +208,20 @@ const ShopDetailPage = () => {
             const urlState = getShopDetailStateFromUrl();
             console.log('새로운 URL 상태:', urlState);
             
-            if (urlState.type === 'space-menu' && urlState.spaceId) {
-                if (selectedSpaceId !== urlState.spaceId) {
-                    console.log(`브라우저 네비게이션: selectedSpaceId 업데이트 ${selectedSpaceId} -> ${urlState.spaceId}`);
-                    setSelectedSpaceId(urlState.spaceId);
+            // 즉시 상태 동기화 (setTimeout으로 비동기 처리)
+            setTimeout(() => {
+                if (urlState.type === 'space-menu' && urlState.spaceId) {
+                    if (selectedSpaceId !== urlState.spaceId) {
+                        console.log(`브라우저 네비게이션: selectedSpaceId 업데이트 ${selectedSpaceId} -> ${urlState.spaceId}`);
+                        setSelectedSpaceId(urlState.spaceId);
+                    }
+                } else if (urlState.type === 'spaces-list' || urlState.type === 'entry-point' || urlState.type === 'single-space-menu') {
+                    if (selectedSpaceId !== null) {
+                        console.log(`브라우저 네비게이션: selectedSpaceId 초기화 ${selectedSpaceId} -> null`);
+                        setSelectedSpaceId(null);
+                    }
                 }
-            } else if (urlState.type === 'spaces-list' || urlState.type === 'entry-point' || urlState.type === 'single-space-menu') {
-                if (selectedSpaceId !== null) {
-                    console.log(`브라우저 네비게이션: selectedSpaceId 초기화 ${selectedSpaceId} -> null`);
-                    setSelectedSpaceId(null);
-                }
-            }
+            }, 0);
             
             // 브라우저 뒤로가기로 entry-point 상태가 되었을 때 홈페이지로 이동
             if (urlState.type === 'entry-point') {
@@ -207,7 +250,7 @@ const ShopDetailPage = () => {
             console.log('=== popstate 이벤트 리스너 제거 ===');
             window.removeEventListener('popstate', handlePopState);
         };
-    }, [selectedSpaceId, navigate]);
+    }, [navigate]); // selectedSpaceId 의존성 제거
 
     // URL 변경 감지 및 브라우저 뒤로가기 처리
     useEffect(() => {
@@ -285,43 +328,165 @@ const ShopDetailPage = () => {
             
             // Space 메뉴 페이지에서 예약 페이지로 이동한 경우 (앞으로가기)
             if (previousPathnameRef.current.includes('/space/') && urlState.type === 'reservation') {
-                console.log('=== Space 메뉴 페이지에서 예약 페이지로 이동 감지 (앞으로가기) ===');
-                console.log('예약 페이지로 이동합니다.');
+                console.log('=== 🎯 Space 메뉴 페이지에서 예약 페이지로 이동 감지 (앞으로가기) ===');
+                console.log('📍 예약 페이지로 이동합니다.');
                 
                 // 이미 예약 상태가 설정되어 있는지 확인
                 if (!isReserving) {
-                    console.log('예약 상태가 설정되지 않음 - 예약 상태 복원 시도');
+                    console.log('⚠️ 예약 상태가 설정되지 않음 - 예약 상태 복원 시도');
                     // Zustand 스토어에서 이미 선택된 메뉴 정보 사용
                     const { selectedMenu } = useStore.getState();
                     if (selectedMenu) {
-                        console.log('Zustand 스토어에서 선택된 메뉴 정보 찾음:', selectedMenu);
+                        console.log('✅ Zustand 스토어에서 선택된 메뉴 정보 찾음:', selectedMenu);
                         startReservation(selectedMenu, null);
                     } else {
-                        console.log('Zustand 스토어에서 선택된 메뉴 정보를 찾을 수 없음');
+                        console.log('❌ Zustand 스토어에서 선택된 메뉴 정보를 찾을 수 없음');
+                        console.log('🔄 localStorage에서 예약 상태 복원 시도...');
+                        const restored = restoreReservationState();
+                        if (!restored) {
+                            console.log('❌ localStorage에서 예약 상태 복원 실패');
+                            console.log('🔄 현재 페이지 메뉴 정보로 예약 상태 복원 시도...');
+                            
+                            // localStorage에 데이터가 없을 때 현재 페이지의 메뉴 정보를 활용해 복원
+                            if (storeData && storeData.menus && storeData.menus.length > 0) {
+                                console.log('📋 현재 페이지에 메뉴 정보가 있음');
+                                console.log('📊 메뉴 개수:', storeData.menus.length);
+                                
+                                // 첫 번째 메뉴를 선택하여 예약 상태 복원
+                                const firstMenu = storeData.menus[0];
+                                console.log('🎯 첫 번째 메뉴로 예약 상태 복원:', firstMenu);
+                                
+                                // 예약 상태 설정
+                                startReservation(firstMenu, null);
+                                console.log('✅ 현재 페이지 메뉴로 예약 상태 복원 성공');
+                            } else {
+                                console.log('❌ 현재 페이지에도 메뉴 정보가 없음 - Space 메뉴 페이지로 리다이렉트');
+                                setTimeout(() => {
+                                    navigate(`/shop/${id}/space/${selectedSpaceId}`, { replace: true });
+                                }, 100);
+                            }
+                        }
                     }
                 } else {
-                    console.log('이미 예약 상태가 설정되어 있음');
+                    console.log('✅ 이미 예약 상태가 설정되어 있음');
                 }
             }
             
             // 단일 메뉴 페이지에서 예약 페이지로 이동한 경우 (앞으로가기)
             if (previousPathnameRef.current.includes('/menu') && urlState.type === 'reservation') {
-                console.log('=== 단일 메뉴 페이지에서 예약 페이지로 이동 감지 (앞으로가기) ===');
-                console.log('예약 페이지로 이동합니다.');
+                console.log('=== 🎯 단일 메뉴 페이지에서 예약 페이지로 이동 감지 (앞으로가기) ===');
+                console.log('📍 예약 페이지로 이동합니다.');
                 
                 // 이미 예약 상태가 설정되어 있는지 확인
                 if (!isReserving) {
-                    console.log('예약 상태가 설정되지 않음 - 예약 상태 복원 시도');
+                    console.log('⚠️ 예약 상태가 설정되지 않음 - 예약 상태 복원 시도');
                     // Zustand 스토어에서 이미 선택된 메뉴 정보 사용
                     const { selectedMenu } = useStore.getState();
                     if (selectedMenu) {
-                        console.log('Zustand 스토어에서 선택된 메뉴 정보 찾음:', selectedMenu);
+                        console.log('✅ Zustand 스토어에서 선택된 메뉴 정보 찾음:', selectedMenu);
                         startReservation(selectedMenu, null);
                     } else {
-                        console.log('Zustand 스토어에서 선택된 메뉴 정보를 찾을 수 없음');
+                        console.log('❌ Zustand 스토어에서 선택된 메뉴 정보를 찾을 수 없음');
+                        console.log('🔄 localStorage에서 예약 상태 복원 시도...');
+                        const restored = restoreReservationState();
+                        if (!restored) {
+                            console.log('❌ localStorage에서 예약 상태 복원 실패');
+                            console.log('🔄 현재 페이지 메뉴 정보로 예약 상태 복원 시도...');
+                            
+                            // localStorage에 데이터가 없을 때 현재 페이지의 메뉴 정보를 활용해 복원
+                            if (storeData && storeData.menus && storeData.menus.length > 0) {
+                                console.log('📋 현재 페이지에 메뉴 정보가 있음');
+                                console.log('📊 메뉴 개수:', storeData.menus.length);
+                                
+                                // 첫 번째 메뉴를 선택하여 예약 상태 복원
+                                const firstMenu = storeData.menus[0];
+                                console.log('🎯 첫 번째 메뉴로 예약 상태 복원:', firstMenu);
+                                
+                                // 예약 상태 설정
+                                startReservation(firstMenu, null);
+                                console.log('✅ 현재 페이지 메뉴로 예약 상태 복원 성공');
+                            } else {
+                                console.log('❌ 현재 페이지에도 메뉴 정보가 없음 - 단일 메뉴 페이지로 리다이렉트');
+                                setTimeout(() => {
+                                    navigate(`/shop/${id}/menu`, { replace: true });
+                                }, 100);
+                            }
+                        }
                     }
                 } else {
-                    console.log('이미 예약 상태가 설정되어 있음');
+                    console.log('✅ 이미 예약 상태가 설정되어 있음');
+                }
+            }
+            
+            // 예약 페이지로 이동하는 경우 (앞으로가기)
+            if (urlState.type === 'reservation') {
+                console.log('🎯 예약 페이지로 이동 감지 (앞으로가기)');
+                console.log('📋 현재 예약 상태:', {
+                    isReserving,
+                    selectedMenu: selectedMenu ? '있음' : '없음',
+                    selectedMenu_item_id: selectedMenu?.item_id,
+                    showPiAgreement,
+                    storeData: storeData ? '있음' : '없음'
+                });
+                
+                // 예약 상태가 없는데 예약 페이지로 이동하려는 경우
+                if (!isReserving || !selectedMenu) {
+                    console.log('⚠️ 경고: 예약 상태가 없는데 예약 페이지로 이동 시도');
+                    console.log('🔄 예약 상태 복원 시도...');
+                    
+                    // localStorage에서 예약 상태 복원 시도
+                    const restored = restoreReservationState();
+                    if (restored) {
+                        console.log('✅ 예약 상태 복원 성공');
+                        console.log('📋 복원된 상태:', {
+                            isReserving: useStore.getState().isReserving,
+                            selectedMenu: useStore.getState().selectedMenu ? '있음' : '없음',
+                            selectedMenu_item_id: useStore.getState().selectedMenu?.item_id
+                        });
+                        
+                        // 복원 후 히스토리 상태 재추적
+                        setTimeout(() => {
+                            logHistoryState('예약 상태 복원 후');
+                        }, 100);
+                    } else {
+                        console.log('❌ localStorage에서 예약 상태 복원 실패');
+                        console.log('🔄 현재 페이지 메뉴 정보로 예약 상태 복원 시도...');
+                        
+                        // localStorage에 데이터가 없을 때 현재 페이지의 메뉴 정보를 활용해 복원
+                        if (storeData && storeData.menus && storeData.menus.length > 0) {
+                            console.log('📋 현재 페이지에 메뉴 정보가 있음');
+                            console.log('📊 메뉴 개수:', storeData.menus.length);
+                            
+                            // 첫 번째 메뉴를 선택하여 예약 상태 복원
+                            const firstMenu = storeData.menus[0];
+                            console.log('🎯 첫 번째 메뉴로 예약 상태 복원:', firstMenu);
+                            
+                            // 예약 상태 설정
+                            startReservation(firstMenu, null);
+                            console.log('✅ 현재 페이지 메뉴로 예약 상태 복원 성공');
+                            
+                            // 복원 후 히스토리 상태 재추적
+                            setTimeout(() => {
+                                logHistoryState('현재 페이지 메뉴로 예약 상태 복원 후');
+                            }, 100);
+                        } else {
+                            console.log('❌ 현재 페이지에도 메뉴 정보가 없음');
+                            console.log('🔄 Space 목록으로 리다이렉트...');
+                            
+                            // 예약 상태 복원이 실패한 경우 Space 목록으로 리다이렉트
+                            setTimeout(() => {
+                                const storeId = urlState.storeId;
+                                if (spaceCount >= 2) {
+                                    navigate(`/shop/${storeId}/spaces`, { replace: true });
+                                } else {
+                                    navigate(`/shop/${storeId}/menu`, { replace: true });
+                                }
+                            }, 100);
+                            return;
+                        }
+                    }
+                } else {
+                    console.log('✅ 예약 상태가 정상적으로 설정되어 있음');
                 }
             }
             

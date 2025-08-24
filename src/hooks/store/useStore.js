@@ -26,7 +26,7 @@ const useStore = create(
       
       // ===== 주소 상태 관리 =====
       /** 현재 주소 (7글자 초과 시 ... 처리) */
-      currentAddress: '노량진동 240-30',
+    
       
       // ===== 시간 상태 관리 =====
       /** 현재 시간 (HH:MM 형식) */
@@ -111,14 +111,7 @@ const useStore = create(
        */
       setFromHomePage: (fromHome) => set({ fromHomePage: fromHome }),
       
-      /**
-       * 현재 주소 변경 (7글자 초과 시 ... 처리)
-       * @param {string} address - 새로운 주소
-       */
-      setCurrentAddress: (address) => {
-        const truncatedAddress = address.length > 7 ? `${address.slice(0, 7)}...` : address;
-        set({ currentAddress: truncatedAddress });
-      },
+
 
        /**
        * 시간 설정 (AppStorage에 저장)
@@ -291,14 +284,9 @@ const useStore = create(
           // API 호출 (storeAPI에서 모든 로직 처리)
           const stores = await fetchStoresFromAPI(time, category, currentToken);
           
-          // 찜 상태 동기화: likedStoreIds와 일치하는 가게들의 isLiked를 true로 설정
-          const storesWithLikeStatus = stores.map(store => ({
-            ...store,
-            isLiked: get().likedStoreIds.includes(store.id)
-          }));
-          
-          set({ stores: storesWithLikeStatus, loading: false });
-          console.log('가게 목록 가져오기 성공:', storesWithLikeStatus.length, '개');
+          // 백엔드에서 받은 is_liked 필드 그대로 사용
+          set({ stores: stores, loading: false });
+          console.log('가게 목록 가져오기 성공:', stores.length, '개');
         } catch (error) {
           console.error('가게 목록 가져오기 실패:', error);
           set({ loading: false });
@@ -425,62 +413,7 @@ const useStore = create(
         }
       },
 
-      /**
-       * 사용자 찜 목록 조회
-       */
-      fetchUserLikes: async () => {
-        const { filters, stores, time } = get();
-        const { accessToken, isTokenValid, refreshTokens } = useUserInfo.getState();
-        
-        if (!accessToken) {
-          console.error('사용자 인증 정보가 없습니다.');
-          return;
-        }
 
-        // 토큰 유효성 확인 및 갱신
-        if (!isTokenValid()) {
-          console.log('토큰이 만료되었습니다. 토큰 갱신을 시도합니다.');
-          const refreshSuccess = await refreshTokens();
-          if (!refreshSuccess) {
-            console.error('토큰 갱신에 실패했습니다.');
-            return;
-          }
-          console.log('토큰 갱신 성공');
-        }
-
-        // 갱신된 토큰 가져오기
-        const { accessToken: refreshedToken } = useUserInfo.getState();
-        const tokenToUse = refreshedToken || accessToken;
-
-        try {
-          // time 파라미터 변환
-          const timeParam = time ? 
-            parseInt(time.split(':')[0]) : 
-            new Date().getHours();
-          
-          // category 파라미터 (첫 번째 카테고리 사용)
-          const categoryParam = filters.categories.length > 0 ? filters.categories[0] : null;
-          
-          const likes = await fetchUserLikes(timeParam, categoryParam, tokenToUse);
-          
-          // 찜한 가게 ID 목록 업데이트
-          const likedIds = likes.map(like => like.store_id);
-          set({ likedStoreIds: likedIds });
-          
-          // 현재 가게 목록의 찜 상태도 함께 업데이트
-          const updatedStores = stores.map(store => ({
-            ...store,
-            isLiked: likedIds.includes(store.id)
-          }));
-          set({ stores: updatedStores });
-          
-          console.log('사용자 찜 목록 조회 완료:', likedIds.length, '개');
-        } catch (error) {
-          console.error('사용자 찜 목록 조회 실패:', error);
-          // 에러 발생 시 빈 배열로 설정
-          set({ likedStoreIds: [] });
-        }
-      },
 
       selectDesigner: (designer) => set({
         selectedDesigner: designer,
@@ -496,25 +429,28 @@ const useStore = create(
        * @param {Object} designer - 선택된 디자이너 (선택 사항)
        */
       startReservation: (menu, designer = null) => {
-        console.log('=== startReservation 함수 실행 ===');
-        console.log('입력된 menu:', menu);
-        console.log('입력된 designer:', designer);
-        console.log('현재 URL:', window.location.href);
-        console.log('URL에 /reservation 포함 여부:', window.location.href.includes('/reservation'));
-        console.log('현재 isReserving 상태:', get().isReserving);
-        console.log('현재 selectedMenu 상태:', get().selectedMenu);
-        console.log('현재 selectedDesigner 상태:', get().selectedDesigner);
+        console.log('=== 🎯 startReservation 함수 실행 ===');
+        console.log('📋 입력된 menu:', menu);
+        console.log('👤 입력된 designer:', designer);
+        console.log('📍 현재 URL:', window.location.href);
+        console.log('🔍 URL에 /reservation 포함 여부:', window.location.href.includes('/reservation'));
+        console.log('📊 현재 상태:');
+        console.log('  - isReserving:', get().isReserving);
+        console.log('  - selectedMenu:', get().selectedMenu);
+        console.log('  - selectedDesigner:', get().selectedDesigner);
+        console.log('  - showPiAgreement:', get().showPiAgreement);
+        console.log('  - isAgreed:', get().isAgreed);
         
         // 새로고침 시 undefined 에러 확인
         if (!menu) {
-          console.log('경고: startReservation에 menu가 null/undefined로 전달됨');
-          console.log('이 경우 예약 페이지에서 undefined 에러가 발생할 수 있음');
+          console.log('⚠️ 경고: startReservation에 menu가 null/undefined로 전달됨');
+          console.log('🚨 이 경우 예약 페이지에서 undefined 에러가 발생할 수 있음');
         }
         
         if (menu && !menu.item_id) {
-          console.log('경고: menu 객체에 item_id가 없음');
-          console.log('menu 객체 구조:', JSON.stringify(menu, null, 2));
-          console.log('이 경우 예약 페이지에서 undefined 에러가 발생할 수 있음');
+          console.log('⚠️ 경고: menu 객체에 item_id가 없음');
+          console.log('📊 menu 객체 구조:', JSON.stringify(menu, null, 2));
+          console.log('🚨 이 경우 예약 페이지에서 undefined 에러가 발생할 수 있음');
         }
         
         // 예약 상태를 localStorage에 저장 (새로고침 시 복원용)
@@ -525,7 +461,7 @@ const useStore = create(
             timestamp: Date.now()
           };
           localStorage.setItem('reservationData', JSON.stringify(reservationData));
-          console.log('예약 데이터를 localStorage에 저장:', reservationData);
+          console.log('💾 예약 데이터를 localStorage에 저장:', reservationData);
         }
         
         set({
@@ -536,29 +472,32 @@ const useStore = create(
           showPiAgreement: false,
         });
         
-        console.log('startReservation 완료 후 상태:');
-        console.log('- isReserving:', get().isReserving);
-        console.log('- selectedMenu:', get().selectedMenu);
-        console.log('- selectedDesigner:', get().selectedDesigner);
+        console.log('✅ startReservation 완료 후 상태:');
+        console.log('  - isReserving:', get().isReserving);
+        console.log('  - selectedMenu:', get().selectedMenu);
+        console.log('  - selectedDesigner:', get().selectedDesigner);
+        console.log('  - showPiAgreement:', get().showPiAgreement);
+        console.log('  - isAgreed:', get().isAgreed);
+        console.log('=== startReservation 함수 종료 ===');
       },
 
       /**
        * 예약 취소
        */
       cancelReservation: () => {
-        console.log('=== cancelReservation 함수 실행 ===');
-        console.log('현재 URL:', window.location.href);
-        console.log('URL에 /reservation 포함 여부:', window.location.href.includes('/reservation'));
-        console.log('취소 전 상태:');
-        console.log('- isReserving:', get().isReserving);
-        console.log('- selectedMenu:', get().selectedMenu);
-        console.log('- selectedDesigner:', get().selectedDesigner);
-        console.log('- showPiAgreement:', get().showPiAgreement);
-        console.log('- isAgreed:', get().isAgreed);
+        console.log('=== 🚫 cancelReservation 함수 실행 ===');
+        console.log('📍 현재 URL:', window.location.href);
+        console.log('🔍 URL에 /reservation 포함 여부:', window.location.href.includes('/reservation'));
+        console.log('📊 취소 전 상태:');
+        console.log('  - isReserving:', get().isReserving);
+        console.log('  - selectedMenu:', get().selectedMenu);
+        console.log('  - selectedDesigner:', get().selectedDesigner);
+        console.log('  - showPiAgreement:', get().showPiAgreement);
+        console.log('  - isAgreed:', get().isAgreed);
         
         // localStorage에서 예약 데이터 제거
         localStorage.removeItem('reservationData');
-        console.log('localStorage에서 예약 데이터 제거됨');
+        console.log('🗑️ localStorage에서 예약 데이터 제거됨');
         
         set({
           isReserving: false,
@@ -568,33 +507,48 @@ const useStore = create(
           isAgreed: false,
         });
         
-        console.log('cancelReservation 완료 후 상태:');
-        console.log('- isReserving:', get().isReserving);
-        console.log('- selectedMenu:', get().selectedMenu);
-        console.log('- selectedDesigner:', get().selectedDesigner);
-        console.log('- showPiAgreement:', get().showPiAgreement);
-        console.log('- isAgreed:', get().isAgreed);
+        console.log('✅ cancelReservation 완료 후 상태:');
+        console.log('  - isReserving:', get().isReserving);
+        console.log('  - selectedMenu:', get().selectedMenu);
+        console.log('  - selectedDesigner:', get().selectedDesigner);
+        console.log('  - showPiAgreement:', get().showPiAgreement);
+        console.log('  - isAgreed:', get().isAgreed);
+        console.log('=== cancelReservation 함수 종료 ===');
       },
 
       /**
        * 새로고침 시 예약 상태 복원
        */
       restoreReservationState: () => {
-        console.log('=== restoreReservationState 함수 실행 ===');
+        console.log('=== 🔄 restoreReservationState 함수 실행 ===');
+        console.log('📍 현재 URL:', window.location.href);
+        console.log('🔍 URL에 /reservation 포함 여부:', window.location.href.includes('/reservation'));
+        console.log('📊 복원 전 상태:');
+        console.log('  - isReserving:', get().isReserving);
+        console.log('  - selectedMenu:', get().selectedMenu);
+        console.log('  - selectedDesigner:', get().selectedDesigner);
+        
         const reservationData = localStorage.getItem('reservationData');
         
         if (reservationData) {
           try {
             const data = JSON.parse(reservationData);
-            console.log('localStorage에서 복원된 예약 데이터:', data);
+            console.log('💾 localStorage에서 복원된 예약 데이터:', data);
             
             // 24시간 이내의 데이터만 유효
             const now = Date.now();
             const dataAge = now - data.timestamp;
             const maxAge = 24 * 60 * 60 * 1000; // 24시간
             
+            console.log('⏰ 데이터 유효성 검사:');
+            console.log('  - 현재 시간:', new Date(now).toISOString());
+            console.log('  - 데이터 생성 시간:', new Date(data.timestamp).toISOString());
+            console.log('  - 데이터 나이 (밀리초):', dataAge);
+            console.log('  - 최대 유효 나이 (밀리초):', maxAge);
+            console.log('  - 유효 여부:', dataAge < maxAge);
+            
             if (dataAge < maxAge) {
-              console.log('예약 데이터가 유효함 (24시간 이내)');
+              console.log('✅ 예약 데이터가 유효함 (24시간 이내)');
               set({
                 isReserving: true,
                 selectedMenu: data.menu,
@@ -602,20 +556,28 @@ const useStore = create(
                 isAgreed: false,
                 showPiAgreement: false,
               });
-              console.log('예약 상태 복원 완료');
+              console.log('✅ 예약 상태 복원 완료');
+              console.log('📊 복원 후 상태:');
+              console.log('  - isReserving:', get().isReserving);
+              console.log('  - selectedMenu:', get().selectedMenu);
+              console.log('  - selectedDesigner:', get().selectedDesigner);
               return true;
             } else {
-              console.log('예약 데이터가 만료됨 (24시간 초과)');
+              console.log('❌ 예약 데이터가 만료됨 (24시간 초과)');
               localStorage.removeItem('reservationData');
+              console.log('🗑️ 만료된 데이터 제거됨');
             }
           } catch (error) {
-            console.error('예약 데이터 파싱 실패:', error);
+            console.error('❌ 예약 데이터 파싱 실패:', error);
             localStorage.removeItem('reservationData');
+            console.log('🗑️ 파싱 실패한 데이터 제거됨');
           }
         } else {
-          console.log('localStorage에 예약 데이터가 없음');
+          console.log('❌ localStorage에 예약 데이터가 없음');
         }
         
+        console.log('❌ 예약 상태 복원 실패');
+        console.log('=== restoreReservationState 함수 종료 ===');
         return false;
       },
 
@@ -717,7 +679,7 @@ const useStore = create(
         filters: state.filters,
         time: state.time,
         sortOption: state.sortOption,
-        currentAddress: state.currentAddress,
+      
         likedStoreIds: state.likedStoreIds,
         stores: state.stores,
       }),

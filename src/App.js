@@ -11,8 +11,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import MainPageApp from './pages/MainPageApp';
 import useUserInfo from './hooks/user/useUserInfo';
 import ShopDetailPage from './pages/ShopDetailPage';
-import LoginTest from './components/test/LoginTest/LoginTest';
-import StoreTest from './components/test/StoreTest/StoreTest';
+
 import NoticePage from './pages/mypageDescription/NoticePage';
 import FAQPage from './pages/mypageDescription/FAQPage';
 import TermsPage from './pages/mypageDescription/TermsPage';
@@ -103,10 +102,7 @@ function App() {
             <Route path="/notice" element={<NoticePage />} />
             <Route path="/faq" element={<FAQPage />} />
             <Route path="/terms" element={<TermsPage />} />
-            {/* 백서버 로그인 테스트 페이지 */}
-            <Route path="/test" element={<LoginTest />} />
-            {/* 가게 API 테스트 페이지 */}
-            <Route path="/store-test" element={<StoreTest />} />
+
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Router>

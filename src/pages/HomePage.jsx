@@ -31,7 +31,7 @@ export default function HomePage() {
   
   /* Zustand 상태 */
   const { 
-    currentAddress, 
+   
     currentTime, 
     updateCurrentTime, 
     sortOption, 
@@ -42,7 +42,6 @@ export default function HomePage() {
     setCurrentPage,
     setFromHomePage,
     fetchStores, // Zustand 스토어 액션 (API 함수 아님)
-    fetchUserLikes,
     loading,
     time,
     setTime,
@@ -67,21 +66,14 @@ export default function HomePage() {
       // 백엔드 API에서 가게 목록 가져오기 (현재 설정된 필터들 사용)
       try {
         await fetchStores(time, filters.categories.length > 0 ? filters.categories[0] : null);
-        
-        // 로그인된 사용자인 경우에만 찜 목록 가져오기
-        if (accessToken) {
-          await fetchUserLikes();
-        }
       } catch (error) {
         console.error('초기 가게 목록 로딩 실패:', error);
       }
       
-      // 0.1초 지연으로 렌더링 시간 시뮬레이션
-      await new Promise(res => setTimeout(res, 100));
       setLoading(false);
     };
     initializePage();
-  }, [updateCurrentTime, fetchStores, fetchUserLikes, time, filters.categories, accessToken, checkAndUpdateTimeIfExpired, currentTime]); // currentTime 의존성 추가
+  }, [updateCurrentTime, fetchStores, time, filters.categories, accessToken, checkAndUpdateTimeIfExpired, currentTime]); // currentTime 의존성 추가
 
   /**
    * 정렬 변경
@@ -125,17 +117,8 @@ export default function HomePage() {
       console.error('시간 필터 적용 실패:', error);
     }
     
-    console.log('setTimeout 설정 - 0.3초 후 로딩 시작');
-    // 0.3초 후 바텀시트 닫힘, 2초 로딩 (테스트용)
-    setTimeout(async () => {
-      console.log('setTimeout 콜백 실행 - 로딩 시작');
-      setLoading(true);
-      console.log('0.3초 로딩 시작');
-      await new Promise(resolve => setTimeout(resolve, 300));
-      console.log('0.3초 로딩 완료');
-      setLoading(false);
-      console.log('시간필터 로딩 완료');
-    }, 300);
+    // 로딩 상태 즉시 변경
+    setLoading(false);
   };
 
   /**
@@ -153,11 +136,8 @@ export default function HomePage() {
       console.error('카테고리 필터 적용 실패:', error);
     }
     
-    // 로딩 처리 (시간 필터와 동일한 방식)
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-    }, 300);
+    // 로딩 상태 즉시 변경
+    setLoading(false);
   };
 
   /**
@@ -170,7 +150,7 @@ export default function HomePage() {
    * 등록된 주소가 있으면 사용, 없으면 기본 주소
    * 8글자까지 표시
    */
-  const displayAddress = userAddress ? userAddress.roadAddr : currentAddress;
+  const displayAddress = userAddress ? userAddress.roadAddr : '주소를 설정해주세요';
   const getAddressDisplayText = () => {
     return displayAddress.length > 15 ? `${displayAddress.slice(0, 15)}...` : displayAddress;
   };
