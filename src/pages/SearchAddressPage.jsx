@@ -38,8 +38,8 @@ const SearchAddressPage = () => {
           onBack={handleBackClick}
         />
       )}
-      <AddressContainer>
-        <AddressFrame marginTop={!fromHomePage ? '120px' : '0'}>
+      <AddressContainer fromHomePage={fromHomePage}>
+        <AddressFrame>
           <TextContainer>
             <p className='title'>우리 동네를 등록해보세요</p>
             <p className='paragraph'>동네에서 가장 똑똑한 소비를 찾아드려요</p>
@@ -57,6 +57,7 @@ export default SearchAddressPage;
 
 const AddressWrapper = styled.div`
   background-color: #ffffff;
+  display: flex;
   flex-direction: column;
   min-height: 100vh;
   width: 100%;
@@ -70,8 +71,8 @@ const AddressContainer = styled.div`
   height: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding-top: 72px;
+  justify-content: ${props => props.fromHomePage ? 'flex-start' : 'center'};
+  padding-top: ${props => props.fromHomePage ? '72px' : '0'};
 `;
 
 const AddressFrame = styled.div`
@@ -79,9 +80,7 @@ const AddressFrame = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   padding: 0 16px;
-  margin-top: ${props => props.marginTop || '0'};
 `;
 
 const TextContainer = styled.div`

@@ -277,10 +277,11 @@ export default function HomePage() {
 /* Layout 내부에서 스크롤 가능한 영역(내부 화면) */
 const HomeContainer = styled.div`
   background: #fff;
-  min-height: 100%;
   padding: 0 16px;
   width: 100%;
   max-width: 100%;
+  display: flex;
+  flex-direction: column;
 `;
 
 /* 상단 주소 바(Layout 내부에서 상단에 고정되어 스크롤에 영향을 받지 않음) */
@@ -444,7 +445,6 @@ const SortOption = styled.div`
 const StoreList = styled.div`
   background: #fff;
   width: 100%;
-  height: 100%;
   overflow-x: hidden;
   position: relative;
   padding-top: 1px;

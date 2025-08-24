@@ -13,6 +13,7 @@ import useStore from '../hooks/store/useStore';
 import Card from '../components/features/shop/ShopCard/ShopCard';
 import Spinner from '../components/ui/Spinner/Spinner';
 import FilterContainer from '../components/features/filter/FilterContainer/FilterContainer';
+import ScrollContainer from '../components/layout/ScrollContainer';
 
 const FavoritePage = () => {
   const navigate = useNavigate();
@@ -113,29 +114,31 @@ const FavoritePage = () => {
         />
       </SubContainer>
 
-      {/* 찜한 가게 목록 */}
-      <ContentContainer>
-        {isLoading ? (
-          <LoadingContainer>
-            <Spinner />
-          </LoadingContainer>
-        ) : favoriteStores.length > 0 ? (
-          <StoreList>
-            {favoriteStores.map(store => (
-              <Card 
-                key={store.id} 
-                store={store} 
-                onClick={() => handleCardClick(store.id)}
-              />
-            ))}
-          </StoreList>
-        ) : (
-          <EmptyState>
-            <EmptyText>찜한 가게가 없어요</EmptyText>
-            <EmptySubText>마음에 드는 가게를 찜해보세요!</EmptySubText>
-          </EmptyState>
-        )}
-      </ContentContainer>
+      <ScrollContainer offsetTop={128}>
+        {/* 찜한 가게 목록 */}
+        <ContentContainer>
+          {isLoading ? (
+            <LoadingContainer>
+              <Spinner />
+            </LoadingContainer>
+          ) : favoriteStores.length > 0 ? (
+            <StoreList>
+              {favoriteStores.map(store => (
+                <Card 
+                  key={store.id} 
+                  store={store} 
+                  onClick={() => handleCardClick(store.id)}
+                />
+              ))}
+            </StoreList>
+          ) : (
+            <EmptyState>
+              <EmptyText>찜한 가게가 없어요</EmptyText>
+              <EmptySubText>마음에 드는 가게를 찜해보세요!</EmptySubText>
+            </EmptyState>
+          )}
+        </ContentContainer>
+      </ScrollContainer>
     </PageContainer>
   );
 };
@@ -178,7 +181,7 @@ const HeaderTitle = styled.h1`
 const ContentContainer = styled.div`
   flex: 1;
   overflow-y: auto;
-  padding-bottom: 52px;
+  padding: 0px 16px 52px 16px;
 `;
 
 const StoreList = styled.div`

@@ -3,6 +3,8 @@ import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import TopNavBar from '../../components/layout/TopNavBar/TopNavBar';
 import Layout from '../../components/layout/Layout';
+import { NavBar } from '../../components/layout/TopNavBar/TopNavBar.styles';
+import ScrollContainer from '../../components/layout/ScrollContainer';
 
 const NoticePage = () => {
   const navigate = useNavigate();
@@ -62,11 +64,11 @@ const PageContainer = styled.div`
   flex-direction: column;
 `;
 
+const NavBarContainer = styled.div`
+`;
+
 const ContentContainer = styled.div`
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-  padding-top: 80px;
+  padding: 72px 16px 0px 16px;
 `;
 
 const NoticeList = styled.div`
