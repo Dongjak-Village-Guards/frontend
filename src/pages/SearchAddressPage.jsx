@@ -8,8 +8,10 @@ import styled from 'styled-components'
 import useStore from '../hooks/store/useStore'
 import useUserInfo from '../hooks/user/useUserInfo'
 import TopNavBar from '../components/layout/TopNavBar/TopNavBar'
+import { useNavigate } from 'react-router-dom'
 
 const SearchAddressPage = () => {
+  const navigate = useNavigate();
   const { setCurrentPage, fromHomePage } = useStore();
   const { userAddress } = useUserInfo();
 
@@ -17,7 +19,8 @@ const SearchAddressPage = () => {
   console.log('SearchAddressPage - fromHomePage:', fromHomePage);
 
   const handleBackClick = () => {
-    setCurrentPage('home');
+    //setCurrentPage('home');
+    navigate(-1);
   };
 
   return (
