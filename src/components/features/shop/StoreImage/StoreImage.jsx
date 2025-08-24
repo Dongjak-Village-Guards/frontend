@@ -1,19 +1,17 @@
 /**
  * 가게 사진 정보를 표시하는 컴포넌트
  * 메인 이미지를 담당함
+ * 레이지 로딩 적용
  */
 
-import chickenImage from "../../../../assets/images/chicken.png";
-import pizzaImage from "../../../../assets/images/pizza.png";
-import saladImage from "../../../../assets/images/salad.png";
-import steakImage from "../../../../assets/images/steak.png";
-import koreanImage from "../../../../assets/images/korean.png";
-import hairImage from "../../../../assets/images/hair.png";
+import React from 'react';
 import placeholderImage from "../../../../assets/images/placeholder.svg";
+import { useLazyImage } from "../../../../hooks";
 import {
   CardImageContainer,
   ImageGroup,
-  MainCardImage
+  MainCardImage,
+  LoadingOverlay
 } from './StoreImage.styles';
 
 /**
@@ -23,32 +21,39 @@ import {
  * @param {string} store.name - 가게 이름 (alt 텍스트용)
  */
 const StoreImage = ({ storeSrc, storeName, storeId }) => {
-  // 가게 ID에 따라 이미지 매핑 (임시)
-  const imageMap = {
-    1: chickenImage,
-    2: pizzaImage,
-    3: saladImage,
-    4: steakImage,
-    5: koreanImage,
-    6: hairImage,
-    7: hairImage,
-  };
+  // 레이지 로딩 훅 사용
+  const { imageSrc, isLoading, hasError, imageRef } = useLazyImage(
+    storeSrc,
+    placeholderImage,
+    {
+      threshold: 0.1,
+      rootMargin: '100px' // 100px 전에 미리 로드
+    }
+  );
 
-//  const imageSrc = store.store_image_url;
+  // 에러 발생 시 플레이스홀더 이미지 사용
+  const finalImageSrc = hasError ? placeholderImage : imageSrc;
 
   return (
     <CardImageContainer>
-      <ImageGroup>
+      <ImageGroup ref={imageRef}>
         <MainCardImage
-          src={storeSrc}
+          src={finalImageSrc}
           alt={`${storeName} 메인 이미지`}
           onError={(e) => {
             console.warn(`이미지 로드 실패: ${storeId}, using fallback`);
             e.target.src = placeholderImage;
           }}
         />
+        {/* 로딩 중 오버레이 */}
+        {isLoading && (
+          <LoadingOverlay>
+            <div className="loading-spinner"></div>
+          </LoadingOverlay>
+        )}
       </ImageGroup>
     </CardImageContainer>
   );
 };
+
 export default StoreImage; 

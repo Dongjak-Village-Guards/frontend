@@ -95,29 +95,70 @@ const ReservationPage = () => {
       try {
         setLoading(true);
         
-        console.log('=== ReservationPage 디버깅 ===');
-        console.log('selectedMenu:', selectedMenu);
-        console.log('selectedMenu.item_id:', selectedMenu?.item_id);
-        console.log('selectedMenu 구조:', JSON.stringify(selectedMenu, null, 2));
-        console.log('accessToken 존재:', !!accessToken);
+        console.log('=== 🎯 ReservationPage 디버깅 ===');
+        console.log('📋 selectedMenu:', selectedMenu);
+        console.log('🔍 selectedMenu.item_id:', selectedMenu?.item_id);
+        console.log('📊 selectedMenu 구조:', JSON.stringify(selectedMenu, null, 2));
+        console.log('🔑 accessToken 존재:', !!accessToken);
+        console.log('📍 현재 URL:', window.location.href);
+        console.log('🕐 현재 시간:', new Date().toISOString());
         
         // 새로고침 시 undefined 에러 확인을 위한 추가 디버깅
-        console.log('=== 새로고침 시 undefined 에러 확인 ===');
-        console.log('현재 URL:', window.location.href);
-        console.log('URL에 /reservation 포함 여부:', window.location.href.includes('/reservation'));
-        console.log('selectedMenu 존재 여부:', !!selectedMenu);
-        console.log('selectedMenu 타입:', typeof selectedMenu);
-        console.log('selectedMenu === null:', selectedMenu === null);
-        console.log('selectedMenu === undefined:', selectedMenu === undefined);
-        console.log('selectedMenu?.item_id 존재 여부:', !!selectedMenu?.item_id);
-        console.log('selectedMenu?.item_id 타입:', typeof selectedMenu?.item_id);
-        console.log('accessToken 타입:', typeof accessToken);
-        console.log('accessToken 길이:', accessToken?.length);
+        console.log('=== 🔄 새로고침 시 undefined 에러 확인 ===');
+        console.log('📍 현재 URL:', window.location.href);
+        console.log('🔍 URL에 /reservation 포함 여부:', window.location.href.includes('/reservation'));
+        console.log('📋 selectedMenu 존재 여부:', !!selectedMenu);
+        console.log('📊 selectedMenu 타입:', typeof selectedMenu);
+        console.log('❓ selectedMenu === null:', selectedMenu === null);
+        console.log('❓ selectedMenu === undefined:', selectedMenu === undefined);
+        console.log('🔍 selectedMenu?.item_id 존재 여부:', !!selectedMenu?.item_id);
+        console.log('📊 selectedMenu?.item_id 타입:', typeof selectedMenu?.item_id);
+        console.log('🔑 accessToken 타입:', typeof accessToken);
+        console.log('📏 accessToken 길이:', accessToken?.length);
         
         // 새로고침으로 인한 상태 초기화 확인
         if (!selectedMenu) {
-          console.log('경고: selectedMenu가 없음 - 새로고침으로 인한 상태 초기화 가능성');
-          console.log('이 경우 undefined 에러가 발생할 수 있음');
+          console.log('⚠️ 경고: selectedMenu가 없음 - 새로고침으로 인한 상태 초기화 가능성');
+          console.log('🔄 예약 상태 복원 시도...');
+          
+          // localStorage에서 예약 상태 복원 시도
+          const { restoreReservationState } = useStore.getState();
+          const restored = restoreReservationState();
+          
+          if (restored) {
+            console.log('✅ 예약 상태 복원 성공');
+            console.log('📋 복원된 selectedMenu:', useStore.getState().selectedMenu);
+            console.log('🔍 복원된 selectedMenu.item_id:', useStore.getState().selectedMenu?.item_id);
+            
+            // 복원된 메뉴 정보로 다시 API 호출
+            const restoredMenu = useStore.getState().selectedMenu;
+            if (restoredMenu && restoredMenu.item_id) {
+              console.log('🔄 복원된 메뉴 정보로 API 재호출');
+              const data = await fetchMenuItemDetails(restoredMenu.item_id, accessToken);
+              setMenuData(data);
+              return;
+            }
+          } else {
+            console.log('❌ localStorage에서 예약 상태 복원 실패');
+            console.log('🔄 현재 페이지 메뉴 정보로 예약 상태 복원 시도...');
+            
+            // localStorage에 데이터가 없을 때 현재 페이지의 메뉴 정보를 활용해 복원
+            // 이 경우 ShopDetailPage에서 이미 예약 상태가 복원되어 있을 수 있음
+            const currentSelectedMenu = useStore.getState().selectedMenu;
+            if (currentSelectedMenu && currentSelectedMenu.item_id) {
+              console.log('✅ 현재 Zustand 스토어에서 메뉴 정보 찾음:', currentSelectedMenu);
+              console.log('🔄 현재 메뉴 정보로 API 호출');
+              const data = await fetchMenuItemDetails(currentSelectedMenu.item_id, accessToken);
+              setMenuData(data);
+              return;
+            } else {
+              console.log('❌ 현재 Zustand 스토어에도 메뉴 정보가 없음');
+              console.log('🔄 홈페이지로 리다이렉트...');
+              navigate('/', { replace: true });
+              return;
+            }
+          }
+          
           console.log('현재 페이지 상태:');
           console.log('- loading:', loading);
           console.log('- error:', error);
@@ -127,51 +168,83 @@ const ReservationPage = () => {
         }
         
         if (!selectedMenu || !selectedMenu.item_id) {
-          console.log('에러: 메뉴 정보가 없어서 예약 페이지를 표시할 수 없음');
-          console.log('새로고침으로 인한 상태 초기화로 추정됨');
+          console.log('❌ 에러: 메뉴 정보가 없어서 예약 페이지를 표시할 수 없음');
+          console.log('🔄 새로고침으로 인한 상태 초기화로 추정됨');
           throw new Error('메뉴 정보가 없습니다.');
         }
 
-        console.log('ReservationPage: 메뉴 상세 데이터 로드 시작', { itemId: selectedMenu.item_id });
+        console.log('🎯 ReservationPage: 메뉴 상세 데이터 로드 시작', { itemId: selectedMenu.item_id });
         
         const data = await fetchMenuItemDetails(selectedMenu.item_id, accessToken);
+        console.log('✅ 메뉴 상세 데이터 로드 성공:', data);
         setMenuData(data);
         
       } catch (error) {
-        console.error('ReservationPage: 메뉴 상세 데이터 로드 실패', error);
-        console.log('=== 에러 상세 정보 ===');
-        console.log('에러 타입:', typeof error);
-        console.log('에러 메시지:', error.message);
-        console.log('에러 스택:', error.stack);
-        console.log('에러 상태:', error.status);
-        console.log('에러 응답:', error.response);
+        console.error('❌ ReservationPage: 메뉴 상세 데이터 로드 실패', error);
+        console.log('=== 🚨 에러 상세 정보 ===');
+        console.log('📊 에러 타입:', typeof error);
+        console.log('📝 에러 메시지:', error.message);
+        console.log('📚 에러 스택:', error.stack);
+        console.log('📈 에러 상태:', error.status);
+        console.log('📋 에러 응답:', error.response);
         setError(error);
         
         // 401 에러 시 로그인 페이지로 이동
         if (error.status === 401) {
+          console.log('🔐 401 에러 감지 - 로그인 페이지로 이동');
           setCurrentPage('login');
         }
       } finally {
         setLoading(false);
+        console.log('✅ ReservationPage 로딩 완료');
       }
     };
 
     if (selectedMenu && accessToken) {
+      console.log('✅ 조건 충족 - loadMenuData 실행');
       loadMenuData();
     } else {
-      console.log('=== ReservationPage 조건부 로딩 ===');
-      console.log('selectedMenu 존재:', !!selectedMenu);
-      console.log('accessToken 존재:', !!accessToken);
-      console.log('조건 미충족으로 loadMenuData 실행 안됨');
+      console.log('=== ⚠️ ReservationPage 조건부 로딩 ===');
+      console.log('📋 selectedMenu 존재:', !!selectedMenu);
+      console.log('🔑 accessToken 존재:', !!accessToken);
+      console.log('❌ 조건 미충족으로 loadMenuData 실행 안됨');
       
       // 새로고침 시 상태가 초기화된 경우
       if (!selectedMenu && window.location.href.includes('/reservation')) {
-        console.log('경고: 예약 페이지에서 새로고침했지만 selectedMenu가 없음');
-        console.log('이 경우 undefined 에러가 발생할 수 있음');
-        console.log('해결 방법: 홈페이지로 리다이렉트하거나 에러 페이지 표시');
+        console.log('⚠️ 경고: 예약 페이지에서 새로고침했지만 selectedMenu가 없음');
+        console.log('🔄 예약 상태 복원 시도...');
+        
+        const { restoreReservationState } = useStore.getState();
+        const restored = restoreReservationState();
+        
+        if (restored) {
+          console.log('✅ 예약 상태 복원 성공 - loadMenuData 재실행');
+          // 복원된 상태로 다시 loadMenuData 실행
+          setTimeout(() => {
+            const restoredMenu = useStore.getState().selectedMenu;
+            if (restoredMenu && accessToken) {
+              loadMenuData();
+            }
+          }, 100);
+        } else {
+          console.log('❌ 예약 상태 복원 실패 - 현재 Zustand 스토어 상태 확인');
+          console.log('🔄 현재 Zustand 스토어에서 메뉴 정보 확인...');
+          
+          // localStorage 복원이 실패했지만 Zustand 스토어에 메뉴 정보가 있을 수 있음
+          const currentSelectedMenu = useStore.getState().selectedMenu;
+          if (currentSelectedMenu && currentSelectedMenu.item_id && accessToken) {
+            console.log('✅ 현재 Zustand 스토어에서 메뉴 정보 찾음:', currentSelectedMenu);
+            console.log('🔄 현재 메뉴 정보로 loadMenuData 실행');
+            loadMenuData();
+          } else {
+            console.log('❌ 현재 Zustand 스토어에도 메뉴 정보가 없음 - 홈페이지로 리다이렉트');
+            console.log('🔄 홈페이지로 리다이렉트...');
+            navigate('/', { replace: true });
+          }
+        }
       }
     }
-  }, [selectedMenu, accessToken, setCurrentPage]);
+  }, [selectedMenu, accessToken, setCurrentPage, navigate]);
 
   // 예약 확인 핸들러
   const handleConfirm = async () => {
