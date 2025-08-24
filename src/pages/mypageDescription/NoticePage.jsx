@@ -17,7 +17,7 @@ const NoticePage = () => {
     <Layout currentPage="notice">
       <PageContainer>
         <TopNavBar title="공지사항" onBack={handleBackClick} />
-        <ScrollContainer offsetTop={72}>
+        <ScrollContainer offsettop={72}>
           <ContentContainer>
             <NoticeList>
               <NoticeItem>
