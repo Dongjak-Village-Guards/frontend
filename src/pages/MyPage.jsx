@@ -44,6 +44,7 @@ const MyPage = () => {
 
   const handleLogout = () => {
     logoutUser();
+    window.location.reload(true);
   };
 
   const handleMenuClick = (path) => {
