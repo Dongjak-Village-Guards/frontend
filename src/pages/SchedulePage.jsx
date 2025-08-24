@@ -346,7 +346,7 @@ const SchedulePage = () => {
       {/* 예약 완료 알림 바텀시트 */}
       <BottomSheet
         open={reservationCompleteOpen}
-        title="예약이 완료되었습니다!"
+        title="예약이 확정되었습니다."
         onClose={handleReservationCompleteClose}
         sheetHeight="schedulePageSize"
         headerVariant="noHeaderPadding"
@@ -356,9 +356,15 @@ const SchedulePage = () => {
         <ReservationCompleteContent>
           {reservationData && (
             <ReservationInfo>
-                <InfoLabel><InfoSpan>매장</InfoSpan> <InfoSpan>예약일시</InfoSpan></InfoLabel>
+                <InfoLabel>
+                  <InfoTitle>매장</InfoTitle>
+                  <InfoTitle>예약일시</InfoTitle>
+                </InfoLabel>
                 
-                <InfoLabel><InfoSpan>{reservationData.store_name}</InfoSpan> <InfoSpan>{reservationData.reservation_date} {reservationData.reservation_time}</InfoSpan> </InfoLabel> 
+                <InfoLabel>
+                  <InfoSpan>{reservationData.store_name}</InfoSpan>
+                  <InfoSpan>{reservationData.reservation_date} {reservationData.reservation_time}</InfoSpan>
+                </InfoLabel> 
             </ReservationInfo>
           )}
         </ReservationCompleteContent>
@@ -539,27 +545,31 @@ const ReservationCompleteContent = styled.div`
 `;
 
 const ReservationInfo = styled.div`
-  background: #f8f9fa;
-  border-radius: 10px;
-  margin-bottom: 24px;
   text-align: left;
-  margin-top: 0.7rem;
   display: flex;
+  margin-top: 20px;
 `;
 
 const InfoLabel = styled.div`
   display: flex;
   flex-direction: column;
   font-size: 16px;
-  color: #666;
+  color: #000;
   font-weight: 500;
-  padding:  0;
+  gap: 24px;
+`;
+
+const InfoTitle = styled.span`
+  display: flex;
+  flex-direction: column;
+  font-size: 16px;
+  font-weight: 500;
+  padding-right: 36px;
 `;
 
 const InfoSpan = styled.span`
   display: flex;
   flex-direction: column;
-  padding-left: 1.5rem;
-  margin: 0.7rem 0;
+  font-size: 16px;
   font-weight: 700;
 `;
