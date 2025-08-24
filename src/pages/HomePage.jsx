@@ -71,8 +71,6 @@ export default function HomePage() {
         console.error('초기 가게 목록 로딩 실패:', error);
       }
       
-      // 0.1초 지연으로 렌더링 시간 시뮬레이션
-      await new Promise(res => setTimeout(res, 100));
       setLoading(false);
     };
     initializePage();
@@ -120,17 +118,8 @@ export default function HomePage() {
       console.error('시간 필터 적용 실패:', error);
     }
     
-    console.log('setTimeout 설정 - 0.3초 후 로딩 시작');
-    // 0.3초 후 바텀시트 닫힘, 2초 로딩 (테스트용)
-    setTimeout(async () => {
-      console.log('setTimeout 콜백 실행 - 로딩 시작');
-      setLoading(true);
-      console.log('0.3초 로딩 시작');
-      await new Promise(resolve => setTimeout(resolve, 300));
-      console.log('0.3초 로딩 완료');
-      setLoading(false);
-      console.log('시간필터 로딩 완료');
-    }, 300);
+    // 로딩 상태 즉시 변경
+    setLoading(false);
   };
 
   /**
@@ -148,11 +137,8 @@ export default function HomePage() {
       console.error('카테고리 필터 적용 실패:', error);
     }
     
-    // 로딩 처리 (시간 필터와 동일한 방식)
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-    }, 300);
+    // 로딩 상태 즉시 변경
+    setLoading(false);
   };
 
   /**
