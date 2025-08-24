@@ -2,7 +2,7 @@ import styled from "styled-components";
 
 const ScrollContainer = styled.div`
   position: absolute;
-  top: ${({ offsetTop = 0 }) => `${offsetTop}px`};
+  top: ${({ offsettop = 0 }) => `${offsettop}px`};
   left: 0;
   right: 0;
   bottom: 0;

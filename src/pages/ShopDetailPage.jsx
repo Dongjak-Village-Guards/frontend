@@ -1265,7 +1265,7 @@ const ShopDetailPage = () => {
                 />
             </NavBarContainer>
     
-            <ScrollContainer offsetTop={72}>
+            <ScrollContainer offsettop={72}>
                 {/* 콘텐츠 영역 */}
                 <ContentContainer>
                     {loading ? (
