@@ -6,7 +6,7 @@
 
 import React from 'react';
 import placeholderImage from "../../../../assets/images/placeholder.svg";
-import useLazyImage from "../../../../hooks/useLazyImage";
+import { useLazyImage } from "../../../../hooks";
 import {
   CardImageContainer,
   ImageGroup,

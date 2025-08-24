@@ -44,6 +44,7 @@ const useLazyImage = (src, placeholder, options = {}) => {
       console.warn(`이미지 로드 실패: ${src}`);
     };
 
+    // 이미지 로드 시작
     img.src = src;
   }, [src, imageSrc]);
 
