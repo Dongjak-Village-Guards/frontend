@@ -105,6 +105,7 @@ export default function HomePage() {
     if (!isLoading) {
       setCurrentPage('search-address');
       setFromHomePage(true); // 주소 설정 페이지로 이동할 때 fromHomePage 플래그를 true로 설정
+      navigate('/search-address');
     } else {
       console.log('로딩 중이므로 클릭 무시');
     }
