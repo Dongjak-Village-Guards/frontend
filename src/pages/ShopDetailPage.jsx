@@ -594,6 +594,7 @@ const ShopDetailPage = () => {
                                     address={storeData?.store_address}
                                     distance={`${storeData?.distance}m`}
                                     reservationTime={`${time} 예약`}
+                                    walkTime={storeData?.on_foot}
                                 />
                             </IntroductionSection>
                         ) : null}

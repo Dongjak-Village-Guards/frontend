@@ -10,7 +10,7 @@ import {
   StoreName,
   StoreMeta,
   MetaDistance,
-  MetaWorkTime,
+  MetaWalkTime,
   StoreMenu,
   StorePrice,
   StoreDiscountPrice
@@ -61,7 +61,7 @@ const CardText = ({ store }) => {
         <StoreName>{name.length > 6 ? `${name.slice(0, 6)}...` : name}</StoreName>
         <StoreMeta>
             <MetaDistance>{distance}m </MetaDistance>
-            <MetaWorkTime>도보 {walkTime}분</MetaWorkTime>
+            <MetaWalkTime>도보 {walkTime}분</MetaWalkTime>
         </StoreMeta>
       </InfoWrapperLeft>
 

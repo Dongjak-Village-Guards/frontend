@@ -15,7 +15,6 @@ import Spinner from "../components/ui/Spinner/Spinner";
 import useStore from "../hooks/store/useStore";
 import useUserInfo from "../hooks/user/useUserInfo";
 import Card from "../components/features/shop/ShopCard/ShopCard";
-import bannerImage from "../assets/images/bannerImage.png";
 import { useNavigate } from "react-router-dom";
 import { CATEGORY_OPTIONS } from "../components/features/filter/CategoryFilter/CategoryFilter";
 
@@ -171,6 +170,8 @@ export default function HomePage() {
   };
   // 정렬된 가게 목록 가져오기
   const sortedStores = getSortedStores();
+  // 배너 이미지
+  const bannerImageUrl = "https://ifh.cc/g/4j8oA3.png";
 
   return (
     <HomeContainer>
@@ -186,7 +187,7 @@ export default function HomePage() {
 
       {/* 배너 */}
       <BannerWrapper>
-        <BannerImage src={bannerImage} alt="배너 이미지" />
+        <BannerImage src={bannerImageUrl} alt="배너 이미지" />
         <BannerTextContainer>
           <BannerSubTitle>꾸미기 딱 좋은 날 ♥</BannerSubTitle>
           <BannerTitle>

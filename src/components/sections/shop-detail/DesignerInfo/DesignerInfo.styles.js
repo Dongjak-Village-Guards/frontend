@@ -8,6 +8,7 @@ export const DesignerInfoContainer = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 16px;
 `;
 
 export const DesignerImage = styled.img`

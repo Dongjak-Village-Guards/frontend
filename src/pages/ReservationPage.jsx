@@ -16,7 +16,7 @@ import Line from '../components/ui/Line/Line';
 import Spinner from '../components/ui/Spinner/Spinner';
 import { fetchMenuItemDetails, createReservation } from '../apis/storeAPI';
 
-const ReservationPage = () => {
+const ReservationPage = ({ shop }) => {
   const navigate = useNavigate();
   
   const { 
@@ -31,6 +31,7 @@ const ReservationPage = () => {
   } = useStore();
 
   const { accessToken } = useUserInfo();
+  const storeData = shop;
 
   // 상태 관리
   const [menuData, setMenuData] = useState(null);
@@ -95,7 +96,6 @@ const ReservationPage = () => {
     const loadMenuData = async () => {
       try {
         setLoading(true);
-        setError(null);
         
         console.log('=== 🎯 ReservationPage 디버깅 ===');
         console.log('📋 selectedMenu:', selectedMenu);
@@ -297,15 +297,8 @@ const ReservationPage = () => {
       
     } catch (error) {
       console.log('예약 생성 실패:', error);
-      
-      let errorMessage = '예약에 실패했습니다.';
-      
-      // 서버에서 받은 구체적인 에러 메시지가 있으면 사용
-      if (error.serverResponse && error.serverResponse.error) {
-        errorMessage = error.serverResponse.error;
-      }
-      
-      setError(errorMessage);
+      // storeAPI에서 throw한 에러 객체를 그대로 상태에 저장
+      setError(error);
     } finally {
       setReserving(false);
     }
@@ -319,6 +312,27 @@ const ReservationPage = () => {
   // 화살표 버튼 클릭 핸들러
   const handleArrowClick = () => {
     togglePiAgreement();
+  };
+
+  const getErrorMessage = (error) => {
+    if (!error) return "에러 상태가 없습니다.";
+
+    // 1. 가장 가능성 있는 경로에서 에러 메시지를 우선 추출
+    let message = error?.serverResponse?.error || error?.response?.data?.error;
+
+    // 2. 만약 message가 string 타입이고, JSON 형태('{...}')라면 파싱을 시도
+    if (typeof message === 'string' && message.trim().startsWith('{')) {
+      try {
+        const parsedMessage = JSON.parse(message);
+        // 파싱에 성공하면 진짜 에러 메시지를 사용
+        message = parsedMessage.error || message;
+      } catch (e) {
+        // 파싱에 실패하면 그냥 기존 메시지를 그대로 사용
+      }
+    }
+    
+    // 3. 최종 메시지가 없으면 기본 에러 메시지를 반환
+    return message || "알 수 없는 오류가 발생했습니다.";
   };
 
   // 가게 이름 (/ 디자이너)
@@ -340,13 +354,14 @@ const ReservationPage = () => {
     );
   }
 
+  console.log("렌더링 시점 error 상태:", error);
+  console.log("getErrorMessage 결과:", getErrorMessage(error));
+
   if (error) {
     return (
       <ReservationContainer>
         <ErrorContainer>
-          <ErrorText>
-            {error.status === 404 ? '해당 메뉴를 찾을 수 없습니다.' : '데이터를 불러오는데 실패했습니다.'}
-          </ErrorText>
+          <ErrorText>{getErrorMessage(error)}</ErrorText>
           <BackButton onClick={cancelReservation}>뒤로가기</BackButton>
         </ErrorContainer>
       </ReservationContainer>
@@ -403,11 +418,6 @@ const ReservationPage = () => {
             </ArrowIcon>
           </CheckboxContainer>
           <Line />
-          {error && (
-            <ErrorContainer>
-              <ErrorText>{error}</ErrorText>
-            </ErrorContainer>
-          )}
           <ReserveButton 
             disabled={!isAgreed || reserving} 
             onClick={handleConfirm}
