@@ -32,7 +32,7 @@ export default function HomePage() {
   
   /* Zustand 상태 */
   const { 
-    currentAddress, 
+   
     currentTime, 
     updateCurrentTime, 
     sortOption, 
@@ -43,7 +43,6 @@ export default function HomePage() {
     setCurrentPage,
     setFromHomePage,
     fetchStores, // Zustand 스토어 액션 (API 함수 아님)
-    fetchUserLikes,
     loading,
     time,
     setTime,
@@ -68,11 +67,6 @@ export default function HomePage() {
       // 백엔드 API에서 가게 목록 가져오기 (현재 설정된 필터들 사용)
       try {
         await fetchStores(time, filters.categories.length > 0 ? filters.categories[0] : null);
-        
-        // 로그인된 사용자인 경우에만 찜 목록 가져오기
-        if (accessToken) {
-          await fetchUserLikes();
-        }
       } catch (error) {
         console.error('초기 가게 목록 로딩 실패:', error);
       }
@@ -82,7 +76,7 @@ export default function HomePage() {
       setLoading(false);
     };
     initializePage();
-  }, [updateCurrentTime, fetchStores, fetchUserLikes, time, filters.categories, accessToken, checkAndUpdateTimeIfExpired, currentTime]); // currentTime 의존성 추가
+  }, [updateCurrentTime, fetchStores, time, filters.categories, accessToken, checkAndUpdateTimeIfExpired, currentTime]); // currentTime 의존성 추가
 
   /**
    * 정렬 변경
@@ -171,7 +165,7 @@ export default function HomePage() {
    * 등록된 주소가 있으면 사용, 없으면 기본 주소
    * 8글자까지 표시
    */
-  const displayAddress = userAddress ? userAddress.roadAddr : currentAddress;
+  const displayAddress = userAddress ? userAddress.roadAddr : '주소를 설정해주세요';
   const getAddressDisplayText = () => {
     return displayAddress.length > 15 ? `${displayAddress.slice(0, 15)}...` : displayAddress;
   };
