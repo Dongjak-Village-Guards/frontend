@@ -1,5 +1,6 @@
 import { signInWithPopup } from 'firebase/auth';
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { auth, provider } from '../../../../firebase';
 import useUserInfo from '../../../../hooks/user/useUserInfo';
 import useStore from '../../../../hooks/store/useStore';
@@ -12,6 +13,7 @@ const Google = ({
   googleLogo = "https://www.gstatic.com/marketing-cms/assets/images/d5/dc/cfe9ce8b4425b410b49b7f2dd3f3/g.webp=s96-fcrop64=1,00000000ffffffff-rw",
   text = "Sign In with Google",
 }) => {
+  const navigate = useNavigate();
   const { setAuthUser, setAuthTokens, fetchAndSetUserInfo } = useUserInfo();
   const { setCurrentPage } = useStore();
 
@@ -45,9 +47,11 @@ const Google = ({
       if (userInfo.user_address && userInfo.user_address !== "") {
         console.log('기존 주소가 있어 메인페이지로 이동');
         setCurrentPage("home");
+        navigate('/');
       } else {
         console.log('주소가 없어 주소 검색 페이지로 이동');
         setCurrentPage("search-address");
+        navigate('/search-address');
       }
     } catch (error) {
       console.error("로그인 실패:", error.code, error.message);
