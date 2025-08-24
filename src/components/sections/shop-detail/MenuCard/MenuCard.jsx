@@ -72,7 +72,13 @@ const MenuCard = ({ menu, onReserve = false }) => {
                 onError={handleImageError}
             />
             <Detail>
-                <MenuName isUnavailable={isUnavailable}>{menuName.length > 7 ? `${menuName.slice(0, 7)}...` : menuName}</MenuName>
+                <MenuName isUnavailable={isUnavailable}>
+                    {isUnavailable
+                        ? menuName
+                        : menuName.length > 13
+                        ? `${menuName.slice(0, 13)}...`
+                        : menuName}
+                </MenuName>
                 <PriceInfo>
                     <DiscountRate isUnavailable={isUnavailable}>{discountRate}%</DiscountRate>
                     <OriginalPrice isUnavailable={isUnavailable}>{originalPrice.toLocaleString()}원</OriginalPrice>
