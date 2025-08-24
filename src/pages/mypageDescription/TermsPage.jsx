@@ -101,6 +101,7 @@ const TermsPage = () => {
 
 const ContentContainer = styled.div`
   position: relative;
+  padding: 2px 16px 0px 16px;
 `;
 
 const NavBarContainer = styled.div`
