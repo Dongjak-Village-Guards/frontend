@@ -9,11 +9,18 @@ import useStore from '../hooks/store/useStore'
 import useUserInfo from '../hooks/user/useUserInfo'
 import TopNavBar from '../components/layout/TopNavBar/TopNavBar'
 import { useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
 
 const SearchAddressPage = () => {
   const navigate = useNavigate();
-  const { setCurrentPage, fromHomePage } = useStore();
+  const { setCurrentPage, fromHomePage, setFromHomePage } = useStore();
   const { userAddress } = useUserInfo();
+
+  // userAddress가 있으면 홈에서 온 것으로 판단, 없으면 로그인 후 첫 주소 설정
+  useEffect(() => {
+    const isFromHome = userAddress !== null;
+    setFromHomePage(isFromHome);
+  }, [userAddress, setFromHomePage]);
 
   console.log('SearchAddressPage - userAddress:', userAddress);
   console.log('SearchAddressPage - fromHomePage:', fromHomePage);

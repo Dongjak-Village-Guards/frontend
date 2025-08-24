@@ -75,7 +75,7 @@ const AddressSearch = () => {
     try {
       await setUserAddress(address);
       setCurrentPage("home");
-      navigate(-1);
+      navigate('/');
     } catch (error) {
       console.error('주소 설정 실패:', error);
       alert('주소 설정에 실패했습니다. 다시 시도해주세요.');
