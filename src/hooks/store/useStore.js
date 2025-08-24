@@ -26,7 +26,7 @@ const useStore = create(
       
       // ===== 주소 상태 관리 =====
       /** 현재 주소 (7글자 초과 시 ... 처리) */
-      currentAddress: '노량진동 240-30',
+    
       
       // ===== 시간 상태 관리 =====
       /** 현재 시간 (HH:MM 형식) */
@@ -111,14 +111,7 @@ const useStore = create(
        */
       setFromHomePage: (fromHome) => set({ fromHomePage: fromHome }),
       
-      /**
-       * 현재 주소 변경 (7글자 초과 시 ... 처리)
-       * @param {string} address - 새로운 주소
-       */
-      setCurrentAddress: (address) => {
-        const truncatedAddress = address.length > 7 ? `${address.slice(0, 7)}...` : address;
-        set({ currentAddress: truncatedAddress });
-      },
+
 
        /**
        * 시간 설정 (AppStorage에 저장)
@@ -291,14 +284,9 @@ const useStore = create(
           // API 호출 (storeAPI에서 모든 로직 처리)
           const stores = await fetchStoresFromAPI(time, category, currentToken);
           
-          // 찜 상태 동기화: likedStoreIds와 일치하는 가게들의 isLiked를 true로 설정
-          const storesWithLikeStatus = stores.map(store => ({
-            ...store,
-            isLiked: get().likedStoreIds.includes(store.id)
-          }));
-          
-          set({ stores: storesWithLikeStatus, loading: false });
-          console.log('가게 목록 가져오기 성공:', storesWithLikeStatus.length, '개');
+          // 백엔드에서 받은 is_liked 필드 그대로 사용
+          set({ stores: stores, loading: false });
+          console.log('가게 목록 가져오기 성공:', stores.length, '개');
         } catch (error) {
           console.error('가게 목록 가져오기 실패:', error);
           set({ loading: false });
@@ -425,62 +413,7 @@ const useStore = create(
         }
       },
 
-      /**
-       * 사용자 찜 목록 조회
-       */
-      fetchUserLikes: async () => {
-        const { filters, stores, time } = get();
-        const { accessToken, isTokenValid, refreshTokens } = useUserInfo.getState();
-        
-        if (!accessToken) {
-          console.error('사용자 인증 정보가 없습니다.');
-          return;
-        }
 
-        // 토큰 유효성 확인 및 갱신
-        if (!isTokenValid()) {
-          console.log('토큰이 만료되었습니다. 토큰 갱신을 시도합니다.');
-          const refreshSuccess = await refreshTokens();
-          if (!refreshSuccess) {
-            console.error('토큰 갱신에 실패했습니다.');
-            return;
-          }
-          console.log('토큰 갱신 성공');
-        }
-
-        // 갱신된 토큰 가져오기
-        const { accessToken: refreshedToken } = useUserInfo.getState();
-        const tokenToUse = refreshedToken || accessToken;
-
-        try {
-          // time 파라미터 변환
-          const timeParam = time ? 
-            parseInt(time.split(':')[0]) : 
-            new Date().getHours();
-          
-          // category 파라미터 (첫 번째 카테고리 사용)
-          const categoryParam = filters.categories.length > 0 ? filters.categories[0] : null;
-          
-          const likes = await fetchUserLikes(timeParam, categoryParam, tokenToUse);
-          
-          // 찜한 가게 ID 목록 업데이트
-          const likedIds = likes.map(like => like.store_id);
-          set({ likedStoreIds: likedIds });
-          
-          // 현재 가게 목록의 찜 상태도 함께 업데이트
-          const updatedStores = stores.map(store => ({
-            ...store,
-            isLiked: likedIds.includes(store.id)
-          }));
-          set({ stores: updatedStores });
-          
-          console.log('사용자 찜 목록 조회 완료:', likedIds.length, '개');
-        } catch (error) {
-          console.error('사용자 찜 목록 조회 실패:', error);
-          // 에러 발생 시 빈 배열로 설정
-          set({ likedStoreIds: [] });
-        }
-      },
 
       selectDesigner: (designer) => set({
         selectedDesigner: designer,
@@ -717,7 +650,7 @@ const useStore = create(
         filters: state.filters,
         time: state.time,
         sortOption: state.sortOption,
-        currentAddress: state.currentAddress,
+      
         likedStoreIds: state.likedStoreIds,
         stores: state.stores,
       }),
