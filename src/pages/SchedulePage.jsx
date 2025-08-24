@@ -9,6 +9,7 @@ import useUserInfo from '../hooks/user/useUserInfo';
 import Spinner from '../components/ui/Spinner/Spinner';
 import { getNearestHour } from '../components/features/filter/TimeFilter/TimeFilter';
 import { fetchUserReservations, cancelReservation } from '../apis/reservationAPI';
+import { fetchStoreSpacesCount } from '../apis/storeAPI';
 import placeholderImage from '../assets/images/placeholder.svg';
 import ScrollContainer from '../components/layout/ScrollContainer';
 
@@ -208,7 +209,7 @@ const SchedulePage = () => {
   };
 
   // 가게 제목 클릭 핸들러
-  const handleSalonClick = (storeId, visitTime) => {
+  const handleSalonClick = async (storeId, visitTime) => {
     console.log('=== SchedulePage 가게 클릭 디버깅 ===');
     console.log('클릭된 가게 ID:', storeId);
     console.log('클릭된 가게 이름:', appointments.find(apt => apt.storeId === storeId)?.salonName);
@@ -220,10 +221,29 @@ const SchedulePage = () => {
       return;
     }
     
-    console.log('ShopDetailPage로 네비게이션 시작...');
-    // ShopDetailPage로 라우팅
-    navigate(`/shop/${storeId}`);
-    console.log('ShopDetailPage로 네비게이션 완료');
+    try {
+      // Space 개수 조회
+      const spacesData = await fetchStoreSpacesCount(storeId);
+      console.log('Space 개수 조회 결과:', spacesData);
+      
+      let targetUrl;
+      if (spacesData.count === 1) {
+        // Space가 1개인 경우: 메뉴 페이지로 직접 이동
+        targetUrl = `/shop/${storeId}/menu`;
+      } else {
+        // Space가 2개 이상인 경우: Space 목록 페이지로 직접 이동
+        targetUrl = `/shop/${storeId}/spaces`;
+      }
+      
+      console.log('ShopDetailPage로 네비게이션 시작...');
+      console.log('이동할 URL:', targetUrl);
+      navigate(targetUrl);
+      console.log('ShopDetailPage로 네비게이션 완료');
+    } catch (error) {
+      console.error('Space 개수 조회 실패:', error);
+      // 에러 발생 시 기존 방식으로 fallback
+      navigate(`/shop/${storeId}`);
+    }
   };
 
   return (
