@@ -26,7 +26,8 @@ const ReservationPage = () => {
     cancelReservation, 
     togglePiAgreement, 
     showPiAgreement, 
-    setCurrentPage
+    setCurrentPage,
+    time
   } = useStore();
 
   const { accessToken } = useUserInfo();
@@ -264,7 +265,7 @@ const ReservationPage = () => {
       console.log('현재 시간:', new Date().toISOString());
       
       // 시간 관련 정보 추가
-      const { time } = useStore.getState();
+    //  const { time } = useStore.getState();
       console.log('=== 시간 관련 정보 ===');
       console.log('선택된 시간:', time);
       console.log('현재 시간 (시):', new Date().getHours());
@@ -368,7 +369,7 @@ const ReservationPage = () => {
             name={getShopName()}
             address={menuData?.store_address || '주소 정보 없음'}
             distance={`${menuData?.distance || 0}m`}
-            reservationTime={`${menuData?.selected_time || currentTime} 예약`}
+            reservationTime={`${time} 예약`}
           />
           <Line />
           {menuData && (
