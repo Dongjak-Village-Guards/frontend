@@ -22,7 +22,7 @@ const MainPageApp = () => {
   const navigate = useNavigate();
   
   // Zustand 스토어에서 페이지 관련 상태와 액션 가져오기
-  const { currentPage, setCurrentPage, time, setTime, currentTime, checkAndUpdateTimeIfExpired } = useStore();
+  const { currentpage, setCurrentPage, time, setTime, currentTime, checkAndUpdateTimeIfExpired } = useStore();
   
   // 사용자 정보에서 인증 상태와 주소 확인
   const { authUser, userAddress, accessToken } = useUserInfo();
@@ -33,7 +33,7 @@ const MainPageApp = () => {
   console.log('userAddress 타입:', typeof userAddress);
   console.log('localStorage userAddress:', localStorage.getItem('userAddress'));
 
-  // URL 기반으로 currentPage 결정하는 함수 추가 (기존 로직과 병행)
+  // URL 기반으로 currentpage 결정하는 함수 추가 (기존 로직과 병행)
   const getCurrentPageFromUrl = () => {
     console.log('=== MainPageApp URL 기반 라우팅 디버깅 ===');
     console.log('현재 location.pathname:', location.pathname);
@@ -66,12 +66,12 @@ const MainPageApp = () => {
     return 'home';
   };
 
-  // URL 기반 currentPage (기존 currentPage와 병행)
+  // URL 기반 currentpage (기존 currentpage와 병행)
   const urlBasedCurrentPage = getCurrentPageFromUrl();
   console.log('=== MainPageApp 상태 디버깅 ===');
   console.log('urlBasedCurrentPage:', urlBasedCurrentPage);
-  console.log('currentPage (Zustand):', currentPage);
-  console.log('최종 렌더링 페이지:', urlBasedCurrentPage || currentPage);
+  console.log('currentpage (Zustand):', currentpage);
+  console.log('최종 렌더링 페이지:', urlBasedCurrentPage || currentpage);
 
   // setCurrentPage 래퍼 함수 - URL도 함께 변경 (기존 로직과 병행)
   const handlePageChange = (page) => {
@@ -128,37 +128,37 @@ const MainPageApp = () => {
 //    }
 //  }, [navigate]);
 
-  // URL 변경 시 저장 및 currentPage 동기화 (기존 로직과 병행)
+  // URL 변경 시 저장 및 currentpage 동기화 (기존 로직과 병행)
   useEffect(() => {
     console.log('=== MainPageApp URL 변경 감지 ===');
     console.log('이전 URL:', localStorage.getItem('currentUrl'));
     console.log('현재 URL:', location.pathname);
-    console.log('이전 currentPage:', currentPage);
+    console.log('이전 currentpage:', currentpage);
     
     localStorage.setItem('currentUrl', location.pathname);
     console.log('localStorage에 현재 URL 저장됨');
     
-    // URL이 변경될 때 currentPage도 동기화
+    // URL이 변경될 때 currentpage도 동기화
     const newPage = getCurrentPageFromUrl();
     console.log('URL 기반 새 페이지:', newPage);
     
-    if (newPage !== currentPage) {
-      console.log('currentPage 변경 필요:', currentPage, '->', newPage);
+    if (newPage !== currentpage) {
+      console.log('currentpage 변경 필요:', currentpage, '->', newPage);
       setCurrentPage(newPage);
       console.log('setCurrentPage 호출 완료');
     } else {
-      console.log('currentPage 변경 불필요 (동일함)');
+      console.log('currentpage 변경 불필요 (동일함)');
     }
     
     console.log('=== MainPageApp URL 변경 감지 완료 ===');
-  }, [location.pathname, currentPage, setCurrentPage]);
+  }, [location.pathname, currentpage, setCurrentPage]);
 
   // 로그인하지 않았으면 로그인 페이지로 설정
   console.log(authUser);
   console.log(accessToken);
   if (!accessToken && urlBasedCurrentPage !== "login") {
     return (
-      <Layout currentPage="login" onPageChange={handlePageChange}>
+      <Layout currentpage="login" onPageChange={handlePageChange}>
         <LoginPage />
       </Layout>
     );
@@ -167,7 +167,7 @@ const MainPageApp = () => {
   // 주소가 없으면 주소 검색 페이지 표시
   if (!userAddress && urlBasedCurrentPage !== "login" && urlBasedCurrentPage !== "history") {
     return (
-      <Layout currentPage="search-address" onPageChange={handlePageChange}>
+      <Layout currentpage="search-address" onPageChange={handlePageChange}>
         <SearchAddressPage />
       </Layout>
     );
@@ -180,10 +180,10 @@ const MainPageApp = () => {
   const renderCurrentPage = () => {
     console.log('=== MainPageApp renderCurrentPage 호출 ===');
     console.log('urlBasedCurrentPage:', urlBasedCurrentPage);
-    console.log('currentPage (Zustand):', currentPage);
+    console.log('currentpage (Zustand):', currentpage);
     
-    // URL 기반으로 페이지 결정 (기존 currentPage와 병행)
-    const pageToRender = urlBasedCurrentPage || currentPage;
+    // URL 기반으로 페이지 결정 (기존 currentpage와 병행)
+    const pageToRender = urlBasedCurrentPage || currentpage;
     console.log('최종 렌더링할 페이지:', pageToRender);
     
     // MainPageApp이 처리하지 않는 경로인 경우 null 반환
@@ -218,7 +218,7 @@ const MainPageApp = () => {
   };
 
   console.log('=== MainPageApp 최종 렌더링 ===');
-  console.log('Layout currentPage:', urlBasedCurrentPage || currentPage);
+  console.log('Layout currentpage:', urlBasedCurrentPage || currentpage);
   
   // MainPageApp이 처리하지 않는 경로인 경우 null 반환
   const renderedPage = renderCurrentPage();
@@ -232,7 +232,7 @@ const MainPageApp = () => {
   }
   
   return (
-    <Layout currentPage={urlBasedCurrentPage || currentPage} onPageChange={handlePageChange}>
+    <Layout currentpage={urlBasedCurrentPage || currentpage} onPageChange={handlePageChange}>
       {renderedPage}
     </Layout>
   );

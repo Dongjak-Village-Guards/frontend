@@ -13,7 +13,7 @@ const TermsPage = () => {
   };
 
   return (
-    <Layout currentPage="terms">
+    <Layout currentpage="terms">
         <NavBarContainer>
           <TopNavBar title="약관 및 정책" onBack={handleBackClick} />
         </NavBarContainer>
