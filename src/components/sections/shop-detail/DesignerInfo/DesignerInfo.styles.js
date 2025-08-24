@@ -23,27 +23,24 @@ export const Detail = styled.div`
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 10px;
-    width: 140px;
+    gap: 3px;
 `;
 
 export const DesignerName = styled.h3`
     font-size: 20px;
     font-weight: 700;
-    line-height: 14px;
     color: #000;
+    word-break: keep-all;
 `;
 
 export const ReservationTime = styled.span`
     font-size: 16px;
     font-weight: 700;
     color: #da2538;
-    line-height: 14px;
 `;
 
 export const Specialty = styled.span`
     font-size: 14px;
     font-weight: 600;
     color: #000;
-    line-height: 14px;
 `; 
