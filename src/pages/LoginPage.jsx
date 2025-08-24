@@ -2,12 +2,66 @@
  * 로그인 페이지
  */
 
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Logo from '../assets/images/logo_login.png';
 import { ReactComponent as Bubble } from '../assets/images/bubble.svg';
 import Google from '../components/features/auth/Google/Google';
+import useUserInfo from '../hooks/user/useUserInfo';
 import styled from 'styled-components';
 
 const Login = () => {
+  const navigate = useNavigate();
+  const { accessToken } = useUserInfo();
+
+  // 로그인 페이지에서 히스토리 초기화 및 URL 고정
+  useEffect(() => {
+    console.log('=== 로그인 페이지 히스토리 초기화 useEffect ===');
+    console.log('accessToken 존재:', !!accessToken);
+    console.log('현재 URL:', window.location.pathname);
+    console.log('현재 히스토리 길이:', window.history.length);
+    
+    if (!accessToken) {
+      // 현재 위치를 /login으로 설정
+      window.history.replaceState(null, '', '/login');
+      console.log('로그인 페이지: 히스토리 초기화 완료');
+      console.log('초기화 후 URL:', window.location.pathname);
+    } else {
+      console.log('accessToken이 있으므로 히스토리 초기화 건너뜀');
+    }
+  }, [accessToken]);
+
+  // popstate 이벤트에서 URL 변경을 감지하고 즉시 /login으로 강제 교체
+  useEffect(() => {
+    console.log('=== 로그인 페이지 popstate 리스너 useEffect ===');
+    console.log('accessToken 존재:', !!accessToken);
+    console.log('현재 URL:', window.location.pathname);
+    
+    if (!accessToken) {
+      console.log('popstate 리스너 등록 시작');
+      
+      const handlePopState = () => {
+        console.log('=== popstate 이벤트 발생 ===');
+        console.log('이벤트 발생 시 URL:', window.location.pathname);
+        console.log('이벤트 발생 시 accessToken 존재:', !!accessToken);
+        
+        // URL이 변경되면 즉시 /login으로 강제 교체
+        window.history.replaceState(null, '', '/login');
+        console.log('로그인 페이지: URL 강제 교체 완료');
+        console.log('교체 후 URL:', window.location.pathname);
+      };
+
+      window.addEventListener('popstate', handlePopState);
+      console.log('popstate 리스너 등록 완료');
+      
+      return () => {
+        console.log('popstate 리스너 제거');
+        window.removeEventListener('popstate', handlePopState);
+      };
+    } else {
+      console.log('accessToken이 있으므로 popstate 리스너 등록하지 않음');
+    }
+  }, [accessToken]);
   return (
     <Container>
       <img src={Logo} alt="지금살래 로고" className="logo-icon" />
