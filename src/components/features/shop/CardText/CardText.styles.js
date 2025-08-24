@@ -85,7 +85,7 @@ export const MetaDistance = styled.span`
 `;
 
 /* 도보 시간 정보(예상 도보 시간 표시) */
-export const MetaWorkTime = styled.span`
+export const MetaWalkTime = styled.span`
   color: #6D6D6D;
   font-size: 12px;
   font-style: normal;

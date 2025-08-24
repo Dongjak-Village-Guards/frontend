@@ -16,7 +16,7 @@ import Line from '../components/ui/Line/Line';
 import Spinner from '../components/ui/Spinner/Spinner';
 import { fetchMenuItemDetails, createReservation } from '../apis/storeAPI';
 
-const ReservationPage = () => {
+const ReservationPage = ({ shop }) => {
   const navigate = useNavigate();
   
   const { 
@@ -30,6 +30,7 @@ const ReservationPage = () => {
   } = useStore();
 
   const { accessToken } = useUserInfo();
+  const storeData = shop;
 
   // 상태 관리
   const [menuData, setMenuData] = useState(null);
@@ -383,6 +384,7 @@ const ReservationPage = () => {
             address={menuData?.store_address || '주소 정보 없음'}
             distance={`${menuData?.distance || 0}m`}
             reservationTime={`${menuData?.selected_time || currentTime} 예약`}
+            walkTime={storeData?.on_foot}
           />
           <Line />
           {menuData && (
