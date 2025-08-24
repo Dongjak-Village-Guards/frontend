@@ -47,7 +47,7 @@ const FAQPage = () => {
   ];
 
   return (
-    <Layout currentPage="faq">
+    <Layout currentpage="faq">
       <PageContainer>
         <NavBarContainer>
           <TopNavBar title="자주 묻는 질문" onBack={handleBackClick} />

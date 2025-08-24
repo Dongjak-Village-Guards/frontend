@@ -15,7 +15,7 @@ import ScrollContainer from '../components/layout/ScrollContainer';
 
 const SchedulePage = () => {
   const navigate = useNavigate();
-  const { currentPage } = useStore();
+  const { currentpage } = useStore();
   const { accessToken, isTokenValid, refreshTokens } = useUserInfo();
   
   // 로딩 상태
@@ -115,14 +115,14 @@ const SchedulePage = () => {
 
   // 컴포넌트 마운트 시 예약 목록 조회
   useEffect(() => {
-    if (currentPage === 'history') {
+    if (currentpage === 'history') {
       fetchReservations();
     }
-  }, [currentPage, accessToken]);
+  }, [currentpage, accessToken]);
 
   // 시간 경과에 따른 취소 가능 여부 실시간 업데이트
   useEffect(() => {
-    if (currentPage === 'history' && appointments.length > 0) {
+    if (currentpage === 'history' && appointments.length > 0) {
       const interval = setInterval(() => {
         setAppointments(prev => 
           prev.map(appointment => {
@@ -139,11 +139,11 @@ const SchedulePage = () => {
 
       return () => clearInterval(interval);
     }
-  }, [currentPage, appointments.length]);
+  }, [currentpage, appointments.length]);
 
   // 예약 완료 알림 바텀시트 표시 (예약 후 SchedulePage로 이동 시)
   useEffect(() => {
-    if (currentPage === 'history') {
+    if (currentpage === 'history') {
       // 예약 완료 데이터가 있다면 바텀시트 표시
       const completedReservation = localStorage.getItem('completedReservation');
       if (completedReservation) {
@@ -152,7 +152,7 @@ const SchedulePage = () => {
         localStorage.removeItem('completedReservation'); // 사용 후 제거
       }
     }
-  }, [currentPage]);
+  }, [currentpage]);
 
   // 예약 취소 확인 바텀시트 열기
   const handleCancelClick = (appointmentId) => {
