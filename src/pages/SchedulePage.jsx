@@ -253,7 +253,7 @@ const SchedulePage = () => {
         <HeaderTitle>방문 예정</HeaderTitle>
       </Header>
 
-      <ScrollContainer offsetTop={60}>
+      <ScrollContainer offsettop={60}>
         {/* 예약 목록 */}
         <ContentContainer>
           {loading ? (
@@ -507,20 +507,21 @@ const EmptyState = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 80px 20px;
   text-align: center;
+  padding: 60px 0;
 `;
 
 const EmptyText = styled.div`
   font-size: 18px;
   font-weight: 600;
-  color: #666;
+  color: #333;
   margin-bottom: 8px;
 `;
 
 const EmptySubText = styled.div`
   font-size: 14px;
-  color: #999;
+  font-weight: 500;
+  color: #555;
 `;
 
 const CancelConfirmContent = styled.div`
