@@ -7,6 +7,7 @@ import Spinner from '../../../ui/Spinner/Spinner';
 import AddressResultContainer from '../AddressResultContiner/AddressResultContainer';
 import useUserInfo from '../../../../hooks/user/useUserInfo';
 import useStore from '../../../../hooks/store/useStore';
+import { useNavigate } from 'react-router-dom';
 import {
   SearchWrapper,
   SearchBar,
@@ -20,6 +21,7 @@ const PAGE_SIZE = 7;   // 한 페이지에 보여줄 결과 개수
 const BLOCK_SIZE = 5;  // 페이지네이션에 표시할 페이지 개수
 
 const AddressSearch = () => {
+  const navigate = useNavigate();
   const [keyword, setKeyword] = useState('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState({ list: [], totalCount: 0 });
@@ -72,6 +74,7 @@ const AddressSearch = () => {
     try {
       await setUserAddress(address);
       setCurrentPage("home");
+      navigate(-1);
     } catch (error) {
       console.error('주소 설정 실패:', error);
       alert('주소 설정에 실패했습니다. 다시 시도해주세요.');
