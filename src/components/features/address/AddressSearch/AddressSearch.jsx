@@ -15,6 +15,7 @@ import {
   PaginationWrapper,
   PageButton,
   PageNumSpan,
+  ResultAreaWrapper
 } from './AddressSearch.styles';
 
 const PAGE_SIZE = 7;   // 한 페이지에 보여줄 결과 개수
@@ -99,48 +100,50 @@ const AddressSearch = () => {
         </SearchBar>
       </SearchFixArea>
       
-      {loading && hasSearched && <Spinner />}
-      <AddressResultContainer
-        results={results.list}
-        loading={loading}
-        error={error}
-        hasSearched={hasSearched}
-        onSelect={handleAddressSelect}
-      />
-
-      {/* 페이지네이션 UI */}
-      {totalPages > 1 && (
-        <PaginationWrapper>
-          <PageButton
-            onClick={() => setPage(startPage - BLOCK_SIZE)}
-            disabled={startPage === 1}
-            isCaret
-          >
-            <CaretLeftIcon style={{ width: 28, height: 28, opacity: startPage === 1 ? 0.5 : 1 }} />
-          </PageButton>
-          {Array.from({ length: endPage - startPage + 1 }, (_, idx) => {
-            const pageNum = startPage + idx;
-            const isLast = idx === endPage - startPage;
-            return (
-              <PageButton
-                key={pageNum}
-                onClick={() => setPage(pageNum)}
-                active={pageNum === page ? 1 : 0}
-                disabled={pageNum === page}
-              >
-                <PageNumSpan hasBorder={!isLast}>{pageNum}</PageNumSpan>
-              </PageButton>
-            );
-          })}
-          <PageButton
-            onClick={() => setPage(startPage + BLOCK_SIZE)}
-            disabled={endPage === totalPages}
-            isCaret
-          >
-            <CaretRightIcon style={{ width: 28, height: 28, opacity: endPage === totalPages ? 0.5 : 1 }} />
-          </PageButton>
-        </PaginationWrapper>
-      )}
+      <ResultAreaWrapper center={!hasSearched}>
+        {loading && hasSearched && <Spinner />}
+        <AddressResultContainer
+          results={results.list}
+          loading={loading}
+          error={error}
+          hasSearched={hasSearched}
+          onSelect={handleAddressSelect}
+        />
+  
+        {/* 페이지네이션 UI */}
+        {totalPages > 1 && (
+          <PaginationWrapper>
+            <PageButton
+              onClick={() => setPage(startPage - BLOCK_SIZE)}
+              disabled={startPage === 1}
+              isCaret
+            >
+              <CaretLeftIcon style={{ width: 28, height: 28, opacity: startPage === 1 ? 0.5 : 1 }} />
+            </PageButton>
+            {Array.from({ length: endPage - startPage + 1 }, (_, idx) => {
+              const pageNum = startPage + idx;
+              const isLast = idx === endPage - startPage;
+              return (
+                <PageButton hasBorder={!isLast}
+                  key={pageNum}
+                  onClick={() => setPage(pageNum)}
+                  active={pageNum === page ? 1 : 0}
+                  disabled={pageNum === page}
+                >
+                  <PageNumSpan>{pageNum}</PageNumSpan>
+                </PageButton>
+              );
+            })}
+            <PageButton
+              onClick={() => setPage(startPage + BLOCK_SIZE)}
+              disabled={endPage === totalPages}
+              isCaret
+            >
+              <CaretRightIcon style={{ width: 28, height: 28, opacity: endPage === totalPages ? 0.5 : 1 }} />
+            </PageButton>
+          </PaginationWrapper>
+        )}
+      </ResultAreaWrapper>
     </SearchWrapper>
   );
 };
