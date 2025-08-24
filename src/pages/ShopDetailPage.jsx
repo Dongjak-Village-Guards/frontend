@@ -468,10 +468,12 @@ const ShopDetailPage = () => {
             navigate(`/shop/${id}/spaces`);
         } else if (spaceCount >= 2 && !selectedSpaceId) {
             // Space 목록에서 뒤로가기: 홈페이지로
-            navigate('/');
+            //navigate('/');
+            navigate(-1);
         } else if (spaceCount === 1) {
             // 단일 Space 메뉴 페이지에서 뒤로가기: 홈페이지로
-            navigate('/');
+            //navigate('/');
+            navigate(-1);
         } else {
             // 기본: 브라우저 히스토리 뒤로가기
             navigate(-1);
