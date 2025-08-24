@@ -20,7 +20,7 @@ import { Card, Div, MenuImage, Detail, MenuName, PriceInfo, DiscountRate, Origin
  */
 
 const MenuCard = ({ menu, onReserve = false }) => {
-    const { startReservation, selectedDesigner, isReserving } = useStore();
+    const { startReservation, selectedDesigner } = useStore();
 
     // menu가 없거나 필수 필드가 없을 경우 처리
     if (!menu) {
@@ -35,7 +35,7 @@ const MenuCard = ({ menu, onReserve = false }) => {
     };
 
     // 예약 페이지에서 메뉴 카드 속 '예약하기' 버튼 숨김
-    const hideButton = isReserving;
+    const hideButton = window.location.pathname.includes('/reservation');
 
     // API 응답 구조에 맞게 필드 매핑
     const menuName = menu.menu_name || menu.name || '메뉴명 없음';
