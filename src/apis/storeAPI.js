@@ -480,24 +480,75 @@ export const fetchStoreSpacesList = async (storeId, time, accessToken) => {
  */
 export const fetchSpaceDetails = async (spaceId, time, accessToken) => {
   try {
-    console.log(`Space 상세 조회 시작... (Space ID: ${spaceId}, Time: ${time})`);
+    console.log(`=== fetchSpaceDetails API 호출 ===`);
+    console.log(`Space ID: ${spaceId}`);
+    console.log(`Space ID 타입: ${typeof spaceId}`);
+    console.log(`Time: ${time}`);
+    console.log(`Time 타입: ${typeof time}`);
+    console.log(`AccessToken 존재: ${!!accessToken}`);
+    console.log(`AccessToken 길이: ${accessToken?.length}`);
     
-    const response = await fetch(`${REST_API_BASE_URL}/v1/stores/spaces/${spaceId}/details/?time=${time}`, {
+    const url = `${REST_API_BASE_URL}/v1/stores/spaces/${spaceId}/details/?time=${time}`;
+    console.log(`요청 URL: ${url}`);
+    
+    const headers = buildHeaders(accessToken);
+    console.log(`요청 헤더:`, headers);
+    
+    console.log(`API 요청 시작...`);
+    const response = await fetch(url, {
       method: 'GET',
-      headers: buildHeaders(accessToken),
+      headers: headers,
     });
+    
+    console.log(`API 응답 상태: ${response.status}`);
+    console.log(`API 응답 상태 텍스트: ${response.statusText}`);
+    console.log(`API 응답 헤더:`, response.headers);
     
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      console.error(`API 에러 응답:`, errorData);
       throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
     
     const data = await response.json();
-    console.log('Space 상세 조회 성공:', data);
+    console.log(`=== fetchSpaceDetails API 응답 성공 ===`);
+    console.log(`응답 데이터 전체:`, data);
+    console.log(`응답 데이터 타입: ${typeof data}`);
+    console.log(`응답 데이터 키들:`, Object.keys(data));
     
+    // Space 정보 확인
+    console.log(`=== Space 정보 확인 ===`);
+    console.log(`Space 이름: ${data.space_name}`);
+    console.log(`Space ID: ${data.space_id}`);
+    console.log(`가게 이름: ${data.store_name}`);
+    console.log(`가게 ID: ${data.store_id}`);
+    
+    // 메뉴 정보 확인
+    console.log(`=== 메뉴 정보 확인 ===`);
+    console.log(`메뉴 개수: ${data.menus?.length || 0}`);
+    if (data.menus && data.menus.length > 0) {
+      data.menus.forEach((menu, index) => {
+        console.log(`메뉴 ${index + 1}:`, {
+          menu_id: menu.menu_id,
+          menu_name: menu.menu_name,
+          item_id: menu.item_id,
+          space_id: menu.space_id,
+          discount_rate: menu.discount_rate,
+          is_available: menu.is_available,
+          price: menu.price,
+          discounted_price: menu.discounted_price
+        });
+      });
+    } else {
+      console.log(`메뉴 데이터가 없음`);
+    }
+    
+    console.log(`=== fetchSpaceDetails API 완료 ===`);
     return data;
   } catch (error) {
-    console.error('Space 상세 조회 실패:', error);
+    console.error(`=== fetchSpaceDetails API 실패 ===`);
+    console.error(`에러 메시지: ${error.message}`);
+    console.error(`에러 스택: ${error.stack}`);
     throw error;
   }
 };
