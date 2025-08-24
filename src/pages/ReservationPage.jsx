@@ -39,57 +39,6 @@ const ReservationPage = () => {
   const [reserving, setReserving] = useState(false);
   const [isAgreed, setIsAgreed] = useState(false);
 
-  // menuData 디버깅을 위한 useEffect
-  useEffect(() => {
-    console.log('=== menuData 상태 변경 디버깅 ===');
-    console.log('menuData:', menuData);
-    console.log('menuData 타입:', typeof menuData);
-    
-    if (menuData) {
-      console.log('=== menuData 상세 분석 ===');
-      console.log('전체 menuData 객체:', JSON.stringify(menuData, null, 2));
-      console.log('menuData 키들:', Object.keys(menuData));
-      
-      // 메뉴 기본 정보
-      console.log('메뉴 ID:', menuData.menu_id);
-      console.log('메뉴 이름:', menuData.menu_name);
-      console.log('아이템 ID:', menuData.item_id);
-      console.log('메뉴 이미지:', menuData.menu_image_url);
-      
-      // 가격 정보
-      console.log('할인율:', menuData.discount_rate);
-      console.log('원래 가격:', menuData.menu_price);
-      console.log('할인 가격:', menuData.discounted_price);
-      
-      // 예약 관련 정보
-      console.log('예약 가능 여부:', menuData.is_available);
-      console.log('선택된 시간:', menuData.selected_time);
-      
-      // 가게 정보
-      console.log('가게 ID:', menuData.store_id);
-      console.log('가게 이름:', menuData.store_name);
-      console.log('가게 주소:', menuData.store_address);
-      console.log('거리:', menuData.distance);
-      
-      // Space 정보 (있다면)
-      if (menuData.space_id) {
-        console.log('=== Space 정보 ===');
-        console.log('Space ID:', menuData.space_id);
-        console.log('Space 이름:', menuData.space_name);
-        console.log('Space 이미지:', menuData.space_image_url);
-      }
-      
-      console.log('=== 현재 상태 ===');
-      console.log('loading:', loading);
-      console.log('error:', error);
-      console.log('reserving:', reserving);
-      console.log('isAgreed:', isAgreed);
-      console.log('---');
-    } else {
-      console.log('menuData가 null입니다.');
-    }
-  }, [menuData, loading, error, reserving, isAgreed]);
-
   // 메뉴 상세 데이터 로드
   useEffect(() => {
     const loadMenuData = async () => {
@@ -97,130 +46,64 @@ const ReservationPage = () => {
         setLoading(true);
         setError(null);
         
-        console.log('=== 🎯 ReservationPage 디버깅 ===');
-        console.log('📋 selectedMenu:', selectedMenu);
-        console.log('🔍 selectedMenu.item_id:', selectedMenu?.item_id);
-        console.log('📊 selectedMenu 구조:', JSON.stringify(selectedMenu, null, 2));
-        console.log('🔑 accessToken 존재:', !!accessToken);
-        console.log('📍 현재 URL:', window.location.href);
-        console.log('🕐 현재 시간:', new Date().toISOString());
-        
-        // 새로고침 시 undefined 에러 확인을 위한 추가 디버깅
-        console.log('=== 🔄 새로고침 시 undefined 에러 확인 ===');
-        console.log('📍 현재 URL:', window.location.href);
-        console.log('🔍 URL에 /reservation 포함 여부:', window.location.href.includes('/reservation'));
-        console.log('📋 selectedMenu 존재 여부:', !!selectedMenu);
-        console.log('📊 selectedMenu 타입:', typeof selectedMenu);
-        console.log('❓ selectedMenu === null:', selectedMenu === null);
-        console.log('❓ selectedMenu === undefined:', selectedMenu === undefined);
-        console.log('🔍 selectedMenu?.item_id 존재 여부:', !!selectedMenu?.item_id);
-        console.log('📊 selectedMenu?.item_id 타입:', typeof selectedMenu?.item_id);
-        console.log('🔑 accessToken 타입:', typeof accessToken);
-        console.log('📏 accessToken 길이:', accessToken?.length);
-        
         // 새로고침으로 인한 상태 초기화 확인
         if (!selectedMenu) {
-          console.log('⚠️ 경고: selectedMenu가 없음 - 새로고침으로 인한 상태 초기화 가능성');
-          console.log('🔄 예약 상태 복원 시도...');
-          
           // localStorage에서 예약 상태 복원 시도
           const { restoreReservationState } = useStore.getState();
           const restored = restoreReservationState();
           
           if (restored) {
-            console.log('✅ 예약 상태 복원 성공');
-            console.log('📋 복원된 selectedMenu:', useStore.getState().selectedMenu);
-            console.log('🔍 복원된 selectedMenu.item_id:', useStore.getState().selectedMenu?.item_id);
-            
             // 복원된 메뉴 정보로 다시 API 호출
             const restoredMenu = useStore.getState().selectedMenu;
             if (restoredMenu && restoredMenu.item_id) {
-              console.log('🔄 복원된 메뉴 정보로 API 재호출');
               const data = await fetchMenuItemDetails(restoredMenu.item_id, accessToken);
               setMenuData(data);
               return;
             }
           } else {
-            console.log('❌ localStorage에서 예약 상태 복원 실패');
-            console.log('🔄 현재 페이지 메뉴 정보로 예약 상태 복원 시도...');
-            
             // localStorage에 데이터가 없을 때 현재 페이지의 메뉴 정보를 활용해 복원
             // 이 경우 ShopDetailPage에서 이미 예약 상태가 복원되어 있을 수 있음
             const currentSelectedMenu = useStore.getState().selectedMenu;
             if (currentSelectedMenu && currentSelectedMenu.item_id) {
-              console.log('✅ 현재 Zustand 스토어에서 메뉴 정보 찾음:', currentSelectedMenu);
-              console.log('🔄 현재 메뉴 정보로 API 호출');
               const data = await fetchMenuItemDetails(currentSelectedMenu.item_id, accessToken);
               setMenuData(data);
               return;
             } else {
-              console.log('❌ 현재 Zustand 스토어에도 메뉴 정보가 없음');
-              console.log('🔄 홈페이지로 리다이렉트...');
               navigate('/', { replace: true });
               return;
             }
           }
-          
-          console.log('현재 페이지 상태:');
-          console.log('- loading:', loading);
-          console.log('- error:', error);
-          console.log('- reserving:', reserving);
-          console.log('- isAgreed:', isAgreed);
-          console.log('- menuData:', menuData);
         }
         
         if (!selectedMenu || !selectedMenu.item_id) {
-          console.log('❌ 에러: 메뉴 정보가 없어서 예약 페이지를 표시할 수 없음');
-          console.log('🔄 새로고침으로 인한 상태 초기화로 추정됨');
           throw new Error('메뉴 정보가 없습니다.');
         }
-
-        console.log('🎯 ReservationPage: 메뉴 상세 데이터 로드 시작', { itemId: selectedMenu.item_id });
         
         const data = await fetchMenuItemDetails(selectedMenu.item_id, accessToken);
-        console.log('✅ 메뉴 상세 데이터 로드 성공:', data);
         setMenuData(data);
         
       } catch (error) {
-        console.error('❌ ReservationPage: 메뉴 상세 데이터 로드 실패', error);
-        console.log('=== 🚨 에러 상세 정보 ===');
-        console.log('📊 에러 타입:', typeof error);
-        console.log('📝 에러 메시지:', error.message);
-        console.log('📚 에러 스택:', error.stack);
-        console.log('📈 에러 상태:', error.status);
-        console.log('📋 에러 응답:', error.response);
         setError(error);
         
         // 401 에러 시 로그인 페이지로 이동
         if (error.status === 401) {
-          console.log('🔐 401 에러 감지 - 로그인 페이지로 이동');
           setCurrentPage('login');
         }
       } finally {
         setLoading(false);
-        console.log('✅ ReservationPage 로딩 완료');
       }
     };
 
     if (selectedMenu && accessToken) {
-      console.log('✅ 조건 충족 - loadMenuData 실행');
       loadMenuData();
     } else {
-      console.log('=== ⚠️ ReservationPage 조건부 로딩 ===');
-      console.log('📋 selectedMenu 존재:', !!selectedMenu);
-      console.log('🔑 accessToken 존재:', !!accessToken);
-      console.log('❌ 조건 미충족으로 loadMenuData 실행 안됨');
       
       // 새로고침 시 상태가 초기화된 경우
       if (!selectedMenu && window.location.href.includes('/reservation')) {
-        console.log('⚠️ 경고: 예약 페이지에서 새로고침했지만 selectedMenu가 없음');
-        console.log('🔄 예약 상태 복원 시도...');
-        
         const { restoreReservationState } = useStore.getState();
         const restored = restoreReservationState();
         
         if (restored) {
-          console.log('✅ 예약 상태 복원 성공 - loadMenuData 재실행');
           // 복원된 상태로 다시 loadMenuData 실행
           setTimeout(() => {
             const restoredMenu = useStore.getState().selectedMenu;
@@ -229,18 +112,11 @@ const ReservationPage = () => {
             }
           }, 100);
         } else {
-          console.log('❌ 예약 상태 복원 실패 - 현재 Zustand 스토어 상태 확인');
-          console.log('🔄 현재 Zustand 스토어에서 메뉴 정보 확인...');
-          
           // localStorage 복원이 실패했지만 Zustand 스토어에 메뉴 정보가 있을 수 있음
           const currentSelectedMenu = useStore.getState().selectedMenu;
           if (currentSelectedMenu && currentSelectedMenu.item_id && accessToken) {
-            console.log('✅ 현재 Zustand 스토어에서 메뉴 정보 찾음:', currentSelectedMenu);
-            console.log('🔄 현재 메뉴 정보로 loadMenuData 실행');
             loadMenuData();
           } else {
-            console.log('❌ 현재 Zustand 스토어에도 메뉴 정보가 없음 - 홈페이지로 리다이렉트');
-            console.log('🔄 홈페이지로 리다이렉트...');
             navigate('/', { replace: true });
           }
         }
@@ -256,48 +132,18 @@ const ReservationPage = () => {
       setReserving(true);
       setError(null);
       
-      console.log('=== 예약 요청 전 데이터 확인 ===');
-      console.log('menuData:', menuData);
-      console.log('item_id:', menuData.item_id);
-      console.log('accessToken 존재:', !!accessToken);
-      console.log('accessToken 길이:', accessToken?.length);
-      console.log('isAgreed:', isAgreed);
-      console.log('현재 시간:', new Date().toISOString());
-      
-      // 시간 관련 정보 추가
-    //  const { time } = useStore.getState();
-      console.log('=== 시간 관련 정보 ===');
-      console.log('선택된 시간:', time);
-      console.log('현재 시간 (시):', new Date().getHours());
-      console.log('현재 시간 (분):', new Date().getMinutes());
-      console.log('현재 시간 (전체):', new Date().toLocaleString('ko-KR'));
-      
-      console.log('예약 생성 시작', { itemId: menuData.item_id });
-      
       const reservationResult = await createReservation(menuData.item_id, accessToken);
-      console.log('예약 생성 성공:', reservationResult);
-      
-      console.log('=== 예약 완료 후 리다이렉트 과정 시작 ===');
       
       // 예약 완료 데이터를 localStorage에 저장 (SchedulePage에서 바텀시트로 표시)
       localStorage.setItem('completedReservation', JSON.stringify(reservationResult));
-      console.log('localStorage에 예약 완료 데이터 저장됨');
       
       // 예약 상태 초기화
-      console.log('예약 상태 초기화 시작');
-      cancelReservation();
-      console.log('예약 상태 초기화 완료');
+      //  cancelReservation();
       
       // SchedulePage로 직접 이동
-      console.log('navigate("/history") 호출 시작');
       navigate('/history');
-      console.log('navigate("/history") 호출 완료');
-      
-      console.log('=== 예약 완료 후 리다이렉트 과정 완료 ===');
       
     } catch (error) {
-      console.log('예약 생성 실패:', error);
-      
       let errorMessage = '예약에 실패했습니다.';
       
       // 서버에서 받은 구체적인 에러 메시지가 있으면 사용
