@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import TopNavBar from '../../components/layout/TopNavBar/TopNavBar';
 import Layout from '../../components/layout/Layout';
+import ScrollContainer from '../../components/layout/ScrollContainer';
 
 const FAQPage = () => {
   const navigate = useNavigate();
@@ -40,27 +41,31 @@ const FAQPage = () => {
   return (
     <Layout currentPage="faq">
       <PageContainer>
-        <TopNavBar title="자주 묻는 질문" onBack={handleBackClick} />
-        <ContentContainer>
-          <FAQList>
-            {faqData.map((item, index) => (
-              <FAQItem key={index}>
-                <FAQQuestion 
-                  onClick={() => toggleItem(index)}
-                  isOpen={openItems.has(index)}
-                >
-                  <QuestionText>{item.question}</QuestionText>
-                  <ArrowIcon isOpen={openItems.has(index)}>▼</ArrowIcon>
-                </FAQQuestion>
-                {openItems.has(index) && (
-                  <FAQAnswer>
-                    {item.answer}
-                  </FAQAnswer>
-                )}
-              </FAQItem>
-            ))}
-          </FAQList>
-        </ContentContainer>
+        <NavBarContainer>
+          <TopNavBar title="자주 묻는 질문" onBack={handleBackClick} />
+        </NavBarContainer>
+        <ScrollContainer>
+          <ContentContainer>
+            <FAQList>
+              {faqData.map((item, index) => (
+                <FAQItem key={index}>
+                  <FAQQuestion 
+                      onClick={() => toggleItem(index)}
+                    isOpen={openItems.has(index)}
+                  >
+                    <QuestionText>{item.question}</QuestionText>
+                    <ArrowIcon isOpen={openItems.has(index)}>▼</ArrowIcon>
+                  </FAQQuestion>
+                  {openItems.has(index) && (
+                    <FAQAnswer>
+                      {item.answer}
+                    </FAQAnswer>
+                  )}
+                </FAQItem>
+              ))}
+            </FAQList>
+          </ContentContainer>
+        </ScrollContainer>
       </PageContainer>
     </Layout>
   );
@@ -73,11 +78,42 @@ const PageContainer = styled.div`
   flex-direction: column;
 `;
 
+const NavBarContainer = styled.div`
+`;
+
 const ContentContainer = styled.div`
-  flex: 1;
+  position: absolute;
+  top: 72px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 0 16px;
   overflow-y: auto;
-  padding: 20px;
-  padding-top: 80px;
+
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #ddd;
+    border-radius: 2px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: #ccc;
+  }
+
+  @media (max-width: 500px) {
+    &::-webkit-scrollbar {
+      width: 0;
+    }
+  }
 `;
 
 const FAQList = styled.div`

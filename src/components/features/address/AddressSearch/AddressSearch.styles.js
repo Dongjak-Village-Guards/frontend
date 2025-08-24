@@ -47,6 +47,15 @@ export const SearchFixArea = styled.div`
   background-color: white;
 `;
 
+export const ResultAreaWrapper = styled.div`
+  width: 100%;
+  min-height: 420px; // 결과 + 페이지네이션 예상 높이
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: ${props => props.center ? 'center' : 'flex-start'};
+`;
+
 export const PaginationWrapper = styled.div`
   display: flex;
   justify-content: center;
@@ -76,8 +85,6 @@ export const PageNumSpan = styled.span`
   font-size: 16px;
   font-weight: inherit;
   color: inherit;
-  padding: 0 9px;
-  border-right: ${({ hasBorder }) => (hasBorder ? '1px solid #737373' : 'none')};
   display: inline-block;
   height: 19px;
   vertical-align: middle;

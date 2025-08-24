@@ -2,11 +2,12 @@ import styled from 'styled-components';
 
 export const FixedHeader = styled.div`
   position: -webkit-sticky;
-  position: fixed;
+  position: absolute;
   top: 0;
   z-index: 20;
   background: #fff;
   width: 100%;
+  height: 72px;
 `;
 
 export const NavBar = styled.div`

@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import TopNavBar from '../../components/layout/TopNavBar/TopNavBar';
 import Layout from '../../components/layout/Layout';
+import ScrollContainer from '../../components/layout/ScrollContainer';
 
 const TermsPage = () => {
   const navigate = useNavigate();
@@ -13,39 +14,41 @@ const TermsPage = () => {
 
   return (
     <Layout currentPage="terms">
-      <PageContainer>
-        <TopNavBar title="약관 및 정책" onBack={handleBackClick} />
-        <ContentContainer>
-          <TermsSection>
-            <SectionTitle>서비스 이용약관</SectionTitle>
-            <SectionContent>
-              <Paragraph>
-                제1조 (목적)
-              </Paragraph>
-              <Paragraph>
-                이 약관은 회사가 제공하는 서비스의 이용과 관련하여 회사와 회원과의 권리, 의무 및 책임사항, 기타 필요한 사항을 규정함을 목적으로 합니다.
-              </Paragraph>
+        <NavBarContainer>
+          <TopNavBar title="약관 및 정책" onBack={handleBackClick} />
+        </NavBarContainer>
+        <ScrollContainer offsetTop={72}>
+          <ContentContainer>
+            <TermsSection>
+              <SectionTitle>서비스 이용약관</SectionTitle>
+              <SectionContent>
+                <Paragraph>
+                  제1조 (목적)
+                </Paragraph>
+                <Paragraph>
+                  이 약관은 회사가 제공하는 서비스의 이용과 관련하여 회사와 회원과의 권리, 의무 및 책임사항, 기타 필요한 사항을 규정함을 목적으로 합니다.
+                </Paragraph>
               
-              <Paragraph>
-                제2조 (정의)
-              </Paragraph>
-              <Paragraph>
-                1. "서비스"라 함은 회사가 제공하는 모든 서비스를 의미합니다.
-                2. "회원"이라 함은 회사의 서비스에 접속하여 이 약관에 따라 회사와 이용계약을 체결하고 회사가 제공하는 서비스를 이용하는 고객을 말합니다.
-              </Paragraph>
-              
-              <Paragraph>
-                제3조 (약관의 효력 및 변경)
-              </Paragraph>
-              <Paragraph>
-                1. 이 약관은 서비스 화면에 게시하거나 기타의 방법으로 회원에게 공지함으로써 효력이 발생합니다.
-                2. 회사는 필요한 경우 관련법령을 위배하지 않는 범위에서 이 약관을 변경할 수 있습니다.
-              </Paragraph>
-            </SectionContent>
-          </TermsSection>
+                <Paragraph>
+                  제2조 (정의)
+                </Paragraph>
+                <Paragraph>
+                  1. "서비스"라 함은 회사가 제공하는 모든 서비스를 의미합니다.
+                  2. "회원"이라 함은 회사의 서비스에 접속하여 이 약관에 따라 회사와 이용계약을 체결하고 회사가 제공하는 서비스를 이용하는 고객을 말합니다.
+                </Paragraph>
+                
+                <Paragraph>
+                  제3조 (약관의 효력 및 변경)
+                </Paragraph>
+                <Paragraph>
+                  1. 이 약관은 서비스 화면에 게시하거나 기타의 방법으로 회원에게 공지함으로써 효력이 발생합니다.
+                  2. 회사는 필요한 경우 관련법령을 위배하지 않는 범위에서 이 약관을 변경할 수 있습니다.
+                </Paragraph>
+              </SectionContent>
+            </TermsSection>
 
-          <TermsSection>
-            <SectionTitle>개인정보처리방침</SectionTitle>
+            <TermsSection>
+              <SectionTitle>개인정보처리방침</SectionTitle>
             <SectionContent>
               <Paragraph>
                 1. 개인정보의 수집 및 이용목적
@@ -82,14 +85,14 @@ const TermsPage = () => {
             </SectionContent>
 
             <SectionContent>
-                <Paragraph>
-                    2. 패널티 적용
-                </Paragraph>
-                <Paragraph>
-                    최근 30일 이내 1회 발생 시: 7일 동안 서비스 이용(예약)이 제한됩니다.
-                    최근 30일 이내 2회 발생 시: 14일 동안 서비스 이용(예약)이 제한됩니다.
-                    최근 30일 이내 3회 이상 발생 시: 영구적으로 서비스 이용(예약)이 제한됩니다.<br /><br />
-                </Paragraph>
+              <Paragraph>
+                2. 패널티 적용
+              </Paragraph>
+              <Paragraph>
+                  최근 30일 이내 1회 발생 시: 7일 동안 서비스 이용(예약)이 제한됩니다.
+                  최근 30일 이내 2회 발생 시: 14일 동안 서비스 이용(예약)이 제한됩니다.
+                  최근 30일 이내 3회 이상 발생 시: 영구적으로 서비스 이용(예약)이 제한됩니다.<br /><br />
+              </Paragraph>
             </SectionContent>
             <SectionContent>
                 <Paragraph>
@@ -100,26 +103,25 @@ const TermsPage = () => {
                     '지금 살래'는 사장님과 사용자 여러분 모두가 웃을 수 있는 건강한 지역 상생 플랫폼이 될 수 있도록 최선을 다하겠습니다.
                     감사합니다. '지금 살래' 팀 드림.
                 </Paragraph>
-            </SectionContent>
-          </TermsSection>
-        </ContentContainer>
-      </PageContainer>
+              </SectionContent>
+            </TermsSection>
+          </ContentContainer>
+      </ScrollContainer>
     </Layout>
   );
 };
 
-const PageContainer = styled.div`
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+const ContentContainer = styled.div`
+  position: relative;
+  padding: 2px 16px 0px 16px;
 `;
 
-const ContentContainer = styled.div`
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-  padding-top: 80px;
+const NavBarContainer = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 10;
 `;
 
 const TermsSection = styled.div`
