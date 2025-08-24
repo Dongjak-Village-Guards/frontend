@@ -2,18 +2,17 @@
  * 가게 정보를 표시하는 컴포넌트
  */
 
-import { InfoContainer, Title, ShopName, InfoText, ReservationTime } from './ShopInfo.styles';
+import { InfoContainer, Title, ShopName, InfoText, ReservationTime, MetaWalkTime, BottomInfoWrapper } from './ShopInfo.styles';
 
 /**
  * @param {string} name - 가게 이름
  * @param {string} address - 주소
  * @param {string} distance - 거리
- * @param {string} walkingTime - 도보 시간
  * @param {string} reservationTime - 예약 시간
- * 
+ * @param {number} store.walkTime - 도보 시간
  */
 
-const ShopInfo = ({ name, address, distance, reservationTime }) => {
+const ShopInfo = ({ name, address, distance, reservationTime, walkTime }) => {
   return (
     <InfoContainer>
         <Title>
@@ -21,7 +20,10 @@ const ShopInfo = ({ name, address, distance, reservationTime }) => {
             <ReservationTime>{reservationTime}</ReservationTime>
         </Title>
         <InfoText className='address'>{address}</InfoText>
-        <InfoText className='distance'>{distance}</InfoText>
+        <BottomInfoWrapper>
+          <InfoText className='distance'>{distance}</InfoText>
+          <MetaWalkTime>도보 {walkTime}분</MetaWalkTime>
+        </BottomInfoWrapper>
     </InfoContainer>
   );
 };

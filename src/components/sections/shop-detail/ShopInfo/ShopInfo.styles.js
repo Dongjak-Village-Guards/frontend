@@ -38,6 +38,21 @@ export const InfoText = styled.p`
     }
 `;
 
+export const BottomInfoWrapper = styled.div`
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+`;
+
+/* 도보 시간 정보(예상 도보 시간 표시) */
+export const MetaWalkTime = styled.span`
+  color: #6D6D6D;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 14px; /* 116.667% */
+`;
+
 /* 예약 시간 텍스트 */
 export const ReservationTime = styled.p`
     font-size: 18px;
