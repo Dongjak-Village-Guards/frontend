@@ -154,20 +154,6 @@ export default function HomePage() {
   const getAddressDisplayText = () => {
     return displayAddress.length > 15 ? `${displayAddress.slice(0, 15)}...` : displayAddress;
   };
-
-  /** 업종 라벨 */
-  const getCategoryLabel = () => {
-    console.log('getCategoryLabel 호출됨, filters.categories:', filters.categories);
-    if (filters.categories.length === 0) return '업종';
-    
-    // CATEGORY_OPTIONS에서 해당 카테고리의 label 찾기
-    const selectedCategory = filters.categories[0];
-    const categoryOption = CATEGORY_OPTIONS.find(option => option.value === selectedCategory);
-    const label = categoryOption ? categoryOption.label : '업종';
-    
-    console.log('선택된 카테고리 라벨:', label);
-    return label;
-  };
   // 정렬된 가게 목록 가져오기
   const sortedStores = getSortedStores();
   // 배너 이미지

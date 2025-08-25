@@ -61,7 +61,7 @@ const MyPage = () => {
       {/* 사용자 정보 섹션 */}
       <UserInfoSection>
         <ProfileImage>
-          <ProfilePlaceholder src={userInfo.user_image_url} />
+          <ProfilePlaceholder src={userInfo?.user_image_url || 'x'} />
         </ProfileImage>
         <UserDetails>
           <UserName>{userInfo?.user_nickname || authUser?.displayName || 'randomuser_99999'}</UserName>
