@@ -22,12 +22,12 @@ const MainPageApp = () => {
   const navigate = useNavigate();
   
   // Zustand 스토어에서 페이지 관련 상태와 액션 가져오기
-  const { currentPage, setCurrentPage, time, setTime, currentTime, checkAndUpdateTimeIfExpired } = useStore();
+  const { currentpage, setCurrentPage, time, setTime, currentTime, checkAndUpdateTimeIfExpired } = useStore();
   
   // 사용자 정보에서 인증 상태와 주소 확인
   const { authUser, userAddress, accessToken } = useUserInfo();
 
-  // URL 기반으로 currentPage 결정하는 함수 추가 (기존 로직과 병행)
+  // URL 기반으로 currentpage 결정하는 함수 추가 (기존 로직과 병행)
   const getCurrentPageFromUrl = () => {
     
     if (location.pathname === '/') {
@@ -51,7 +51,7 @@ const MainPageApp = () => {
     return 'home';
   };
 
-  // URL 기반 currentPage (기존 currentPage와 병행)
+  // URL 기반 currentpage (기존 currentpage와 병행)
   const urlBasedCurrentPage = getCurrentPageFromUrl();
 
   // setCurrentPage 래퍼 함수 - URL도 함께 변경 (기존 로직과 병행)
@@ -90,20 +90,19 @@ const MainPageApp = () => {
   useEffect(() => {
     localStorage.setItem('currentUrl', location.pathname);
     
-    // URL이 변경될 때 currentPage도 동기화
+    // URL이 변경될 때 currentpage도 동기화
     const newPage = getCurrentPageFromUrl();
     
     if (newPage !== currentPage) {
       setCurrentPage(newPage);
     } else {
-      console.log('currentPage 변경 불필요 (동일함)');
+      console.log('currentpage 변경 불필요 (동일함)');
     }
   }, [location.pathname, currentPage, setCurrentPage]);
-
   // 로그인하지 않았으면 로그인 페이지로 설정
   if (!accessToken && urlBasedCurrentPage !== "login") {
     return (
-      <Layout currentPage="login" onPageChange={handlePageChange}>
+      <Layout currentpage="login" onPageChange={handlePageChange}>
         <LoginPage />
       </Layout>
     );
@@ -112,7 +111,7 @@ const MainPageApp = () => {
   // 주소가 없으면 주소 검색 페이지 표시
   if (!userAddress && urlBasedCurrentPage !== "login" && urlBasedCurrentPage !== "history") {
     return (
-      <Layout currentPage="search-address" onPageChange={handlePageChange}>
+      <Layout currentpage="search-address" onPageChange={handlePageChange}>
         <SearchAddressPage />
       </Layout>
     );
@@ -157,7 +156,7 @@ const MainPageApp = () => {
   }
   
   return (
-    <Layout currentPage={urlBasedCurrentPage || currentPage} onPageChange={handlePageChange}>
+    <Layout currentpage={urlBasedCurrentPage || currentpage} onPageChange={handlePageChange}>
       {renderedPage}
     </Layout>
   );

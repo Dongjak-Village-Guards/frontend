@@ -46,7 +46,7 @@ export const MenuName = styled.h3`
     color: #000;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
+    white-space: pre-wrap;
 `;
 
 /* 가격 정보 (할인율과 원래 가격) */

@@ -2,17 +2,17 @@ import { forwardRef } from "react";
 import styled from 'styled-components';
 import NavBar from './BottomNavBar/BottomNavBar';
 
-const Layout = forwardRef(({ children, currentPage = "home", onPageChange }, contentAreaRef) => {
+const Layout = forwardRef(({ children, currentpage = "home", onPageChange }, contentAreaRef) => {
   // 로그인/주소검색/상세 페이지에서는 NavBar 숨김
-  const showNavBar = !['login', 'search-address', 'shop-detail', 'notice', 'faq', 'terms'].includes(currentPage);
+  const showNavBar = !['login', 'search-address', 'shop-detail', 'notice', 'faq', 'terms'].includes(currentpage);
 
   return (
     <Container>
       <PhoneFrame>
-        <ContentArea currentPage={currentPage} ref={contentAreaRef} className="content-area">
+        <ContentArea currentpage={currentpage} ref={contentAreaRef} className="content-area">
           {children}
         </ContentArea>
-        {showNavBar && <NavBar current={currentPage} onSelect={onPageChange} />}
+        {showNavBar && <NavBar current={currentpage} onSelect={onPageChange} />}
         
         {/* 바텀시트 포털 마운트 지점 */}
         <PortalRoot id="bottom-sheet-portal" />
@@ -69,7 +69,7 @@ const PhoneFrame = styled.div`
 const ContentArea = styled.div`
   flex: 1;
   position: relative;
-  overflow-y: ${({ currentPage }) => currentPage === 'home' ? 'auto' : 'hidden'};
+  overflow-y: ${({ currentpage }) => currentpage === 'home' ? 'auto' : 'hidden'};
 
   /* 반응형 웹 수정: 모바일에서 스크롤 최적화 */
   -webkit-overflow-scrolling: touch;

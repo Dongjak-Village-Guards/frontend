@@ -15,7 +15,7 @@ import ScrollContainer from '../components/layout/ScrollContainer';
 
 const SchedulePage = () => {
   const navigate = useNavigate();
-  const { currentPage } = useStore();
+  const { currentpage } = useStore();
   const { accessToken, isTokenValid, refreshTokens } = useUserInfo();
   
   // 로딩 상태
@@ -115,14 +115,14 @@ const SchedulePage = () => {
 
   // 컴포넌트 마운트 시 예약 목록 조회
   useEffect(() => {
-    if (currentPage === 'history') {
+    if (currentpage === 'history') {
       fetchReservations();
     }
-  }, [currentPage, accessToken]);
+  }, [currentpage, accessToken]);
 
   // 시간 경과에 따른 취소 가능 여부 실시간 업데이트
   useEffect(() => {
-    if (currentPage === 'history' && appointments.length > 0) {
+    if (currentpage === 'history' && appointments.length > 0) {
       const interval = setInterval(() => {
         setAppointments(prev => 
           prev.map(appointment => {
@@ -139,11 +139,11 @@ const SchedulePage = () => {
 
       return () => clearInterval(interval);
     }
-  }, [currentPage, appointments.length]);
+  }, [currentpage, appointments.length]);
 
   // 예약 완료 알림 바텀시트 표시 (예약 후 SchedulePage로 이동 시)
   useEffect(() => {
-    if (currentPage === 'history') {
+    if (currentpage === 'history') {
       // 예약 완료 데이터가 있다면 바텀시트 표시
       const completedReservation = localStorage.getItem('completedReservation');
       if (completedReservation) {
@@ -152,7 +152,7 @@ const SchedulePage = () => {
         localStorage.removeItem('completedReservation'); // 사용 후 제거
       }
     }
-  }, [currentPage]);
+  }, [currentpage]);
 
   // 예약 취소 확인 바텀시트 열기
   const handleCancelClick = (appointmentId) => {
@@ -253,7 +253,7 @@ const SchedulePage = () => {
         <HeaderTitle>방문 예정</HeaderTitle>
       </Header>
 
-      <ScrollContainer offsetTop={60}>
+      <ScrollContainer offsettop={60}>
         {/* 예약 목록 */}
         <ContentContainer>
           {loading ? (
@@ -507,20 +507,21 @@ const EmptyState = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 80px 20px;
   text-align: center;
+  padding: 60px 0;
 `;
 
 const EmptyText = styled.div`
   font-size: 18px;
   font-weight: 600;
-  color: #666;
+  color: #333;
   margin-bottom: 8px;
 `;
 
 const EmptySubText = styled.div`
   font-size: 14px;
-  color: #999;
+  font-weight: 500;
+  color: #555;
 `;
 
 const CancelConfirmContent = styled.div`
