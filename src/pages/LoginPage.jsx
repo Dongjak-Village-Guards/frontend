@@ -67,7 +67,7 @@ const Login = () => {
       <img src={Logo} alt="지금살래 로고" className="logo-icon" />
 
       <FirstTitle>
-        <p className='main-title'>살래? 지금 이 순간만의 Sale</p>
+        <p className='main-title'>살래? 지금 이 순간만의 Sale!</p>
       </FirstTitle>
 
       <SecondTitle>
