@@ -13,11 +13,11 @@ const TermsPage = () => {
   };
 
   return (
-    <Layout currentPage="terms">
+    <Layout currentpage="terms">
         <NavBarContainer>
           <TopNavBar title="약관 및 정책" onBack={handleBackClick} />
         </NavBarContainer>
-        <ScrollContainer offsetTop={72}>
+        <ScrollContainer offsettop={72}>
           <ContentContainer>
             <TermsSection>
               <SectionTitle>예약 부도(No-Show)</SectionTitle>

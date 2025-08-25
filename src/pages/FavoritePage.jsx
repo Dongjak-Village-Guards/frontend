@@ -22,7 +22,7 @@ const FavoritePage = () => {
   const { 
     stores, 
     currentTime, 
-    setCurrentPage,
+    setcurrentpage,
     updateCurrentTime,
     filters,
     time,
@@ -114,7 +114,7 @@ const FavoritePage = () => {
         />
       </SubContainer>
 
-      <ScrollContainer offsetTop={128}>
+      <ScrollContainer offsettop={128}>
         {/* 찜한 가게 목록 */}
         <ContentContainer>
           {isLoading ? (
@@ -201,8 +201,8 @@ const EmptyState = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px 20px;
   text-align: center;
+  padding: 60px 0;
 `;
 
 const EmptyText = styled.div`
@@ -214,7 +214,8 @@ const EmptyText = styled.div`
 
 const EmptySubText = styled.div`
   font-size: 14px;
-  color: #666;
+  font-weight: 500;
+  color: #555;
 `;
 
 const SubContainer = styled.div`

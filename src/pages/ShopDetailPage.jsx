@@ -541,7 +541,7 @@ const ShopDetailPage = () => {
     };
 
   return (
-    <Layout currentPage="shop-detail">
+    <Layout currentpage="shop-detail">
         <PageContainer>
             {/* 네브 바 영역 */}
             <NavBarContainer>
@@ -555,7 +555,7 @@ const ShopDetailPage = () => {
                 />
             </NavBarContainer>
     
-            <ScrollContainer offsetTop={72}>
+            <ScrollContainer offsettop={72}>
                 {/* 콘텐츠 영역 */}
                 <ContentContainer>
                     {loading ? (

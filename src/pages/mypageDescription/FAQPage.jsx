@@ -47,12 +47,12 @@ const FAQPage = () => {
   ];
 
   return (
-    <Layout currentPage="faq">
+    <Layout currentpage="faq">
       <PageContainer>
         <NavBarContainer>
           <TopNavBar title="자주 묻는 질문" onBack={handleBackClick} />
         </NavBarContainer>
-        <ScrollContainer offsetTop={72}>
+        <ScrollContainer offsettop={72}>
           <ContentContainer>
             <FAQList>
               {faqData.map((item, index) => (
