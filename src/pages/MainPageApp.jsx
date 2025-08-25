@@ -22,7 +22,8 @@ const MainPageApp = () => {
   const navigate = useNavigate();
   
   // Zustand 스토어에서 페이지 관련 상태와 액션 가져오기
-  const { currentpage, setCurrentPage, time, setTime, currentTime, checkAndUpdateTimeIfExpired } = useStore();
+  const store = useStore();
+  const { currentPage, setCurrentPage, time, setTime, currentTime, checkAndUpdateTimeIfExpired } = useStore();
   
   // 사용자 정보에서 인증 상태와 주소 확인
   const { authUser, userAddress, accessToken } = useUserInfo();
