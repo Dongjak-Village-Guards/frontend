@@ -240,6 +240,7 @@ const ReservationPage = ({ shop }) => {
                     discountPrice: menuData.discounted_price,
                     isReserved: false,
                     menuImage: menuData.menu_image_url,
+                    isReservationPage: true
                   }}
                   onReserve={() => {}}
                 />
