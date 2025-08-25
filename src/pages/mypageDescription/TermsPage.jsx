@@ -9,11 +9,11 @@ const TermsPage = () => {
   const navigate = useNavigate();
 
   const handleBackClick = () => {
-    navigate('/');
+    navigate(-1);
   };
 
   return (
-    <Layout currentpage="terms">
+    <Layout currentPage="terms">
         <NavBarContainer>
           <TopNavBar title="약관 및 정책" onBack={handleBackClick} />
         </NavBarContainer>

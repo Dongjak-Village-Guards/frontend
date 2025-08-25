@@ -10,11 +10,11 @@ const NoticePage = () => {
   const navigate = useNavigate();
 
   const handleBackClick = () => {
-    navigate('/');
+    navigate(-1);
   };
 
   return (
-    <Layout currentpage="notice">
+    <Layout currentPage="notice">
       <PageContainer>
         <TopNavBar title="공지사항" onBack={handleBackClick} />
         <ScrollContainer offsettop={72}>
