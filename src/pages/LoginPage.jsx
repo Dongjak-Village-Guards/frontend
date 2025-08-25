@@ -86,7 +86,7 @@ const Login = () => {
       </GoogleButton>
 
       <ProviderLinkButton>
-        <a href="https://buynow.streamlit.app/">
+        <a href="https://nowsale.streamlit.app/">
           공급자 페이지 바로가기
           <Link />
         </a>
