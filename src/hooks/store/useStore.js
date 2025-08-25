@@ -429,29 +429,6 @@ const useStore = create(
        * @param {Object} designer - 선택된 디자이너 (선택 사항)
        */
       startReservation: (menu, designer = null) => {
-        console.log('=== 🎯 startReservation 함수 실행 ===');
-        console.log('📋 입력된 menu:', menu);
-        console.log('👤 입력된 designer:', designer);
-        console.log('📍 현재 URL:', window.location.href);
-        console.log('🔍 URL에 /reservation 포함 여부:', window.location.href.includes('/reservation'));
-        console.log('📊 현재 상태:');
-        console.log('  - isReserving:', get().isReserving);
-        console.log('  - selectedMenu:', get().selectedMenu);
-        console.log('  - selectedDesigner:', get().selectedDesigner);
-        console.log('  - showPiAgreement:', get().showPiAgreement);
-        console.log('  - isAgreed:', get().isAgreed);
-        
-        // 새로고침 시 undefined 에러 확인
-        if (!menu) {
-          console.log('⚠️ 경고: startReservation에 menu가 null/undefined로 전달됨');
-          console.log('🚨 이 경우 예약 페이지에서 undefined 에러가 발생할 수 있음');
-        }
-        
-        if (menu && !menu.item_id) {
-          console.log('⚠️ 경고: menu 객체에 item_id가 없음');
-          console.log('📊 menu 객체 구조:', JSON.stringify(menu, null, 2));
-          console.log('🚨 이 경우 예약 페이지에서 undefined 에러가 발생할 수 있음');
-        }
         
         // 예약 상태를 localStorage에 저장 (새로고침 시 복원용)
         if (menu) {
@@ -471,33 +448,14 @@ const useStore = create(
           isAgreed: false,  // 초기화
           showPiAgreement: false,
         });
-        
-        console.log('✅ startReservation 완료 후 상태:');
-        console.log('  - isReserving:', get().isReserving);
-        console.log('  - selectedMenu:', get().selectedMenu);
-        console.log('  - selectedDesigner:', get().selectedDesigner);
-        console.log('  - showPiAgreement:', get().showPiAgreement);
-        console.log('  - isAgreed:', get().isAgreed);
-        console.log('=== startReservation 함수 종료 ===');
       },
 
       /**
        * 예약 취소
        */
       cancelReservation: () => {
-        console.log('=== 🚫 cancelReservation 함수 실행 ===');
-        console.log('📍 현재 URL:', window.location.href);
-        console.log('🔍 URL에 /reservation 포함 여부:', window.location.href.includes('/reservation'));
-        console.log('📊 취소 전 상태:');
-        console.log('  - isReserving:', get().isReserving);
-        console.log('  - selectedMenu:', get().selectedMenu);
-        console.log('  - selectedDesigner:', get().selectedDesigner);
-        console.log('  - showPiAgreement:', get().showPiAgreement);
-        console.log('  - isAgreed:', get().isAgreed);
-        
         // localStorage에서 예약 데이터 제거
         localStorage.removeItem('reservationData');
-        console.log('🗑️ localStorage에서 예약 데이터 제거됨');
         
         set({
           isReserving: false,
@@ -506,46 +464,22 @@ const useStore = create(
           showPiAgreement: false,
           isAgreed: false,
         });
-        
-        console.log('✅ cancelReservation 완료 후 상태:');
-        console.log('  - isReserving:', get().isReserving);
-        console.log('  - selectedMenu:', get().selectedMenu);
-        console.log('  - selectedDesigner:', get().selectedDesigner);
-        console.log('  - showPiAgreement:', get().showPiAgreement);
-        console.log('  - isAgreed:', get().isAgreed);
-        console.log('=== cancelReservation 함수 종료 ===');
       },
 
       /**
        * 새로고침 시 예약 상태 복원
        */
       restoreReservationState: () => {
-        console.log('=== 🔄 restoreReservationState 함수 실행 ===');
-        console.log('📍 현재 URL:', window.location.href);
-        console.log('🔍 URL에 /reservation 포함 여부:', window.location.href.includes('/reservation'));
-        console.log('📊 복원 전 상태:');
-        console.log('  - isReserving:', get().isReserving);
-        console.log('  - selectedMenu:', get().selectedMenu);
-        console.log('  - selectedDesigner:', get().selectedDesigner);
-        
         const reservationData = localStorage.getItem('reservationData');
         
         if (reservationData) {
           try {
             const data = JSON.parse(reservationData);
-            console.log('💾 localStorage에서 복원된 예약 데이터:', data);
             
             // 24시간 이내의 데이터만 유효
             const now = Date.now();
             const dataAge = now - data.timestamp;
             const maxAge = 24 * 60 * 60 * 1000; // 24시간
-            
-            console.log('⏰ 데이터 유효성 검사:');
-            console.log('  - 현재 시간:', new Date(now).toISOString());
-            console.log('  - 데이터 생성 시간:', new Date(data.timestamp).toISOString());
-            console.log('  - 데이터 나이 (밀리초):', dataAge);
-            console.log('  - 최대 유효 나이 (밀리초):', maxAge);
-            console.log('  - 유효 여부:', dataAge < maxAge);
             
             if (dataAge < maxAge) {
               console.log('✅ 예약 데이터가 유효함 (24시간 이내)');
@@ -556,28 +490,14 @@ const useStore = create(
                 isAgreed: false,
                 showPiAgreement: false,
               });
-              console.log('✅ 예약 상태 복원 완료');
-              console.log('📊 복원 후 상태:');
-              console.log('  - isReserving:', get().isReserving);
-              console.log('  - selectedMenu:', get().selectedMenu);
-              console.log('  - selectedDesigner:', get().selectedDesigner);
               return true;
             } else {
-              console.log('❌ 예약 데이터가 만료됨 (24시간 초과)');
               localStorage.removeItem('reservationData');
-              console.log('🗑️ 만료된 데이터 제거됨');
             }
           } catch (error) {
-            console.error('❌ 예약 데이터 파싱 실패:', error);
             localStorage.removeItem('reservationData');
-            console.log('🗑️ 파싱 실패한 데이터 제거됨');
           }
-        } else {
-          console.log('❌ localStorage에 예약 데이터가 없음');
         }
-        
-        console.log('❌ 예약 상태 복원 실패');
-        console.log('=== restoreReservationState 함수 종료 ===');
         return false;
       },
 
