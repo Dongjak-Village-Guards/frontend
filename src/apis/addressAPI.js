@@ -1,5 +1,5 @@
 export const fetchAddressResults = async (keyword, page = 1, pageSize = 7) => {
-  const API_KEY = process.env.JUSO_API_KEY;
+  const API_KEY = process.env.REACT_APP_JUSO_API;
   const url = `https://business.juso.go.kr/addrlink/addrLinkApi.do?confmKey=${API_KEY}&currentPage=${page}&countPerPage=${pageSize}&keyword=${encodeURIComponent(keyword)}&resultType=json`;
 
   try {
