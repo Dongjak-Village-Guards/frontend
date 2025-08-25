@@ -29,6 +29,8 @@ const FavoritePage = () => {
     setFilters,
     fetchStores,
     checkAndUpdateTimeIfExpired, // 새로 추가
+    fromFavoritePage,
+    setFromFavoritePage,
   } = useStore();
 
   // 컴포넌트 마운트 시 초기 로딩 처리
@@ -49,6 +51,14 @@ const FavoritePage = () => {
 
     initializePage();
   }, [updateCurrentTime, checkAndUpdateTimeIfExpired, currentTime]); // currentTime 의존성 추가
+
+  // 찜페이지 렌더링 시 fromFavoritePage 초기화
+  useEffect(() => {
+    console.log(fromFavoritePage, "체크체크3");
+    setFromFavoritePage(false);
+    console.log(fromFavoritePage, "체크체크4");
+
+  }, []);
 
   // 찜한 가게만 필터링
   const favoriteStores = stores.filter(store => store.isLiked);
@@ -92,6 +102,7 @@ const FavoritePage = () => {
 
   // 가게 카드 클릭 시 상세 페이지로 이동
   const handleCardClick = (storeId) => {
+    setFromFavoritePage(true); // 찜페이지에서 출발함을 표시
     navigate(`/shop/${storeId}`);
   };
 
