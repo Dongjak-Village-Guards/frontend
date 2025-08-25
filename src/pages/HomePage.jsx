@@ -10,14 +10,13 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { FiChevronDown } from "react-icons/fi";
 import { AiFillCaretDown } from "react-icons/ai";
-import FilterContainer from "../components/filter/FilterContainer";
-import Spinner from "../components/common/Spinner";
+import FilterContainer from "../components/features/filter/FilterContainer/FilterContainer";
+import Spinner from "../components/ui/Spinner/Spinner";
 import useStore from "../hooks/store/useStore";
 import useUserInfo from "../hooks/user/useUserInfo";
-import Card from "../components/home/shop/Card";
-import bannerImage from "../assets/images/bannerImage.png";
+import Card from "../components/features/shop/ShopCard/ShopCard";
 import { useNavigate } from "react-router-dom";
-import { CATEGORY_OPTIONS } from "../components/filter/CategoryFilter";
+import { CATEGORY_OPTIONS } from "../components/features/filter/CategoryFilter/CategoryFilter";
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -32,7 +31,7 @@ export default function HomePage() {
   
   /* Zustand 상태 */
   const { 
-    currentAddress, 
+   
     currentTime, 
     updateCurrentTime, 
     sortOption, 
@@ -43,10 +42,10 @@ export default function HomePage() {
     setCurrentPage,
     setFromHomePage,
     fetchStores, // Zustand 스토어 액션 (API 함수 아님)
-    fetchUserLikes,
     loading,
     time,
     setTime,
+    checkAndUpdateTimeIfExpired, // 새로 추가
   } = useStore();
 
   /** 사용자 주소 */
@@ -56,6 +55,10 @@ export default function HomePage() {
   useEffect(() => {
     const initializePage = async () => {
       setLoading(true);
+      
+      // 시간 만료 체크 및 자동 업데이트
+      checkAndUpdateTimeIfExpired();
+      
       // 초기 시간 설정 (새로고침 시에만 실행)
       console.log('updateCurrentTime 호출');
       updateCurrentTime();
@@ -63,21 +66,14 @@ export default function HomePage() {
       // 백엔드 API에서 가게 목록 가져오기 (현재 설정된 필터들 사용)
       try {
         await fetchStores(time, filters.categories.length > 0 ? filters.categories[0] : null);
-        
-        // 로그인된 사용자인 경우에만 찜 목록 가져오기
-        if (accessToken) {
-          await fetchUserLikes();
-        }
       } catch (error) {
         console.error('초기 가게 목록 로딩 실패:', error);
       }
       
-      // 0.1초 지연으로 렌더링 시간 시뮬레이션
-      await new Promise(res => setTimeout(res, 100));
       setLoading(false);
     };
     initializePage();
-  }, [updateCurrentTime, fetchStores, fetchUserLikes, time, filters.categories, accessToken]);
+  }, [updateCurrentTime, fetchStores, time, filters.categories, accessToken, checkAndUpdateTimeIfExpired, currentTime]); // currentTime 의존성 추가
 
   /**
    * 정렬 변경
@@ -100,6 +96,7 @@ export default function HomePage() {
     if (!isLoading) {
       setCurrentPage('search-address');
       setFromHomePage(true); // 주소 설정 페이지로 이동할 때 fromHomePage 플래그를 true로 설정
+      navigate('/search-address');
     } else {
       console.log('로딩 중이므로 클릭 무시');
     }
@@ -120,17 +117,8 @@ export default function HomePage() {
       console.error('시간 필터 적용 실패:', error);
     }
     
-    console.log('setTimeout 설정 - 0.3초 후 로딩 시작');
-    // 0.3초 후 바텀시트 닫힘, 2초 로딩 (테스트용)
-    setTimeout(async () => {
-      console.log('setTimeout 콜백 실행 - 로딩 시작');
-      setLoading(true);
-      console.log('0.3초 로딩 시작');
-      await new Promise(resolve => setTimeout(resolve, 300));
-      console.log('0.3초 로딩 완료');
-      setLoading(false);
-      console.log('시간필터 로딩 완료');
-    }, 300);
+    // 로딩 상태 즉시 변경
+    setLoading(false);
   };
 
   /**
@@ -148,11 +136,8 @@ export default function HomePage() {
       console.error('카테고리 필터 적용 실패:', error);
     }
     
-    // 로딩 처리 (시간 필터와 동일한 방식)
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-    }, 300);
+    // 로딩 상태 즉시 변경
+    setLoading(false);
   };
 
   /**
@@ -165,42 +150,30 @@ export default function HomePage() {
    * 등록된 주소가 있으면 사용, 없으면 기본 주소
    * 8글자까지 표시
    */
-  const displayAddress = userAddress ? userAddress.roadAddr : currentAddress;
+  const displayAddress = userAddress ? userAddress.roadAddr : '주소를 설정해주세요';
   const getAddressDisplayText = () => {
-    return displayAddress.length > 8 ? `${displayAddress.slice(0, 8)}...` : displayAddress;
-  };
-
-  /** 업종 라벨 */
-  const getCategoryLabel = () => {
-    console.log('getCategoryLabel 호출됨, filters.categories:', filters.categories);
-    if (filters.categories.length === 0) return '업종';
-    
-    // CATEGORY_OPTIONS에서 해당 카테고리의 label 찾기
-    const selectedCategory = filters.categories[0];
-    const categoryOption = CATEGORY_OPTIONS.find(option => option.value === selectedCategory);
-    const label = categoryOption ? categoryOption.label : '업종';
-    
-    console.log('선택된 카테고리 라벨:', label);
-    return label;
+    return displayAddress.length > 15 ? `${displayAddress.slice(0, 15)}...` : displayAddress;
   };
   // 정렬된 가게 목록 가져오기
   const sortedStores = getSortedStores();
+  // 배너 이미지
+  const bannerImageUrl = "https://ifh.cc/g/4j8oA3.png";
 
   return (
     <HomeContainer>
       {/* 상단 주소 */}
       <AddressBar>
-        <AddressText>
+        <AddressText onClick={handleAddressClick}>
           <AddressTextContent>{getAddressDisplayText()}</AddressTextContent>
-          <AddressIcon onClick={handleAddressClick}>
-            <FiChevronDown size={16} color="#DA2538" />
+          <AddressIcon>
+            <FiChevronDown size={24} color="#DA2538" />
           </AddressIcon>
         </AddressText>
       </AddressBar>
 
       {/* 배너 */}
       <BannerWrapper>
-        <BannerImage src={bannerImage} alt="배너 이미지" />
+        <BannerImage src={bannerImageUrl} alt="배너 이미지" />
         <BannerTextContainer>
           <BannerSubTitle>꾸미기 딱 좋은 날 ♥</BannerSubTitle>
           <BannerTitle>
@@ -246,7 +219,9 @@ export default function HomePage() {
             <Spinner />
           </LoadingContainer>
         ) : sortedStores.length > 0 ? (
-          sortedStores.map(store => (
+          sortedStores
+          .filter(store => store && store.id) // undefined나 id가 없는 store 제거
+          .map(store => (
             <Card 
               key={store.id} 
               store={store} 
@@ -269,29 +244,38 @@ export default function HomePage() {
 /* Layout 내부에서 스크롤 가능한 영역(내부 화면) */
 const HomeContainer = styled.div`
   background: #fff;
-  min-height: 100%;
-  padding: 0 clamp(8px, 4vw, 16px);
+  padding: 0 16px;
   width: 100%;
   max-width: 100%;
+  display: flex;
+  flex-direction: column;
 `;
 
 /* 상단 주소 바(Layout 내부에서 상단에 고정되어 스크롤에 영향을 받지 않음) */
 const AddressBar = styled.div`
-  position: -webkit-sticky;
   position: sticky;
-  top: 0;
+  top: -0.5px;
   z-index: 20;
+  height: 68px;
   display: flex;
   align-items: center;
-  padding: 16px 0;//임시
-  background: #fff;
+  padding: 16px 0;
+  background-color: #fff;
   width: 100%;
-  
-  /* sticky 포지션이 확실히 작동하도록 추가 설정 */
-  transform: translateZ(0);
-  will-change: transform;
 
   touch-action: manipulation; // 모바일에서 주소바 클릭 시 자동 줌 방지 테스트 -> 해결 안 됨
+`;
+
+/* 주소 아이콘 */
+const AddressIcon = styled.span`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  will-change: transform;
+  transition: transform 0.2s ease;
 `;
 
 /* 주소 텍스트 */
@@ -301,43 +285,32 @@ const AddressText = styled.div`
   text-overflow: ellipsis;
   white-space: nowrap;
   font-style: normal;
-  font-weight: 700;
-  line-height: normal;
   display: flex;
   align-items: center;
-  gap: clamp(2px, 2vw, 4px);
-  padding: 4px 8px;
+  gap: 4px;
   border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+
+  &:hover ${AddressIcon} {
+    transform: rotate(180deg);
+  }
 `;
 
 /* 주소 텍스트 내용 */
-const AddressTextContent = styled.span`
+const AddressTextContent = styled.p`
+  font-size: 22px;
+  font-weight: 700;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   flex: 1;
-`;
-
-/* 주소 아이콘 */
-const AddressIcon = styled.span`
-  cursor: pointer;
-  transition: transform 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2px;
-  border-radius: 4px;
-  flex-shrink: 0;
-
-  &:hover {
-    transform: rotate(180deg);
-  }
+  user-select: none;
 `;
 
 /* 배너 광고 영역(주소바 아래에 위치) */
 const BannerWrapper = styled.div`
   border-radius: 10px;
-  flex-shrink: 0;
   overflow: hidden;
   position: relative;
   background-color: #000000a9;
@@ -346,7 +319,7 @@ const BannerWrapper = styled.div`
 /* 배너 이미지 */
 const BannerImage = styled.img`
   width: 100%;
-  height: clamp(100px, 25vh, 130px);
+  height: 130px;
   opacity: 0.7;
   object-fit: cover;
   display: block;
@@ -357,13 +330,14 @@ const BannerTextContainer = styled.div`
   display: flex;
   flex-direction: column;
   position: absolute;
-  right: 6px; bottom: 6px;
+  right: 6px;
+  bottom: 6px;
 `;
 
 /* 배너 이미지 위에 Overlay되는 텍스트 */
 const BannerTitle = styled.div`
   color: #fff;
-  font-size: clamp(18px, 6.5vw, 22px);
+  font-size: 22px;
   font-weight: 700;
   line-height: normal;
   text-align: right;
@@ -372,7 +346,7 @@ const BannerTitle = styled.div`
 /* 배너 서브 텍스트 배너 상단에 표시되는 작은 텍스트 */
 const BannerSubTitle = styled.div`
   color: #FFB1B9;
-  font-size: clamp(10px, 3.5vw, 12px);
+  font-size: 12px;
   font-style: normal;
   font-weight: 700;
   line-height: normal;
@@ -381,13 +355,13 @@ const BannerSubTitle = styled.div`
 
 /* 정렬 토글 컨테이너(토글 버튼 & 드롭다운) */
 const SortToggleContainer = styled.div`
-  margin-left: auto;
   position: relative;
 `;
 
 /* 정렬 토글 버튼(할인율순/가격순 정렬 옵션) */
 const SortToggle = styled.button`
   font-size: 14px;
+  font-weight: 400;
   color: #000;
   cursor: pointer;
   border: none;
@@ -395,27 +369,28 @@ const SortToggle = styled.button`
   outline: none;
   display: flex;
   align-items: center;
-  gap: clamp(2px, 1vw, 4px);
+  gap: 4px;
   padding: 0;
 `;
 
 /* 정렬 드롭다운 메뉴 */
 const SortDropdown = styled.div`
+  font-size: 14px;
+  font-weight: 400;
   position: absolute;
   top: 100%;
   right: 0;
   background: #fff;
   border: 1px solid #CCC;
-  border-radius: clamp(6px, 2vw, 8px);
+  border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   z-index: 10;
-  min-width: clamp(70px, 20vw, 80px);
+  min-width: 80px;
 `;
 
 /* 정렬 옵션 */
 const SortOption = styled.div`
-  padding: clamp(6px, 2vw, 8px) clamp(8px, 3vw, 12px);
-  font-size: clamp(12px, 3.5vw, 14px);
+  padding: 8px 12px;
   color: #000;
   cursor: pointer;
   transition: background-color 0.2s ease;
@@ -425,11 +400,11 @@ const SortOption = styled.div`
   }
 
   &:first-child {
-    border-radius: clamp(6px, 2vw, 8px) clamp(6px, 2vw, 8px) 0 0;
+    border-radius: 8px 8px 0 0;
   }
 
   &:last-child {
-    border-radius: 0 0 clamp(6px, 2vw, 8px) clamp(6px, 2vw, 8px);
+    border-radius: 0 0 8px 8px;
   }
 `;
 
@@ -437,9 +412,10 @@ const SortOption = styled.div`
 const StoreList = styled.div`
   background: #fff;
   width: 100%;
-  height: 100%;
   overflow-x: hidden;
   position: relative;
+  padding-top: 1px;
+  padding-bottom: 52px;
 `;
 
 /* 로딩 컨테이너 */
@@ -485,7 +461,7 @@ const FilterAndSortToggleContainer = styled.div`
   align-items: center;
   position: -webkit-sticky;
   position: sticky;
-  top: clamp(60px, 10vh, 5vh); // 눈바디 수정 > 거의 최적
-  z-index: 15;
+  top: 66px;
+  z-index: 19;
   background-color: #fff;
 `;

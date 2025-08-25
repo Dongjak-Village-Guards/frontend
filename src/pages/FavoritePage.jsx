@@ -10,9 +10,10 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import useStore from '../hooks/store/useStore';
-import Card from '../components/home/shop/Card';
-import Spinner from '../components/common/Spinner';
-import FilterContainer from '../components/filter/FilterContainer';
+import Card from '../components/features/shop/ShopCard/ShopCard';
+import Spinner from '../components/ui/Spinner/Spinner';
+import FilterContainer from '../components/features/filter/FilterContainer/FilterContainer';
+import ScrollContainer from '../components/layout/ScrollContainer';
 
 const FavoritePage = () => {
   const navigate = useNavigate();
@@ -21,19 +22,25 @@ const FavoritePage = () => {
   const { 
     stores, 
     currentTime, 
-    setCurrentPage,
     updateCurrentTime,
     filters,
     time,
     setTime,
     setFilters,
-    fetchStores
+    fetchStores,
+    checkAndUpdateTimeIfExpired, // 새로 추가
+    fromFavoritePage,
+    setFromFavoritePage,
   } = useStore();
 
   // 컴포넌트 마운트 시 초기 로딩 처리
   useEffect(() => {
     const initializePage = async () => {
       setIsLoading(true);
+      
+      // 시간 만료 체크 및 자동 업데이트
+      checkAndUpdateTimeIfExpired();
+      
       console.log("FavoritePage 렌더링함 updateCurrentTime호출됨",updateCurrentTime);
       updateCurrentTime();
       
@@ -43,7 +50,15 @@ const FavoritePage = () => {
     };
 
     initializePage();
-  }, [updateCurrentTime]);
+  }, [updateCurrentTime, checkAndUpdateTimeIfExpired, currentTime]); // currentTime 의존성 추가
+
+  // 찜페이지 렌더링 시 fromFavoritePage 초기화
+  useEffect(() => {
+    console.log(fromFavoritePage, "체크체크3");
+    setFromFavoritePage(false);
+    console.log(fromFavoritePage, "체크체크4");
+
+  }, []);
 
   // 찜한 가게만 필터링
   const favoriteStores = stores.filter(store => store.isLiked);
@@ -87,6 +102,7 @@ const FavoritePage = () => {
 
   // 가게 카드 클릭 시 상세 페이지로 이동
   const handleCardClick = (storeId) => {
+    setFromFavoritePage(true); // 찜페이지에서 출발함을 표시
     navigate(`/shop/${storeId}`);
   };
 
@@ -108,29 +124,31 @@ const FavoritePage = () => {
         />
       </SubContainer>
 
-      {/* 찜한 가게 목록 */}
-      <ContentContainer>
-        {isLoading ? (
-          <LoadingContainer>
-            <Spinner />
-          </LoadingContainer>
-        ) : favoriteStores.length > 0 ? (
-          <StoreList>
-            {favoriteStores.map(store => (
-              <Card 
-                key={store.id} 
-                store={store} 
-                onClick={() => handleCardClick(store.id)}
-              />
-            ))}
-          </StoreList>
-        ) : (
-          <EmptyState>
-            <EmptyText>찜한 가게가 없어요</EmptyText>
-            <EmptySubText>마음에 드는 가게를 찜해보세요!</EmptySubText>
-          </EmptyState>
-        )}
-      </ContentContainer>
+      <ScrollContainer offsettop={128}>
+        {/* 찜한 가게 목록 */}
+        <ContentContainer>
+          {isLoading ? (
+            <LoadingContainer>
+              <Spinner />
+            </LoadingContainer>
+          ) : favoriteStores.length > 0 ? (
+            <StoreList>
+              {favoriteStores.map(store => (
+                <Card 
+                  key={store.id} 
+                  store={store} 
+                  onClick={() => handleCardClick(store.id)}
+                />
+              ))}
+            </StoreList>
+          ) : (
+            <EmptyState>
+              <EmptyText>찜한 가게가 없어요</EmptyText>
+              <EmptySubText>마음에 드는 가게를 찜해보세요!</EmptySubText>
+            </EmptyState>
+          )}
+        </ContentContainer>
+      </ScrollContainer>
     </PageContainer>
   );
 };
@@ -167,13 +185,13 @@ const Header = styled.div`
 const HeaderTitle = styled.h1`
   font-size: 22px;
   font-weight: 700;
-  line-height: 14px;
   color: #000;
 `;
 
 const ContentContainer = styled.div`
   flex: 1;
   overflow-y: auto;
+  padding: 0px 16px 52px 16px;
 `;
 
 const StoreList = styled.div`
@@ -193,8 +211,8 @@ const EmptyState = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px 20px;
   text-align: center;
+  padding: 60px 0;
 `;
 
 const EmptyText = styled.div`
@@ -206,14 +224,14 @@ const EmptyText = styled.div`
 
 const EmptySubText = styled.div`
   font-size: 14px;
-  color: #666;
+  font-weight: 500;
+  color: #555;
 `;
 
 const SubContainer = styled.div`
   position: -webkit-sticky;
   position: sticky;
-  top: 48px;
+  top: 60px;
   z-index: 15;
   background-color: #fff;
-//  padding: clamp(8px, 2vh, 16px) 0;
 `;

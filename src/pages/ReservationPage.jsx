@@ -8,12 +8,12 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import useStore from '../hooks/store/useStore';
 import useUserInfo from '../hooks/user/useUserInfo';
-import ShopInfo from '../components/home/detail/ShopInfo';
-import MenuCard from '../components/home/detail/MenuCard';
-import PiAgreement from '../components/home/detail/PiAgreement';
+import ShopInfo from '../components/sections/shop-detail/ShopInfo/ShopInfo';
+import MenuCard from '../components/sections/shop-detail/MenuCard/MenuCard';
+import PiAgreement from '../components/sections/shop-detail/PiAgreement/PiAgreement';
 import { ReactComponent as ArrowButton } from '../assets/images/piArrow.svg';
-import Line from '../components/common/Line';
-import Spinner from '../components/common/Spinner';
+import Line from '../components/ui/Line/Line';
+import Spinner from '../components/ui/Spinner/Spinner';
 import { fetchMenuItemDetails, createReservation } from '../apis/storeAPI';
 
 const ReservationPage = ({ shop }) => {
@@ -26,10 +26,12 @@ const ReservationPage = ({ shop }) => {
     cancelReservation, 
     togglePiAgreement, 
     showPiAgreement, 
-    setCurrentPage
+    setCurrentPage,
+    time
   } = useStore();
 
   const { accessToken } = useUserInfo();
+  const storeData = shop;
 
   // 상태 관리
   const [menuData, setMenuData] = useState(null);
@@ -45,23 +47,43 @@ const ReservationPage = ({ shop }) => {
         setLoading(true);
         setError(null);
         
-        console.log('=== ReservationPage 디버깅 ===');
-        console.log('selectedMenu:', selectedMenu);
-        console.log('selectedMenu.item_id:', selectedMenu?.item_id);
-        console.log('selectedMenu 구조:', JSON.stringify(selectedMenu, null, 2));
-        console.log('accessToken 존재:', !!accessToken);
+        // 새로고침으로 인한 상태 초기화 확인
+        if (!selectedMenu) {
+          // localStorage에서 예약 상태 복원 시도
+          const { restoreReservationState } = useStore.getState();
+          const restored = restoreReservationState();
+          
+          if (restored) {
+            // 복원된 메뉴 정보로 다시 API 호출
+            const restoredMenu = useStore.getState().selectedMenu;
+            if (restoredMenu && restoredMenu.item_id) {
+              const data = await fetchMenuItemDetails(restoredMenu.item_id, accessToken);
+              setMenuData(data);
+              return;
+            }
+          } else {
+            // localStorage에 데이터가 없을 때 현재 페이지의 메뉴 정보를 활용해 복원
+            // 이 경우 ShopDetailPage에서 이미 예약 상태가 복원되어 있을 수 있음
+            const currentSelectedMenu = useStore.getState().selectedMenu;
+            if (currentSelectedMenu && currentSelectedMenu.item_id) {
+              const data = await fetchMenuItemDetails(currentSelectedMenu.item_id, accessToken);
+              setMenuData(data);
+              return;
+            } else {
+              navigate('/', { replace: true });
+              return;
+            }
+          }
+        }
         
         if (!selectedMenu || !selectedMenu.item_id) {
           throw new Error('메뉴 정보가 없습니다.');
         }
-
-        console.log('ReservationPage: 메뉴 상세 데이터 로드 시작', { itemId: selectedMenu.item_id });
         
         const data = await fetchMenuItemDetails(selectedMenu.item_id, accessToken);
         setMenuData(data);
         
       } catch (error) {
-        console.error('ReservationPage: 메뉴 상세 데이터 로드 실패', error);
         setError(error);
         
         // 401 에러 시 로그인 페이지로 이동
@@ -75,8 +97,33 @@ const ReservationPage = ({ shop }) => {
 
     if (selectedMenu && accessToken) {
       loadMenuData();
+    } else {
+      
+      // 새로고침 시 상태가 초기화된 경우
+      if (!selectedMenu && window.location.href.includes('/reservation')) {
+        const { restoreReservationState } = useStore.getState();
+        const restored = restoreReservationState();
+        
+        if (restored) {
+          // 복원된 상태로 다시 loadMenuData 실행
+          setTimeout(() => {
+            const restoredMenu = useStore.getState().selectedMenu;
+            if (restoredMenu && accessToken) {
+              loadMenuData();
+            }
+          }, 100);
+        } else {
+          // localStorage 복원이 실패했지만 Zustand 스토어에 메뉴 정보가 있을 수 있음
+          const currentSelectedMenu = useStore.getState().selectedMenu;
+          if (currentSelectedMenu && currentSelectedMenu.item_id && accessToken) {
+            loadMenuData();
+          } else {
+            navigate('/', { replace: true });
+          }
+        }
+      }
     }
-  }, [selectedMenu, accessToken, setCurrentPage]);
+  }, [selectedMenu, accessToken, setCurrentPage, navigate]);
 
   // 예약 확인 핸들러
   const handleConfirm = async () => {
@@ -86,50 +133,17 @@ const ReservationPage = ({ shop }) => {
       setReserving(true);
       setError(null);
       
-      console.log('=== 예약 요청 전 데이터 확인 ===');
-      console.log('menuData:', menuData);
-      console.log('item_id:', menuData.item_id);
-      console.log('accessToken 존재:', !!accessToken);
-      console.log('accessToken 길이:', accessToken?.length);
-      console.log('isAgreed:', isAgreed);
-      console.log('현재 시간:', new Date().toISOString());
-      
-      // 시간 관련 정보 추가
-      const { time } = useStore.getState();
-      console.log('=== 시간 관련 정보 ===');
-      console.log('선택된 시간:', time);
-      console.log('현재 시간 (시):', new Date().getHours());
-      console.log('현재 시간 (분):', new Date().getMinutes());
-      console.log('현재 시간 (전체):', new Date().toLocaleString('ko-KR'));
-      
-      console.log('예약 생성 시작', { itemId: menuData.item_id });
-      
       const reservationResult = await createReservation(menuData.item_id, accessToken);
-      console.log('예약 생성 성공:', reservationResult);
       
       // 예약 완료 데이터를 localStorage에 저장 (SchedulePage에서 바텀시트로 표시)
       localStorage.setItem('completedReservation', JSON.stringify(reservationResult));
       
-      // 예약 상태 초기화
-      //  cancelReservation();
-      
-      // 예약 완료 후 SchedulePage로 이동 (바텀시트로 알림)
-      setCurrentPage('history');
-      
-      // 한 단계 뒤로가기 (상세페이지로)
-      navigate(-1);
+      // SchedulePage로 직접 이동
+      navigate('/history');
       
     } catch (error) {
-      console.log('예약 생성 실패:', error);
-      
-      let errorMessage = '예약에 실패했습니다.';
-      
-      // 서버에서 받은 구체적인 에러 메시지가 있으면 사용
-      if (error.serverResponse && error.serverResponse.error) {
-        errorMessage = error.serverResponse.error;
-      }
-      
-      setError(errorMessage);
+      // storeAPI에서 throw한 에러 객체를 그대로 상태에 저장
+      setError(error);
     } finally {
       setReserving(false);
     }
@@ -145,12 +159,33 @@ const ReservationPage = ({ shop }) => {
     togglePiAgreement();
   };
 
+  const getErrorMessage = (error) => {
+    if (!error) return "에러 상태가 없습니다.";
+
+    // 1. 가장 가능성 있는 경로에서 에러 메시지를 우선 추출
+    let message = error?.serverResponse?.error || error?.response?.data?.error;
+
+    // 2. 만약 message가 string 타입이고, JSON 형태('{...}')라면 파싱을 시도
+    if (typeof message === 'string' && message.trim().startsWith('{')) {
+      try {
+        const parsedMessage = JSON.parse(message);
+        // 파싱에 성공하면 진짜 에러 메시지를 사용
+        message = parsedMessage.error || message;
+      } catch (e) {
+        // 파싱에 실패하면 그냥 기존 메시지를 그대로 사용
+      }
+    }
+    
+    // 3. 최종 메시지가 없으면 기본 에러 메시지를 반환
+    return message || "알 수 없는 오류가 발생했습니다.";
+  };
+
   // 가게 이름 (/ 디자이너)
   const getShopName = () => {
     if (menuData) {
       return menuData.store_name;
     }
-    return selectedDesigner ? `${shop?.name} / ${selectedDesigner.name}` : shop?.name;
+    return selectedDesigner ? `${selectedDesigner.name}` : '가게 정보 없음';
   };
 
   // 로딩 중이거나 에러 상태 처리
@@ -168,9 +203,7 @@ const ReservationPage = ({ shop }) => {
     return (
       <ReservationContainer>
         <ErrorContainer>
-          <ErrorText>
-            {error.status === 404 ? '해당 메뉴를 찾을 수 없습니다.' : '데이터를 불러오는데 실패했습니다.'}
-          </ErrorText>
+          <ErrorText>{getErrorMessage(error)}</ErrorText>
           <BackButton onClick={cancelReservation}>뒤로가기</BackButton>
         </ErrorContainer>
       </ReservationContainer>
@@ -191,9 +224,10 @@ const ReservationPage = ({ shop }) => {
           <Line />
           <ShopInfo
             name={getShopName()}
-            address={menuData?.store_address || shop?.address}
-            distance={`${menuData?.distance || shop?.distance}m`}
-            reservationTime={`${menuData?.selected_time || currentTime} 예약`}
+            address={menuData?.store_address || '주소 정보 없음'}
+            distance={`${menuData?.distance || 0}m`}
+            reservationTime={`${time} 예약`}
+            walkTime={storeData?.on_foot}
           />
           <Line />
           {menuData && (
@@ -204,37 +238,38 @@ const ReservationPage = ({ shop }) => {
                     discountRate: menuData.discount_rate,
                     originalPrice: menuData.menu_price,
                     discountPrice: menuData.discounted_price,
-                    isReserved: false
+                    isReserved: false,
+                    menuImage: menuData.menu_image_url,
                   }}
                   onReserve={() => {}}
-                  hideButton={true} // 버튼 숨김
                 />
             </MenuCardDiv>
           )}
           <Line />
           <CheckboxContainer>
-            <Checkbox
-              type="checkbox"
-              checked={isAgreed}
-              onChange={handleCheckboxChange}
-            />
-            <CheckboxLabel>개인정보 제3자 제공 동의</CheckboxLabel>
+            <CheckboxWrapper>
+              <Checkbox
+                id="pi-agree-checkbox"
+                type="checkbox"
+                checked={isAgreed}
+                onChange={handleCheckboxChange}
+              />
+              <CheckboxLabel htmlFor="pi-agree-checkbox">개인정보 제3자 제공 동의</CheckboxLabel>
+            </CheckboxWrapper>
             <ArrowIcon onClick={handleArrowClick}>
                 <ArrowButton />
             </ArrowIcon>
           </CheckboxContainer>
           <Line />
-          {error && (
-            <ErrorContainer>
-              <ErrorText>{error}</ErrorText>
-            </ErrorContainer>
-          )}
           <ReserveButton 
             disabled={!isAgreed || reserving} 
             onClick={handleConfirm}
           >
             {reserving ? '예약 중...' : '예약하기'}
           </ReserveButton>
+          <NoticeText>
+            방문 시간 30분 전부터는 예약을 취소할 수 없습니다
+          </NoticeText>
         </>
       )}
     </ReservationContainer>
@@ -275,17 +310,23 @@ const CheckboxContainer = styled.div`
   height: 70px;
 `;
 
+const CheckboxWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  user-select: none;
+`;
+
 const Checkbox = styled.input`
   width: 16px;
   height: 16px;
-  cursor: pointer;
 `;
 
 const CheckboxLabel = styled.label`
   font-size: 14px;
   font-weight: 500;
   color: rgba(0,0,0,0.45);
-  flex: 1;
 `;
 
 const ArrowIcon = styled.div`
@@ -359,4 +400,12 @@ const BackButton = styled.button`
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
+`;
+
+const NoticeText = styled.div`
+  margin-top: 24px;
+  color: #da2538;
+  font-size: 14px;
+  text-align: center;
+  font-weight: 600;
 `;
