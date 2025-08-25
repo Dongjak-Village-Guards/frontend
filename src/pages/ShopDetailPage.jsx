@@ -541,7 +541,7 @@ const ShopDetailPage = () => {
     };
 
   return (
-    <Layout currentpage="shop-detail">
+    <Layout currentPage="shop-detail">
         <PageContainer>
             {/* 네브 바 영역 */}
             <NavBarContainer>

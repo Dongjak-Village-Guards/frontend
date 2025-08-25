@@ -10,7 +10,7 @@ const FAQPage = () => {
   const [openItems, setOpenItems] = useState(new Set());
 
   const handleBackClick = () => {
-    navigate('/');
+    navigate(-1);
   };
 
   const toggleItem = (index) => {
@@ -47,7 +47,7 @@ const FAQPage = () => {
   ];
 
   return (
-    <Layout currentpage="faq">
+    <Layout currentPage="faq">
       <PageContainer>
         <NavBarContainer>
           <TopNavBar title="자주 묻는 질문" onBack={handleBackClick} />

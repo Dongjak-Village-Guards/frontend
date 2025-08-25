@@ -19,7 +19,7 @@ const useStore = create(
       
       // ===== 페이지 상태 관리 =====
       /** 현재 활성화된 페이지 */
-      currentpage: 'home',
+      currentPage: 'home',
       
       /** 주소 설정 페이지 접근 경로 추적 */
       fromHomePage: false,
@@ -86,7 +86,7 @@ const useStore = create(
       logout: () => {
         set({ 
           user: null, 
-          currentpage: 'login',
+          currentPage: 'login',
           stores: [],
           likedStoreIds: [],
           isReserving: false,
@@ -102,7 +102,7 @@ const useStore = create(
        * @param {string} page - 변경할 페이지명
        */
       setCurrentPage: (page) => {
-        set({ currentpage: page });
+        set({ currentPage: page });
       },
       
       /**
