@@ -28,8 +28,8 @@ const MainPageApp = () => {
   // 사용자 정보에서 인증 상태와 주소 확인
   const { authUser, userAddress, accessToken } = useUserInfo();
 
-  // URL 기반으로 currentpage 결정하는 함수 추가 (기존 로직과 병행)
-  const getCurrentPageFromUrl = () => {
+  // URL 기반으로 currentPage 결정하는 함수 추가 (기존 로직과 병행)
+  const getcurrentPageFromUrl = () => {
     
     if (location.pathname === '/') {
       return 'home';
@@ -52,8 +52,8 @@ const MainPageApp = () => {
     return 'home';
   };
 
-  // URL 기반 currentpage (기존 currentpage와 병행)
-  const urlBasedCurrentPage = getCurrentPageFromUrl();
+  // URL 기반 currentPage (기존 currentPage와 병행)
+  const urlBasedcurrentPage = getcurrentPageFromUrl();
 
   // setCurrentPage 래퍼 함수 - URL도 함께 변경 (기존 로직과 병행)
   const handlePageChange = (page) => {
@@ -91,28 +91,28 @@ const MainPageApp = () => {
   useEffect(() => {
     localStorage.setItem('currentUrl', location.pathname);
     
-    // URL이 변경될 때 currentpage도 동기화
-    const newPage = getCurrentPageFromUrl();
+    // URL이 변경될 때 currentPage도 동기화
+    const newPage = getcurrentPageFromUrl();
     
     if (newPage !== currentPage) {
       setCurrentPage(newPage);
     } else {
-      console.log('currentpage 변경 불필요 (동일함)');
+      console.log('currentPage 변경 불필요 (동일함)');
     }
   }, [location.pathname, currentPage, setCurrentPage]);
   // 로그인하지 않았으면 로그인 페이지로 설정
-  if (!accessToken && urlBasedCurrentPage !== "login") {
+  if (!accessToken && urlBasedcurrentPage !== "login") {
     return (
-      <Layout currentpage="login" onPageChange={handlePageChange}>
+      <Layout currentPage="login" onPageChange={handlePageChange}>
         <LoginPage />
       </Layout>
     );
   }
 
   // 주소가 없으면 주소 검색 페이지 표시
-  if (!userAddress && urlBasedCurrentPage !== "login" && urlBasedCurrentPage !== "history") {
+  if (!userAddress && urlBasedcurrentPage !== "login" && urlBasedcurrentPage !== "history") {
     return (
-      <Layout currentpage="search-address" onPageChange={handlePageChange}>
+      <Layout currentPage="search-address" onPageChange={handlePageChange}>
         <SearchAddressPage />
       </Layout>
     );
@@ -122,10 +122,10 @@ const MainPageApp = () => {
    * 현재 페이지에 따른 컴포넌트 렌더링 함수
    * @returns {JSX.Element} 현재 페이지에 해당하는 컴포넌트
    */
-  const renderCurrentPage = () => {
+  const rendercurrentPage = () => {
     
     // URL 기반으로 페이지 결정 (기존 currentPage와 병행)
-    const pageToRender = urlBasedCurrentPage || currentPage;
+    const pageToRender = urlBasedcurrentPage || currentPage;
     
     // MainPageApp이 처리하지 않는 경로인 경우 null 반환
     if (pageToRender === null) {
@@ -151,13 +151,13 @@ const MainPageApp = () => {
   };
   
   // MainPageApp이 처리하지 않는 경로인 경우 null 반환
-  const renderedPage = renderCurrentPage();
+  const renderedPage = rendercurrentPage();
   if (renderedPage === null) {
     return null;
   }
   
   return (
-    <Layout currentpage={urlBasedCurrentPage || currentpage} onPageChange={handlePageChange}>
+    <Layout currentPage={urlBasedcurrentPage || currentPage} onPageChange={handlePageChange}>
       {renderedPage}
     </Layout>
   );
