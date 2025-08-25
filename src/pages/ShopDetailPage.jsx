@@ -44,7 +44,8 @@ const ShopDetailPage = () => {
         cancelReservation,
         togglePiAgreement,
         toggleLikeWithAPI,
-        restoreReservationState
+        restoreReservationState,
+        fromFavoritePage
     } = useStore();
 
     const { accessToken } = useUserInfo();
@@ -112,15 +113,24 @@ const ShopDetailPage = () => {
             }
             // Space 목록으로 이동하는 경우는 데이터 로딩 후 변경하도록 제거
             
-            // 브라우저 뒤로가기로 entry-point 상태가 되었을 때 홈페이지로 이동
+            // 브라우저 뒤로가기로 entry-point 상태가 되었을 때
             if (urlState.type === 'entry-point') {
                 // 홈페이지로 이동 중임을 표시
                 isNavigatingToHomeRef.current = true;
                 
-                // 약간의 지연을 두고 홈페이지로 이동 (무한 루프 방지)
-                setTimeout(() => {
-                    navigate('/', { replace: true });
-                }, 50);
+                // 출발 페이지에 따라 조건부 처리
+                if (fromFavoritePage) {
+                    // 찜페이지에서 온 경우 찜페이지로 이동
+                    console.log(fromFavoritePage, "체크1");
+                    setTimeout(() => {
+                        navigate('/favorites', { replace: true });
+                    }, 50);
+                } else {
+                    // 다른 페이지에서 온 경우 홈페이지로 이동
+                    setTimeout(() => {
+                        navigate('/', { replace: true });
+                    }, 50);
+                }
             }
         };
         
@@ -129,7 +139,7 @@ const ShopDetailPage = () => {
         return () => {
             window.removeEventListener('popstate', handlePopState);
         };
-    }, [navigate]); // selectedSpaceId 의존성 제거
+    }, [navigate, fromFavoritePage]); // fromFavoritePage 의존성 추가
 
     // URL 변경 감지 및 브라우저 뒤로가기 처리
     useEffect(() => {
@@ -143,10 +153,16 @@ const ShopDetailPage = () => {
                 // 홈페이지로 이동 중임을 표시
                 isNavigatingToHomeRef.current = true;
                 
-                // 약간의 지연을 두고 홈페이지로 이동
-                setTimeout(() => {
-                    navigate('/', { replace: true });
-                }, 50);
+                // 출발 페이지에 따라 조건부 처리
+                if (fromFavoritePage) {
+                    setTimeout(() => {
+                        navigate('/favorites', { replace: true });
+                    }, 50);
+                } else {
+                    setTimeout(() => {
+                        navigate('/', { replace: true });
+                    }, 50);
+                }
             }
             
             // 단일 메뉴 페이지에서 entry-point로 이동한 경우 (브라우저 뒤로가기로 추정)
@@ -154,10 +170,16 @@ const ShopDetailPage = () => {
                 // 홈페이지로 이동 중임을 표시
                 isNavigatingToHomeRef.current = true;
                 
-                // 약간의 지연을 두고 홈페이지로 이동
-                setTimeout(() => {
-                    navigate('/', { replace: true });
-                }, 50);
+                // 출발 페이지에 따라 조건부 처리
+                if (fromFavoritePage) {
+                    setTimeout(() => {
+                        navigate('/favorites', { replace: true });
+                    }, 50);
+                } else {
+                    setTimeout(() => {
+                        navigate('/', { replace: true });
+                    }, 50);
+                }
             }
             
             // Space 메뉴 페이지에서 예약 페이지로 이동한 경우 (앞으로가기)
@@ -218,7 +240,7 @@ const ShopDetailPage = () => {
             // 이전 URL 업데이트
             previousPathnameRef.current = location.pathname;
         }
-    }, [location.pathname, navigate, showPiAgreement, selectedSpaceId, storeData]);
+    }, [location.pathname, navigate, showPiAgreement, selectedSpaceId, storeData, fromFavoritePage]);
 
     // 현재 가게의 Zustand 상태에서 좋아요 상태 가져오기
     const currentStore = stores.find(store => store.id === parseInt(id));
@@ -263,7 +285,7 @@ const ShopDetailPage = () => {
                             return;
                         }
                         
-                        // 일반적인 entry-point 접근인 경우 /shop/:id/menu로 리다이렉트
+                        // 일반적인 entry-point 접근인 경우
                         navigate(`/shop/${storeId}/menu`);
                     } else if (urlState.type === 'single-space-menu') {
                         // /shop/:id/menu로 접근한 경우 - 정상 처리
@@ -318,8 +340,8 @@ const ShopDetailPage = () => {
                         // 각 Space의 메뉴 정보를 확인하여 is_possible 계산
                         const spacesWithCorrectedInfo = spacesListData.spaces.map(space => {
                             
-                            // 시간 만료 체크
-                            const timeExpired = isTimeExpired();
+                                                         // 시간 만료 체크
+                              const timeExpired = isTimeExpired();
                             
                             // 해당 Space의 메뉴들 중 하나라도 예약 불가능한지 확인
                             const hasUnavailableMenu = space.menus && space.menus.some(menu => !menu.is_available);
@@ -385,7 +407,7 @@ const ShopDetailPage = () => {
         if (id && time !== null) {
             loadStoreData();
         }
-    }, [id, time, accessToken, location.pathname, navigate]); // navigate 의존성 추가
+    }, [id, time, accessToken, location.pathname, navigate, fromFavoritePage]); // fromFavoritePage 의존성 추가
 
     // 특정 Space 선택 시 상세 데이터 로드
     const handleSpaceSelect = async (spaceId) => {
@@ -467,19 +489,26 @@ const ShopDetailPage = () => {
             setSelectedSpaceId(null);
             navigate(`/shop/${id}/spaces`);
         } else if (spaceCount >= 2 && !selectedSpaceId) {
-            // Space 목록에서 뒤로가기: 홈페이지로
-            //navigate('/');
-            navigate(-1);
+            if (fromFavoritePage) {
+                // 찜페이지에서 온 경우 찜페이지로 이동
+                console.log(fromFavoritePage, "체크체크");
+                navigate('/favorites');
+                console.log(fromFavoritePage, "체크체크2");
+            }
+            else navigate('/');
         } else if (spaceCount === 1) {
-            // 단일 Space 메뉴 페이지에서 뒤로가기: 홈페이지로
-            //navigate('/');
-            navigate(-1);
+            // 출발 페이지에 따라 조건부 처리
+            if (fromFavoritePage) {
+                // 찜페이지에서 온 경우 찜페이지로 이동
+                console.log(fromFavoritePage, "체크체크");
+                navigate('/favorites');
+                console.log(fromFavoritePage, "체크체크2");
+            }
+            else navigate('/');
         } else {
-            // 기본: 브라우저 히스토리 뒤로가기
-            navigate(-1);
+                // 기본: 브라우저 히스토리 뒤로가기
+                navigate(-1);
         }
-        
-        console.log('=== handleBack 함수 실행 완료 ===');
     };
 
     // 예약 버튼 클릭 시
@@ -797,11 +826,4 @@ const ErrorText = styled.div`
 const ErrorSubText = styled.div`
     font-size: 14px;
     color: #999;
-`;
-
-const UnavailableMessage = styled.div`
-    padding: 16px;
-    text-align: center;
-    color: #999;
-    font-size: 14px;
 `;

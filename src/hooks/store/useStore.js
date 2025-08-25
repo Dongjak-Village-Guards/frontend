@@ -24,6 +24,9 @@ const useStore = create(
       /** 주소 설정 페이지 접근 경로 추적 */
       fromHomePage: false,
       
+      /** 찜페이지에서 상세페이지로 이동했는지 추적 */
+      fromFavoritePage: false,
+      
       // ===== 주소 상태 관리 =====
       /** 현재 주소 (7글자 초과 시 ... 처리) */
     
@@ -110,6 +113,12 @@ const useStore = create(
        * @param {boolean} fromHome - HomePage에서 접근했는지 여부
        */
       setFromHomePage: (fromHome) => set({ fromHomePage: fromHome }),
+      
+      /**
+       * 찜페이지에서 상세페이지로 이동했는지 설정
+       * @param {boolean} fromFavorite - FavoritePage에서 접근했는지 여부
+       */
+      setFromFavoritePage: (fromFavorite) => set({ fromFavoritePage: fromFavorite }),
       
 
 
