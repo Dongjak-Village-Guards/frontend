@@ -7,36 +7,24 @@ const REST_API_BASE_URL = 'https://buynow.n-e.kr';
  * @returns {number} API time 파라미터 (0~23)
  */
 export const convertTimeToParam = (time) => {
-  console.log('=== convertTimeToParam 호출 ===');
-  console.log('입력 time:', time, '타입:', typeof time);
-  
+
   if (time === null) {
     const currentHour = new Date().getHours();
-    console.log('time이 null이므로 현재 시간 반환:', currentHour);
-    console.log('=== convertTimeToParam 종료 (null 처리) ===');
     return currentHour;
   }
   
   if (typeof time === 'string') {
     const hour = parseInt(time.split(':')[0]);
     const currentHour = new Date().getHours();
-    console.log('문자열 파싱 - hour:', hour, '현재 시간:', currentHour);
+
     
     // 백엔드 요청 ( time 0~36으로 반환, 다음날(24~36) ) 
     if(currentHour > 12 && hour / 12 < 1) {
       const result = hour + 24;
-      console.log('오후 조건 만족 - 다음날로 계산:', hour, '+ 24 =', result);
-      console.log('=== convertTimeToParam 종료 (오후 조건) ===');
       return result;
     }
-
-    console.log('일반 시간 반환:', hour);
-    console.log('=== convertTimeToParam 종료 (일반) ===');
     return hour;
   }
-  
-  console.log('기타 타입 반환:', time);
-  console.log('=== convertTimeToParam 종료 (기타) ===');
   return time;
 };
 
@@ -111,30 +99,20 @@ const transformApiData = (apiData) => {
  */
 export const fetchStoresFromAPI = async (time, category = null, accessToken = null) => {
   try {
-    console.log('가게 목록 조회 시작...');
-    console.log('time:', time);
-    console.log('category:', category);
-    console.log('accessToken:', accessToken ? `${accessToken.substring(0, 20)}...` : 'null');
     
     // 시간 파라미터 변환
     const timeParam = convertTimeToParam(time);
-    console.log('백엔드에 전송된 timeParam', timeParam);
-    
+
     // URL 구성
     const url = buildUrl(timeParam, category);
-    console.log('API 호출 URL:', url);
     
     // 헤더 구성
     const headers = buildHeaders(accessToken);
-    console.log('요청 헤더:', headers);
     
     const response = await fetch(url, {
       method: 'GET',
       headers: headers,
     });
-    
-    console.log('response status:', response.status);
-    console.log('response ok:', response.ok);
     
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -143,7 +121,6 @@ export const fetchStoresFromAPI = async (time, category = null, accessToken = nu
     }
     
     const stores = await response.json();
-    console.log('가게 목록 조회 성공:', stores.length, '개');
     
     // 백엔드 응답을 UI 구조로 변환
     const transformedStores = transformApiData(stores);
@@ -161,7 +138,6 @@ export const fetchStoresFromAPI = async (time, category = null, accessToken = nu
  */
 export const fetchStoreById = async (storeId) => {
   try {
-    console.log(`가게 상세 조회 시작... (ID: ${storeId})`);
     
     const response = await fetch(`${REST_API_BASE_URL}/stores?store_id=${storeId}`);
     
@@ -173,7 +149,6 @@ export const fetchStoreById = async (storeId) => {
     }
     
     const store = await response.json();
-    console.log('가게 상세 조회 성공:', store.store_name);
     
     return store;
   } catch (error) {
@@ -189,7 +164,6 @@ export const fetchStoreById = async (storeId) => {
  */
 export const fetchStoresByCategory = async (category) => {
   try {
-    console.log(`카테고리별 가게 조회 시작... (카테고리: ${category})`);
     
     const response = await fetch(`${REST_API_BASE_URL}/stores?store_category=${encodeURIComponent(category)}`);
     
@@ -198,7 +172,6 @@ export const fetchStoresByCategory = async (category) => {
     }
     
     const stores = await response.json();
-    console.log('카테고리별 가게 조회 성공:', stores.length, '개');
     
     return stores;
   } catch (error) {
@@ -213,7 +186,6 @@ export const fetchStoresByCategory = async (category) => {
  */
 export const fetchActiveStores = async () => {
   try {
-    console.log('활성화된 가게 조회 시작...');
     
     const response = await fetch(`${REST_API_BASE_URL}/stores?is_active=true`);
     
@@ -222,7 +194,6 @@ export const fetchActiveStores = async () => {
     }
     
     const stores = await response.json();
-    console.log('활성화된 가게 조회 성공:', stores.length, '개');
     
     return stores;
   } catch (error) {
@@ -238,7 +209,6 @@ export const fetchActiveStores = async () => {
  */
 export const fetchStoresByOwner = async (ownerId) => {
   try {
-    console.log(`운영자별 가게 조회 시작... (운영자 ID: ${ownerId})`);
     
     const response = await fetch(`${REST_API_BASE_URL}/stores?store_owner_id=${encodeURIComponent(ownerId)}`);
     
@@ -247,7 +217,6 @@ export const fetchStoresByOwner = async (ownerId) => {
     }
     
     const stores = await response.json();
-    console.log('운영자별 가게 조회 성공:', stores.length, '개');
     
     return stores;
   } catch (error) {
@@ -265,7 +234,6 @@ export const fetchStoresByOwner = async (ownerId) => {
  */
 export const fetchUserLikes = async (time, category = null, accessToken) => {
   try {
-    console.log('사용자 찜 목록 조회 시작...');
     
     // URL 구성
     let url = `${REST_API_BASE_URL}/v1/reservations/userlikes/?time=${time}`;
@@ -273,7 +241,6 @@ export const fetchUserLikes = async (time, category = null, accessToken) => {
       url += `&store_category=${category}`;
     }
     
-    console.log('찜 조회 API 호출 URL:', url);
     
     const response = await fetch(url, {
       method: 'GET',
@@ -289,7 +256,6 @@ export const fetchUserLikes = async (time, category = null, accessToken) => {
     }
     
     const likes = await response.json();
-    console.log('사용자 찜 목록 조회 성공:', likes.length, '개');
     
     return likes;
   } catch (error) {
@@ -306,7 +272,6 @@ export const fetchUserLikes = async (time, category = null, accessToken) => {
  */
 export const createLike = async (storeId, accessToken) => {
   try {
-    console.log(`찜 생성 시작... (가게 ID: ${storeId})`);
     
     const response = await fetch(`${REST_API_BASE_URL}/v1/reservations/userlikes/`, {
       method: 'POST',
@@ -325,7 +290,6 @@ export const createLike = async (storeId, accessToken) => {
     }
     
     const like = await response.json();
-    console.log('찜 생성 성공:', like.like_id);
     
     return like;
   } catch (error) {
@@ -342,8 +306,6 @@ export const createLike = async (storeId, accessToken) => {
  */
 export const deleteLike = async (likeId, accessToken) => {
   try {
-    console.log(`찜 삭제 시작... (찜 ID: ${likeId})`);
-    console.log('전달받은 accessToken:', accessToken ? `${accessToken.substring(0, 20)}...` : 'null');
     
     const response = await fetch(`${REST_API_BASE_URL}/v1/reservations/userlikes/`, {
       method: 'DELETE',
@@ -356,19 +318,12 @@ export const deleteLike = async (likeId, accessToken) => {
       }),
     });
     
-    console.log('삭제 요청 헤더:', {
-      'Authorization': `Bearer ${accessToken ? accessToken.substring(0, 20) + '...' : 'null'}`,
-      'Content-Type': 'application/json',
-    });
-    console.log('삭제 요청 body:', { like_id: likeId });
-    
     if (!response.ok) {
       const errorData = await response.json();
       console.error('삭제 응답 에러:', errorData);
       throw new Error(errorData.message || errorData.error || `HTTP error! status: ${response.status}`);
     }
     
-    console.log('찜 삭제 성공');
   } catch (error) {
     console.error('찜 삭제 실패:', error);
     throw error;
@@ -384,7 +339,6 @@ export const deleteLike = async (likeId, accessToken) => {
  */
 export const fetchStoreSpacesCount = async (storeId) => {
   try {
-    console.log(`Store Space 개수 조회 시작... (Store ID: ${storeId})`);
     
     const response = await fetch(`${REST_API_BASE_URL}/v1/stores/${storeId}/`);
     
@@ -394,7 +348,6 @@ export const fetchStoreSpacesCount = async (storeId) => {
     }
     
     const data = await response.json();
-    console.log('Store Space 개수 조회 성공:', data);
     
     return data;
   } catch (error) {
@@ -412,7 +365,6 @@ export const fetchStoreSpacesCount = async (storeId) => {
  */
 export const fetchStoreMenus = async (storeId, time, accessToken) => {
   try {
-    console.log(`Store 메뉴 조회 시작... (Store ID: ${storeId}, Time: ${time})`);
     
     const response = await fetch(`${REST_API_BASE_URL}/v1/stores/${storeId}/menus/?time=${time}`, {
       method: 'GET',
@@ -425,13 +377,6 @@ export const fetchStoreMenus = async (storeId, time, accessToken) => {
     }
     
     const data = await response.json();
-    console.log('Store 메뉴 조회 성공:', data);
-    console.log('=== 단일 Space API 응답 디버깅 ===');
-    console.log('API 응답 전체:', data);
-    console.log('menus 배열 길이:', data?.menus?.length);
-    console.log('첫 번째 메뉴:', data?.menus?.[0]);
-    console.log('첫 번째 메뉴 item_id:', data?.menus?.[0]?.item_id);
-    console.log('모든 메뉴의 item_id:', data?.menus?.map(menu => ({ menu_id: menu.menu_id, item_id: menu.item_id })));
     
     return data;
   } catch (error) {

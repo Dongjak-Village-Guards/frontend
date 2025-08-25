@@ -135,13 +135,7 @@ const useStore = create(
        * @param {string} newTime - 새로운 시간 (HH:MM 형식)
        */
       setTime: (newTime) => {
-        console.log('=== setTime 호출 ===');
-        console.log('이전 time:', get().time);
-        console.log('새로운 time:', newTime);
-        console.log('호출 스택:', new Error().stack);
         set({ time: newTime });
-        console.log('setTime 완료');
-        console.log('=== setTime 종료 ===');
       },
       
       /**
@@ -151,16 +145,10 @@ const useStore = create(
       checkAndUpdateTimeIfExpired: () => {
         const { time, currentTime, setTime } = get();
         
-        console.log('=== checkAndUpdateTimeIfExpired 시작 ===');
-        console.log('입력값 - time:', time, 'currentTime:', currentTime);
-        
         if (time === null) {
           // time이 null인 경우 초기화
           const nearestHour = getNearestHour(currentTime);
-          console.log('time이 null이므로 초기화 - getNearestHour 결과:', nearestHour);
           setTime(nearestHour);
-          console.log('checkAndUpdateTimeIfExpired: 초기 시간 설정됨:', nearestHour);
-          console.log('=== checkAndUpdateTimeIfExpired 종료 (null 처리) ===');
           return;
         }
         
@@ -169,23 +157,12 @@ const useStore = create(
         const [currentHour, currentMinute] = currentTime.split(':').map(Number);
         const nextHour = currentMinute === 0 ? (currentHour + 1) % 24 : (currentHour + 1) % 24;
         
-        console.log('시간 계산 결과:');
-        console.log('- timeHour (convertTimeToParam 결과):', timeHour);
-        console.log('- currentHour:', currentHour, 'currentMinute:', currentMinute);
-        console.log('- nextHour (계산된 다음 정각):', nextHour);
-        console.log('- 비교 조건: timeHour < nextHour =', timeHour < nextHour);
-        
         // time이 다음 정각보다 작으면 만료된 것으로 판단
         if (timeHour < nextHour) {
           const updatedTime = getNearestHour(currentTime);
-          console.log('시간 만료 감지! getNearestHour 결과:', updatedTime);
           setTime(updatedTime);
-          console.log('checkAndUpdateTimeIfExpired: 시간 만료로 인한 자동 업데이트:', time, '→', updatedTime);
         } else {
-          console.log('시간 만료되지 않음 - 업데이트 없음');
         }
-        
-        console.log('=== checkAndUpdateTimeIfExpired 종료 ===');
       },
       
       
@@ -198,7 +175,6 @@ const useStore = create(
           minute: '2-digit',
           hour12: false 
         });
-        console.log('updateCurrentTime 호출됨, 새 currentTime:', newTime);
         
         // currentTime만 업데이트, availableAt은 사용자가 직접 선택한 값 유지
         set({ currentTime: newTime });
@@ -208,17 +184,14 @@ const useStore = create(
        * 초기 시간 설정 (앱 시작 시 한 번만 호출)
        */
       initializeTime: () => {
-        console.log('=== initializeTime 호출 ===');
         const newTime = new Date().toLocaleTimeString('ko-KR', { 
           hour: '2-digit', 
           minute: '2-digit',
           hour12: false 
         });
-        console.log('현재 시간:', newTime);
         
         // time이 null일 때만 기본값 설정 (사용자가 선택한 값이 있으면 유지)
         const currentTime = get().time;
-        console.log('현재 저장된 time:', currentTime);
         
         if (currentTime === null) {
           const currentHour = new Date().getHours();
@@ -226,25 +199,16 @@ const useStore = create(
           const nextHour = currentMinute === 0 ? (currentHour + 1) % 24 : (currentHour + 1) % 24;
           const initialTime = `${String(nextHour).padStart(2, '0')}:00`;
           
-          console.log('time이 null이므로 초기화:');
-          console.log('- currentHour:', currentHour, 'currentMinute:', currentMinute);
-          console.log('- nextHour:', nextHour);
-          console.log('- initialTime:', initialTime);
-          
           set({ 
             currentTime: newTime,
             time: initialTime
           });
-          console.log('initializeTime: 초기 시간 설정 완료');
         } else {
-          console.log('기존 time이 있으므로 유지:', currentTime);
           
           set({ 
             currentTime: newTime
           });
-          console.log('initializeTime: currentTime만 업데이트 완료');
         }
-        console.log('=== initializeTime 종료 ===');
       },
       
       /**
@@ -260,7 +224,6 @@ const useStore = create(
       setFilters: (partial) => {
         const newFilters = { ...get().filters, ...partial };
         set({ filters: newFilters });
-        console.log('setFilters 호출됨, 새로운 filters:', newFilters);
       },
       
       /** 필터 초기화 */
@@ -281,17 +244,14 @@ const useStore = create(
           // accessToken 가져오기
           const { accessToken, isTokenValid, refreshTokens } = useUserInfo.getState();
           
-          console.log('fetchStores 호출 - accessToken:', accessToken ? `${accessToken.substring(0, 20)}...` : 'null');
           
           // 토큰이 있으면 유효성 확인 및 갱신
           if (accessToken && !isTokenValid()) {
-            console.log('토큰이 만료되었습니다. 토큰 갱신을 시도합니다.');
             const refreshSuccess = await refreshTokens();
             if (!refreshSuccess) {
               console.error('토큰 갱신에 실패했습니다.');
               // 토큰 갱신 실패 시에도 계속 진행 (익명 요청)
             } else {
-              console.log('토큰 갱신 성공');
             }
           }
           
@@ -303,7 +263,6 @@ const useStore = create(
           
           // 백엔드에서 받은 is_liked 필드 그대로 사용
           set({ stores: stores, loading: false });
-          console.log('가게 목록 가져오기 성공:', stores.length, '개');
         } catch (error) {
           console.error('가게 목록 가져오기 실패:', error);
           set({ loading: false });
@@ -332,8 +291,6 @@ const useStore = create(
         const { filters, stores, likedStoreIds, time } = get();
         const { accessToken, isTokenValid, refreshTokens } = useUserInfo.getState();
         
-        console.log('toggleLikeWithAPI 호출 - storeId:', storeId);
-        console.log('useUserInfo에서 가져온 accessToken:', accessToken ? `${accessToken.substring(0, 20)}...` : 'null');
         
         if (!accessToken) {
           console.error('사용자 인증 정보가 없습니다.');
@@ -343,14 +300,12 @@ const useStore = create(
 
         // 토큰 유효성 확인 및 갱신
         if (!isTokenValid()) {
-          console.log('토큰이 만료되었습니다. 토큰 갱신을 시도합니다.');
           const refreshSuccess = await refreshTokens();
           if (!refreshSuccess) {
             console.error('토큰 갱신에 실패했습니다.');
             alert('로그인이 만료되었습니다. 다시 로그인해주세요.');
             return;
           }
-          console.log('토큰 갱신 성공');
         }
 
         // 갱신된 토큰 가져오기
@@ -361,7 +316,6 @@ const useStore = create(
         const currentStore = stores.find(store => store.id === storeId);
         const isCurrentlyLiked = currentStore?.isLiked || likedStoreIds.includes(storeId);
         
-        console.log('현재 찜 상태:', isCurrentlyLiked);
         
         // Optimistic Update: 즉시 UI 업데이트
         set((state) => ({
@@ -382,20 +336,15 @@ const useStore = create(
               new Date().getHours();
             const categoryParam = filters.categories.length > 0 ? filters.categories[0] : null;
             
-            console.log('찜 목록 조회 파라미터:', { timeParam, categoryParam });
             
             const likes = await fetchUserLikes(timeParam, categoryParam, tokenToUse);
             const targetLike = likes.find(like => like.store_id === storeId);
-            
-            console.log('찜 목록 조회 결과:', likes);
-            console.log('찾은 targetLike:', targetLike);
             
             if (!targetLike) {
               throw new Error('찜 정보를 찾을 수 없습니다.');
             }
             
             await deleteLike(targetLike.like_id, tokenToUse);
-            console.log(`가게 ${storeId} 찜 삭제 성공 (like_id: ${targetLike.like_id})`);
             
             // likedStoreIds에서 제거
             set((state) => ({
@@ -404,7 +353,6 @@ const useStore = create(
           } else {
             // 아직 찜하지 않은 상태면 생성
             const newLike = await createLike(storeId, tokenToUse);
-            console.log(`가게 ${storeId} 찜 생성 성공:`, newLike.like_id);
             
             // likedStoreIds에 추가
             set((state) => ({
@@ -455,7 +403,6 @@ const useStore = create(
             timestamp: Date.now()
           };
           localStorage.setItem('reservationData', JSON.stringify(reservationData));
-          console.log('💾 예약 데이터를 localStorage에 저장:', reservationData);
         }
         
         set({
@@ -534,7 +481,6 @@ const useStore = create(
       getSortedStores: () => {
         const { stores, sortOption, filters, time } = get();
         const sortedStores = [...stores];
-        console.log('getSortedStores 호출, 현재 store 상태:', get());
         let filteredStores = [...stores];
         
         // 1) 업종 필터 적용
@@ -544,12 +490,11 @@ const useStore = create(
         //  filteredStores = filteredStores.filter(store => 
         //  filters.categories.includes(store.category)
           // );
-          console.log('업종 필터 적용됨:', filters.categories);
         }
 
         // 2) 시간 필터 적용 - 백서버에서 이미 필터링된 결과를 받아오므로 클라이언트에서 추가 필터링 불필요
         if (time) {
-          console.log('시간 필터 적용됨 (백서버에서 필터링):', time);
+
         }
 
         // 3) 정렬 적용

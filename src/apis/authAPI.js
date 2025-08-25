@@ -8,7 +8,6 @@ const REST_API_BASE_URL = 'https://buynow.n-e.kr';
  */
 export const loginWithGoogle = async (idToken) => {
   try {
-    console.log('구글 로그인/회원가입 시작...');
     
     const response = await fetch(`${REST_API_BASE_URL}/v1/accounts/login/`, {
       method: 'POST',
@@ -26,7 +25,7 @@ export const loginWithGoogle = async (idToken) => {
     }
 
     const data = await response.json();
-    console.log('구글 로그인/회원가입 성공:', data.message);
+
     
     return data;
   } catch (error) {
@@ -42,7 +41,7 @@ export const loginWithGoogle = async (idToken) => {
  */
 export const refreshAccessToken = async (refreshToken) => {
   try {
-    console.log('액세스 토큰 재발급 시작...');
+
     
     const response = await fetch(`${REST_API_BASE_URL}/v1/accounts/login/refresh/`, {
       method: 'POST',
@@ -60,7 +59,7 @@ export const refreshAccessToken = async (refreshToken) => {
     }
 
     const data = await response.json();
-    console.log('액세스 토큰 재발급 성공');
+
     
     return data;
   } catch (error) {
@@ -76,7 +75,7 @@ export const refreshAccessToken = async (refreshToken) => {
  */
 export const fetchUserInfo = async (accessToken) => {
   try {
-    console.log('사용자 정보 조회 시작...');
+
     
     const response = await fetch(`${REST_API_BASE_URL}/v1/accounts/user/me/`, {
       method: 'GET',
@@ -92,7 +91,7 @@ export const fetchUserInfo = async (accessToken) => {
     }
 
     const data = await response.json();
-    console.log('사용자 정보 조회 성공:', data.user_nickname);
+
     
     return data;
   } catch (error) {
@@ -109,8 +108,6 @@ export const fetchUserInfo = async (accessToken) => {
  */
 export const updateUserAddress = async (accessToken, address) => {
   try {
-    console.log('사용자 주소 업데이트 시작...');
-    console.log('업데이트할 주소:', address);
     
     const response = await fetch(`${REST_API_BASE_URL}/v1/accounts/user/me/`, {
       method: 'PATCH',
@@ -144,7 +141,6 @@ export const updateUserAddress = async (accessToken, address) => {
     }
 
     const data = await response.json();
-    console.log('사용자 주소 업데이트 성공:', data);
     
     return data;
   } catch (error) {

@@ -51,7 +51,6 @@ const useUserInfo = create(
           tokenExpiry: expiryTime
         });
         
-        console.log('토큰 저장 완료:', { user_email, user_role });
       },
       
       /**
@@ -70,7 +69,6 @@ const useUserInfo = create(
               jibunAddr: userInfo.user_address
             };
             set({ userAddress: addressData });
-            console.log('기존 주소 설정 완료:', userInfo.user_address);
           }
           
           return userInfo;
@@ -109,18 +107,15 @@ const useUserInfo = create(
           try {
             // 토큰 유효성 확인 및 갱신
             if (!isTokenValid()) {
-              console.log('토큰이 만료되었습니다. 토큰 갱신을 시도합니다.');
               const refreshSuccess = await refreshTokens();
               if (!refreshSuccess) {
                 console.error('토큰 갱신에 실패했습니다.');
                 throw new Error('토큰 갱신 실패');
               }
-              console.log('토큰 갱신 성공');
             }
 
             // 백엔드로 주소 업데이트 요청 (토큰 갱신 후 업데이트된 accessToken 사용)
             await updateUserAddress(get().accessToken, address.roadAddr);
-            console.log('백엔드 주소 업데이트 성공');
           } catch (error) {
             console.error('백엔드 주소 업데이트 실패:', error);
             // 백엔드 업데이트 실패 시에도 로컬 주소는 유지 (사용자 경험을 위해)
@@ -177,7 +172,6 @@ const useUserInfo = create(
             tokenExpiry: Date.now() + (120 * 60 * 60 * 1000)
           });
           
-          console.log('토큰 갱신 성공');
           return true;
         } catch (error) {
           console.error('토큰 갱신 실패:', error);

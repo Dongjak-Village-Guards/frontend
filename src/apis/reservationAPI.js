@@ -8,7 +8,6 @@ const REST_API_BASE_URL = 'https://buynow.n-e.kr';
  */
 export const fetchUserReservations = async (accessToken) => {
   try {
-    console.log('사용자 예약 목록 조회 시작...');
     
     const response = await fetch(`${REST_API_BASE_URL}/v1/reservations/me/`, {
       method: 'GET',
@@ -24,7 +23,6 @@ export const fetchUserReservations = async (accessToken) => {
     }
 
     const data = await response.json();
-    console.log('사용자 예약 목록 조회 성공:', data.length, '개');
     
     return data;
   } catch (error) {
@@ -41,7 +39,6 @@ export const fetchUserReservations = async (accessToken) => {
  */
 export const cancelReservation = async (reservationId, accessToken) => {
   try {
-    console.log('예약 취소 시작...', reservationId);
     
     const response = await fetch(`${REST_API_BASE_URL}/v1/reservations/${reservationId}/`, {
       method: 'DELETE',
@@ -74,13 +71,11 @@ export const cancelReservation = async (reservationId, accessToken) => {
 
     // 204 No Content 응답 처리
     if (response.status === 204) {
-      console.log('예약 취소 성공 (204 No Content)');
       return { success: true, message: '예약이 성공적으로 취소되었습니다.' };
     }
 
     // JSON 응답이 있는 경우
     const data = await response.json();
-    console.log('예약 취소 성공:', data);
     
     return data;
   } catch (error) {
