@@ -11,7 +11,6 @@ import useUserInfo from '../hooks/user/useUserInfo';
 import styled from 'styled-components';
 
 const Login = () => {
-  const navigate = useNavigate();
   const { accessToken } = useUserInfo();
 
   // 로그인 페이지에서 히스토리 초기화 및 URL 고정

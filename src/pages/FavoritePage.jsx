@@ -22,7 +22,6 @@ const FavoritePage = () => {
   const { 
     stores, 
     currentTime, 
-    setcurrentpage,
     updateCurrentTime,
     filters,
     time,
