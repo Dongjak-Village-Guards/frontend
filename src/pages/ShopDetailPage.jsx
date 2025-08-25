@@ -503,7 +503,7 @@ const ShopDetailPage = () => {
         const featured = getFeaturedMenu();
         
         if (featured) {
-            const specialty = `${featured.menu_name} 전문`;
+            const specialty = `${featured.menu_name}`;
             return specialty;
         }
         return 'N/A';

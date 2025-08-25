@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Logo from '../assets/images/logo_login.png';
 import { ReactComponent as Bubble } from '../assets/images/bubble.svg';
+import { ReactComponent as Link } from '../assets/images/link.svg';
 import Google from '../components/features/auth/Google/Google';
 import useUserInfo from '../hooks/user/useUserInfo';
 import styled from 'styled-components';
@@ -83,6 +84,13 @@ const Login = () => {
       <GoogleButton>
         <Google className='google-component' />
       </GoogleButton>
+
+      <ProviderLinkButton>
+        <a href="https://buynow.streamlit.app/">
+          공급자 페이지 바로가기
+          <Link />
+        </a>
+      </ProviderLinkButton>
     </Container>
   );
 };
@@ -164,8 +172,43 @@ const BubbleBox = styled.div`
 const GoogleButton = styled.div`
   width: 296px;
   cursor: pointer;
+  margin-bottom: 20px;
+  display: flex;
 
   .google-component {
     left: 26px;
+  }
+`;
+
+const ProviderLinkButton = styled.div`
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  cursor: pointer;
+
+  a {
+    color: #000000dd;
+    text-underline-offset: 2px;
+    transition: color 0.2s ease;
+    height: 17px;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+
+    &:hover {
+      color: #DA2538;
+
+      svg {
+        fill: #DA2538;
+      }
+    }
+  }
+
+  svg {
+    width: 17px;
+    height: 17px;
+    flex-shrink: 0;
+    fill: currentColor;
+    transition: fill 0.2s ease;
   }
 `;
