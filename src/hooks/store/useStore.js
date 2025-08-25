@@ -26,6 +26,8 @@ const useStore = create(
       
       /** 찜페이지에서 상세페이지로 이동했는지 추적 */
       fromFavoritePage: false,
+      /** 일정페이지에서 상세페이지로 이동했는지 추적 */
+      fromSchedulePage: false,
       
       // ===== 주소 상태 관리 =====
       /** 현재 주소 (7글자 초과 시 ... 처리) */
@@ -119,6 +121,12 @@ const useStore = create(
        * @param {boolean} fromFavorite - FavoritePage에서 접근했는지 여부
        */
       setFromFavoritePage: (fromFavorite) => set({ fromFavoritePage: fromFavorite }),
+
+      /**
+       * 일정페이지에서 상세페이지로 이동했는지 설정
+       * @param {boolean} fromSchedule - SchedulePage에서 접근했는지 여부
+       */
+      setFromSchedulePage: (fromSchedule) => set({ fromSchedulePage: fromSchedule }),
       
 
 

@@ -45,7 +45,8 @@ const ShopDetailPage = () => {
         togglePiAgreement,
         toggleLikeWithAPI,
         restoreReservationState,
-        fromFavoritePage
+        fromFavoritePage,
+        fromSchedulePage,
     } = useStore();
 
     const { accessToken } = useUserInfo();
@@ -121,11 +122,18 @@ const ShopDetailPage = () => {
                 // 출발 페이지에 따라 조건부 처리
                 if (fromFavoritePage) {
                     // 찜페이지에서 온 경우 찜페이지로 이동
-                    console.log(fromFavoritePage, "체크1");
+                    console.log(fromFavoritePage, "체크건");
                     setTimeout(() => {
                         navigate('/favorites', { replace: true });
                     }, 50);
-                } else {
+                } 
+                else if (fromSchedulePage) {
+                    // 일정페이지에서 온 경우 일정페이지로 이동
+                    setTimeout(() => {
+                        navigate('/history', { replace: true });
+                    }, 50);
+                } 
+                else {
                     // 다른 페이지에서 온 경우 홈페이지로 이동
                     setTimeout(() => {
                         navigate('/', { replace: true });
@@ -139,7 +147,7 @@ const ShopDetailPage = () => {
         return () => {
             window.removeEventListener('popstate', handlePopState);
         };
-    }, [navigate, fromFavoritePage]); // fromFavoritePage 의존성 추가
+    }, [navigate, fromFavoritePage, fromSchedulePage]); // fromFavoritePage, fromSchedulePage 의존성 추가
 
     // URL 변경 감지 및 브라우저 뒤로가기 처리
     useEffect(() => {
@@ -158,7 +166,14 @@ const ShopDetailPage = () => {
                     setTimeout(() => {
                         navigate('/favorites', { replace: true });
                     }, 50);
-                } else {
+                } 
+                // 출발 페이지에 따라 조건부 처리
+                if (fromSchedulePage) {
+                    setTimeout(() => {
+                        navigate('/history', { replace: true });
+                    }, 50);
+                } 
+                else {
                     setTimeout(() => {
                         navigate('/', { replace: true });
                     }, 50);
@@ -175,7 +190,14 @@ const ShopDetailPage = () => {
                     setTimeout(() => {
                         navigate('/favorites', { replace: true });
                     }, 50);
-                } else {
+                } 
+                // 출발 페이지에 따라 조건부 처리
+                if (fromSchedulePage) {
+                    setTimeout(() => {
+                        navigate('/history', { replace: true });
+                    }, 50);
+                } 
+                else {
                     setTimeout(() => {
                         navigate('/', { replace: true });
                     }, 50);
@@ -240,7 +262,7 @@ const ShopDetailPage = () => {
             // 이전 URL 업데이트
             previousPathnameRef.current = location.pathname;
         }
-    }, [location.pathname, navigate, showPiAgreement, selectedSpaceId, storeData, fromFavoritePage]);
+    }, [location.pathname, navigate, showPiAgreement, selectedSpaceId, storeData, fromFavoritePage, fromSchedulePage]);
 
     // 현재 가게의 Zustand 상태에서 좋아요 상태 가져오기
     const currentStore = stores.find(store => store.id === parseInt(id));
@@ -407,7 +429,7 @@ const ShopDetailPage = () => {
         if (id && time !== null) {
             loadStoreData();
         }
-    }, [id, time, accessToken, location.pathname, navigate, fromFavoritePage]); // fromFavoritePage 의존성 추가
+    }, [id, time, accessToken, location.pathname, navigate, fromFavoritePage, fromSchedulePage]); // fromFavoritePage, fromSchedulePage 의존성 추가
 
     // 특정 Space 선택 시 상세 데이터 로드
     const handleSpaceSelect = async (spaceId) => {
@@ -491,18 +513,23 @@ const ShopDetailPage = () => {
         } else if (spaceCount >= 2 && !selectedSpaceId) {
             if (fromFavoritePage) {
                 // 찜페이지에서 온 경우 찜페이지로 이동
-                console.log(fromFavoritePage, "체크체크");
                 navigate('/favorites');
-                console.log(fromFavoritePage, "체크체크2");
+            }
+            else if (fromSchedulePage) {
+                // 스케줄 페이지에서 온 경우 스케줄 페이지로 이동
+                navigate('/history');
             }
             else navigate('/');
+
         } else if (spaceCount === 1) {
             // 출발 페이지에 따라 조건부 처리
             if (fromFavoritePage) {
                 // 찜페이지에서 온 경우 찜페이지로 이동
-                console.log(fromFavoritePage, "체크체크");
                 navigate('/favorites');
-                console.log(fromFavoritePage, "체크체크2");
+            }
+            else if (fromSchedulePage) {
+                // 스케줄 페이지에서 온 경우 스케줄 페이지로 이동
+                navigate('/history');
             }
             else navigate('/');
         } else {

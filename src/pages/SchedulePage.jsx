@@ -15,7 +15,7 @@ import ScrollContainer from '../components/layout/ScrollContainer';
 
 const SchedulePage = () => {
   const navigate = useNavigate();
-  const { currentPage } = useStore();
+  const { currentPage, fromSchedulePage, setFromSchedulePage } = useStore();
   const { accessToken, isTokenValid, refreshTokens } = useUserInfo();
   
   // 로딩 상태
@@ -112,6 +112,11 @@ const SchedulePage = () => {
       setLoading(false);
     }
   };
+
+  // 일정페이지 렌더링 시 fromSchedulePage 초기화
+    useEffect(() => {
+      setFromSchedulePage(false);
+    }, []);
 
   // 컴포넌트 마운트 시 예약 목록 조회
   useEffect(() => {
@@ -210,11 +215,7 @@ const SchedulePage = () => {
 
   // 가게 제목 클릭 핸들러
   const handleSalonClick = async (storeId, visitTime) => {
-    console.log('=== SchedulePage 가게 클릭 디버깅 ===');
-    console.log('클릭된 가게 ID:', storeId);
-    console.log('클릭된 가게 이름:', appointments.find(apt => apt.storeId === storeId)?.salonName);
-    console.log('방문 시간:', visitTime);
-    console.log('현재 예약 목록 개수:', appointments.length);
+    setFromSchedulePage(true); // 일정페이지에서 출발함을 표시
     
     if (!storeId) {
       console.warn('가게 ID가 없습니다.');
