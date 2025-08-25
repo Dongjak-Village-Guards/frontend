@@ -162,11 +162,9 @@ const ShopDetailPage = () => {
             // URL 기반으로 showPiAgreement 상태 동기화 (브라우저 뒤로가기/앞으로가기 시에만)
             if (urlState.type === 'agreement') {
                 if (!showPiAgreement) {
-                    console.log('🔍 브라우저 네비게이션 - showPiAgreement true로 설정');
                     togglePiAgreement();
                 }
             } else if (showPiAgreement) {
-                console.log('🔍 브라우저 네비게이션 - showPiAgreement false로 설정');
                 togglePiAgreement();
             }
             
@@ -182,7 +180,7 @@ const ShopDetailPage = () => {
                     }, 50);
                 } 
                 // 출발 페이지에 따라 조건부 처리
-                if (fromSchedulePage) {
+                else if (fromSchedulePage) {
                     setTimeout(() => {
                         navigate('/history', { replace: true });
                     }, 50);
@@ -206,12 +204,13 @@ const ShopDetailPage = () => {
                     }, 50);
                 } 
                 // 출발 페이지에 따라 조건부 처리
-                if (fromSchedulePage) {
+                else if (fromSchedulePage) {
                     setTimeout(() => {
                         navigate('/history', { replace: true });
                     }, 50);
                 } 
                 else {
+                    console.log(fromFavoritePage, "gun");
                     setTimeout(() => {
                         navigate('/', { replace: true });
                     }, 50);
