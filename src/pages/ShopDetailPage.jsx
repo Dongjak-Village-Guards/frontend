@@ -1197,7 +1197,7 @@ const ShopDetailPage = () => {
         console.log('대표 메뉴:', featured);
         
         if (featured) {
-            const specialty = `${featured.menu_name} 전문`;
+            const specialty = `${featured.menu_name}`;
             console.log('전문 분야:', specialty);
             return specialty;
         }
