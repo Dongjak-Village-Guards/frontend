@@ -21,44 +21,6 @@ function App() {
   // useUserInfo에서 사용자 상태 가져오기
   const { authUser, logoutUser, refreshTokens, isTokenValid } = useUserInfo();
 
-
-
-  // 토큰 만료 체크 및 자동 갱신
-//  useEffect(() => {
-//    const checkTokenAndRefresh = async () => {
-//      if (authUser && tokenExpiry) {
-//        const now = Date.now();
-//        const timeUntilExpiry = tokenExpiry - now;
-        
-//        // 토큰이 만료된 경우
-//        if (now > tokenExpiry) {
-//          console.log('토큰 만료로 자동 로그아웃');
-//          alert('토큰이 만료되었습니다. 다시 로그인해주세요.');
-//          logoutUser();
-//          return;
-//        }
-        
-//        // 토큰 만료 5분 전에 자동 갱신 시도
-//        if (timeUntilExpiry < 5 * 60 * 1000 && timeUntilExpiry > 0) {
-//          console.log('토큰 만료 5분 전, 자동 갱신 시도');
-//          const success = await refreshTokens();
-//          if (!success) {
-//            console.log('토큰 갱신 실패로 자동 로그아웃');
-//            alert('토큰이 만료되었습니다. 다시 로그인해주세요.');
-//            logoutUser();
-//          }
-//        }
-//      }
-//    };
-
-//    // 초기 체크
-//    checkTokenAndRefresh();
-
-//    // 1분마다 체크
-//    const interval = setInterval(checkTokenAndRefresh, 60000);
-    
-//    return () => clearInterval(interval);
-//  }, [authUser, tokenExpiry, logoutUser, refreshTokens]);
     useEffect(() => {
     const checkTokenAndRefresh = async () => {
         if (authUser && !isTokenValid()) {

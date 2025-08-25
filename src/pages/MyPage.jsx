@@ -61,7 +61,7 @@ const MyPage = () => {
       {/* 사용자 정보 섹션 */}
       <UserInfoSection>
         <ProfileImage>
-          <ProfilePlaceholder />
+          <ProfilePlaceholder src={userInfo.user_image_url} />
         </ProfileImage>
         <UserDetails>
           <UserName>{userInfo?.user_nickname || authUser?.displayName || 'randomuser_99999'}</UserName>
@@ -157,7 +157,7 @@ const ProfileImage = styled.div`
   flex-shrink: 0;
 `;
 
-const ProfilePlaceholder = styled.div`
+const ProfilePlaceholder = styled.img`
   width: 80px;
   height: 80px;
   border-radius: 50%;
