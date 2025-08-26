@@ -3,21 +3,31 @@
  * 로그인 다음 or 홈 화면에서 주소 변경할 때 사용
  */
 
-import Search from '../components/address/Search'
+import Search from '../components/features/address/AddressSearch'
 import styled from 'styled-components'
 import useStore from '../hooks/store/useStore'
 import useUserInfo from '../hooks/user/useUserInfo'
-import TopNavBar from '../components/nav/TopNavBar'
+import TopNavBar from '../components/layout/TopNavBar/TopNavBar'
+import { useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
 
 const SearchAddressPage = () => {
-  const { setCurrentPage, fromHomePage } = useStore();
+  const navigate = useNavigate();
+  const { setCurrentPage, fromHomePage, setFromHomePage } = useStore();
   const { userAddress } = useUserInfo();
+
+  // userAddress가 있으면 홈에서 온 것으로 판단, 없으면 로그인 후 첫 주소 설정
+  useEffect(() => {
+    const isFromHome = userAddress !== null;
+    setFromHomePage(isFromHome);
+  }, [userAddress, setFromHomePage]);
 
   console.log('SearchAddressPage - userAddress:', userAddress);
   console.log('SearchAddressPage - fromHomePage:', fromHomePage);
 
   const handleBackClick = () => {
-    setCurrentPage('home');
+    //setCurrentPage('home');
+    navigate(-1);
   };
 
   return (
@@ -28,7 +38,7 @@ const SearchAddressPage = () => {
           onBack={handleBackClick}
         />
       )}
-      <AddressContainer>
+      <AddressContainer fromHomePage={fromHomePage}>
         <AddressFrame>
           <TextContainer>
             <p className='title'>우리 동네를 등록해보세요</p>
@@ -47,46 +57,34 @@ export default SearchAddressPage;
 
 const AddressWrapper = styled.div`
   background-color: #ffffff;
-//  display: flex;
+  display: flex;
   flex-direction: column;
   min-height: 100vh;
-//  justify-content: center;
-//  align-items: flex-start;
   width: 100%;
-//  height: 100%;
-//  position: relative;
+  height: 100vh;
+  overflow: hidden;
 `;
 
 const AddressContainer = styled.div`
-//  position: relative;
   background-color: #ffffff;
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  justify-content: ${props => props.fromHomePage ? 'flex-start' : 'center'};
+  padding-top: ${props => props.fromHomePage ? '72px' : '0'};
 `;
 
 const AddressFrame = styled.div`
-//  position: relative;
-//  top: 128px;
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   padding: 0 16px;
 `;
 
 const TextContainer = styled.div`
   width: 100%;
-
-//  // 스크롤시 고정역할
-//  position: sticky;
-//  background-color: white;
-////  top: clamp(80px, 8vh, 4vh);
-//  top: 50px;
-////  padding-top: 1rem;
 
   .title {
     color: #282828;

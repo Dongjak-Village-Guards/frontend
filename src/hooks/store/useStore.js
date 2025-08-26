@@ -6,8 +6,9 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { fetchStoresFromAPI, fetchUserLikes, createLike, deleteLike } from '../../apis/storeAPI';
+import { fetchStoresFromAPI, fetchUserLikes, createLike, deleteLike, convertTimeToParam } from '../../apis/storeAPI';
 import useUserInfo from '../user/useUserInfo';
+import { getNearestHour } from '../../components/features/filter/TimeFilter/TimeFilter';
 
 const useStore = create(
   persist(
@@ -18,14 +19,19 @@ const useStore = create(
       
       // ===== 페이지 상태 관리 =====
       /** 현재 활성화된 페이지 */
-      currentPage: 'login',
+      currentPage: 'home',
       
       /** 주소 설정 페이지 접근 경로 추적 */
       fromHomePage: false,
       
+      /** 찜페이지에서 상세페이지로 이동했는지 추적 */
+      fromFavoritePage: false,
+      /** 일정페이지에서 상세페이지로 이동했는지 추적 */
+      fromSchedulePage: false,
+      
       // ===== 주소 상태 관리 =====
       /** 현재 주소 (7글자 초과 시 ... 처리) */
-      currentAddress: '노량진동 240-30',
+    
       
       // ===== 시간 상태 관리 =====
       /** 현재 시간 (HH:MM 형식) */
@@ -111,20 +117,75 @@ const useStore = create(
       setFromHomePage: (fromHome) => set({ fromHomePage: fromHome }),
       
       /**
-       * 현재 주소 변경 (7글자 초과 시 ... 처리)
-       * @param {string} address - 새로운 주소
+       * 찜페이지에서 상세페이지로 이동했는지 설정
+       * @param {boolean} fromFavorite - FavoritePage에서 접근했는지 여부
        */
-      setCurrentAddress: (address) => {
-        const truncatedAddress = address.length > 7 ? `${address.slice(0, 7)}...` : address;
-        set({ currentAddress: truncatedAddress });
-      },
+      setFromFavoritePage: (fromFavorite) => set({ fromFavoritePage: fromFavorite }),
+
+      /**
+       * 일정페이지에서 상세페이지로 이동했는지 설정
+       * @param {boolean} fromSchedule - SchedulePage에서 접근했는지 여부
+       */
+      setFromSchedulePage: (fromSchedule) => set({ fromSchedulePage: fromSchedule }),
+      
+
 
        /**
        * 시간 설정 (AppStorage에 저장)
        * @param {string} newTime - 새로운 시간 (HH:MM 형식)
        */
       setTime: (newTime) => {
+        console.log('=== setTime 호출 ===');
+        console.log('이전 time:', get().time);
+        console.log('새로운 time:', newTime);
+        console.log('호출 스택:', new Error().stack);
         set({ time: newTime });
+        console.log('setTime 완료');
+        console.log('=== setTime 종료 ===');
+      },
+      
+      /**
+       * 시간 만료 체크 및 자동 업데이트
+       * 현재 설정된 time이 현재 시각의 다음 정각보다 작으면 자동으로 다음 정각으로 업데이트
+       */
+      checkAndUpdateTimeIfExpired: () => {
+        const { time, currentTime, setTime } = get();
+        
+        console.log('=== checkAndUpdateTimeIfExpired 시작 ===');
+        console.log('입력값 - time:', time, 'currentTime:', currentTime);
+        
+        if (time === null) {
+          // time이 null인 경우 초기화
+          const nearestHour = getNearestHour(currentTime);
+          console.log('time이 null이므로 초기화 - getNearestHour 결과:', nearestHour);
+          setTime(nearestHour);
+          console.log('checkAndUpdateTimeIfExpired: 초기 시간 설정됨:', nearestHour);
+          console.log('=== checkAndUpdateTimeIfExpired 종료 (null 처리) ===');
+          return;
+        }
+        
+        // 현재 설정된 time과 다음 정각 비교
+        const timeHour = convertTimeToParam(time);
+        const [currentHour, currentMinute] = currentTime.split(':').map(Number);
+        const nextHour = currentMinute === 0 ? (currentHour + 1) % 24 : (currentHour + 1) % 24;
+        
+        console.log('시간 계산 결과:');
+        console.log('- timeHour (convertTimeToParam 결과):', timeHour);
+        console.log('- currentHour:', currentHour, 'currentMinute:', currentMinute);
+        console.log('- nextHour (계산된 다음 정각):', nextHour);
+        console.log('- 비교 조건: timeHour < nextHour =', timeHour < nextHour);
+        
+        // time이 다음 정각보다 작으면 만료된 것으로 판단
+        if (timeHour < nextHour) {
+          const updatedTime = getNearestHour(currentTime);
+          console.log('시간 만료 감지! getNearestHour 결과:', updatedTime);
+          setTime(updatedTime);
+          console.log('checkAndUpdateTimeIfExpired: 시간 만료로 인한 자동 업데이트:', time, '→', updatedTime);
+        } else {
+          console.log('시간 만료되지 않음 - 업데이트 없음');
+        }
+        
+        console.log('=== checkAndUpdateTimeIfExpired 종료 ===');
       },
       
       
@@ -147,33 +208,43 @@ const useStore = create(
        * 초기 시간 설정 (앱 시작 시 한 번만 호출)
        */
       initializeTime: () => {
+        console.log('=== initializeTime 호출 ===');
         const newTime = new Date().toLocaleTimeString('ko-KR', { 
           hour: '2-digit', 
           minute: '2-digit',
           hour12: false 
         });
+        console.log('현재 시간:', newTime);
         
         // time이 null일 때만 기본값 설정 (사용자가 선택한 값이 있으면 유지)
         const currentTime = get().time;
+        console.log('현재 저장된 time:', currentTime);
+        
         if (currentTime === null) {
           const currentHour = new Date().getHours();
           const currentMinute = new Date().getMinutes();
           const nextHour = currentMinute === 0 ? (currentHour + 1) % 24 : (currentHour + 1) % 24;
           const initialTime = `${String(nextHour).padStart(2, '0')}:00`;
           
-          console.log('initializeTime 호출됨, 초기 시간:', newTime, '초기 time:', initialTime);
+          console.log('time이 null이므로 초기화:');
+          console.log('- currentHour:', currentHour, 'currentMinute:', currentMinute);
+          console.log('- nextHour:', nextHour);
+          console.log('- initialTime:', initialTime);
           
           set({ 
             currentTime: newTime,
             time: initialTime
           });
+          console.log('initializeTime: 초기 시간 설정 완료');
         } else {
-          console.log('initializeTime 호출됨, 초기 시간:', newTime, '기존 time 유지:', currentTime);
+          console.log('기존 time이 있으므로 유지:', currentTime);
           
           set({ 
             currentTime: newTime
           });
+          console.log('initializeTime: currentTime만 업데이트 완료');
         }
+        console.log('=== initializeTime 종료 ===');
       },
       
       /**
@@ -230,14 +301,9 @@ const useStore = create(
           // API 호출 (storeAPI에서 모든 로직 처리)
           const stores = await fetchStoresFromAPI(time, category, currentToken);
           
-          // 찜 상태 동기화: likedStoreIds와 일치하는 가게들의 isLiked를 true로 설정
-          const storesWithLikeStatus = stores.map(store => ({
-            ...store,
-            isLiked: get().likedStoreIds.includes(store.id)
-          }));
-          
-          set({ stores: storesWithLikeStatus, loading: false });
-          console.log('가게 목록 가져오기 성공:', storesWithLikeStatus.length, '개');
+          // 백엔드에서 받은 is_liked 필드 그대로 사용
+          set({ stores: stores, loading: false });
+          console.log('가게 목록 가져오기 성공:', stores.length, '개');
         } catch (error) {
           console.error('가게 목록 가져오기 실패:', error);
           set({ loading: false });
@@ -364,62 +430,7 @@ const useStore = create(
         }
       },
 
-      /**
-       * 사용자 찜 목록 조회
-       */
-      fetchUserLikes: async () => {
-        const { filters, stores, time } = get();
-        const { accessToken, isTokenValid, refreshTokens } = useUserInfo.getState();
-        
-        if (!accessToken) {
-          console.error('사용자 인증 정보가 없습니다.');
-          return;
-        }
 
-        // 토큰 유효성 확인 및 갱신
-        if (!isTokenValid()) {
-          console.log('토큰이 만료되었습니다. 토큰 갱신을 시도합니다.');
-          const refreshSuccess = await refreshTokens();
-          if (!refreshSuccess) {
-            console.error('토큰 갱신에 실패했습니다.');
-            return;
-          }
-          console.log('토큰 갱신 성공');
-        }
-
-        // 갱신된 토큰 가져오기
-        const { accessToken: refreshedToken } = useUserInfo.getState();
-        const tokenToUse = refreshedToken || accessToken;
-
-        try {
-          // time 파라미터 변환
-          const timeParam = time ? 
-            parseInt(time.split(':')[0]) : 
-            new Date().getHours();
-          
-          // category 파라미터 (첫 번째 카테고리 사용)
-          const categoryParam = filters.categories.length > 0 ? filters.categories[0] : null;
-          
-          const likes = await fetchUserLikes(timeParam, categoryParam, tokenToUse);
-          
-          // 찜한 가게 ID 목록 업데이트
-          const likedIds = likes.map(like => like.store_id);
-          set({ likedStoreIds: likedIds });
-          
-          // 현재 가게 목록의 찜 상태도 함께 업데이트
-          const updatedStores = stores.map(store => ({
-            ...store,
-            isLiked: likedIds.includes(store.id)
-          }));
-          set({ stores: updatedStores });
-          
-          console.log('사용자 찜 목록 조회 완료:', likedIds.length, '개');
-        } catch (error) {
-          console.error('사용자 찜 목록 조회 실패:', error);
-          // 에러 발생 시 빈 배열로 설정
-          set({ likedStoreIds: [] });
-        }
-      },
 
       selectDesigner: (designer) => set({
         selectedDesigner: designer,
@@ -434,24 +445,77 @@ const useStore = create(
        * @param {Object} menu - 선택된 메뉴
        * @param {Object} designer - 선택된 디자이너 (선택 사항)
        */
-      startReservation: (menu, designer = null) => set({
-        isReserving: true,
-        selectedMenu: menu,
-        selectedDesigner: designer,
-        isAgreed: false,  // 초기화
-        showPiAgreement: false,
-      }),
+      startReservation: (menu, designer = null) => {
+        
+        // 예약 상태를 localStorage에 저장 (새로고침 시 복원용)
+        if (menu) {
+          const reservationData = {
+            menu: menu,
+            designer: designer,
+            timestamp: Date.now()
+          };
+          localStorage.setItem('reservationData', JSON.stringify(reservationData));
+          console.log('💾 예약 데이터를 localStorage에 저장:', reservationData);
+        }
+        
+        set({
+          isReserving: true,
+          selectedMenu: menu,
+          selectedDesigner: designer,
+          isAgreed: false,  // 초기화
+          showPiAgreement: false,
+        });
+      },
 
       /**
        * 예약 취소
        */
-      cancelReservation: () => set({
-        isReserving: false,
-        selectedMenu: null,
-        selectedDesigner: null,
-        showPiAgreement: false,
-        isAgreed: false,
-      }),
+      cancelReservation: () => {
+        // localStorage에서 예약 데이터 제거
+        localStorage.removeItem('reservationData');
+        
+        set({
+          isReserving: false,
+          selectedMenu: null,
+          selectedDesigner: null,
+          showPiAgreement: false,
+          isAgreed: false,
+        });
+      },
+
+      /**
+       * 새로고침 시 예약 상태 복원
+       */
+      restoreReservationState: () => {
+        const reservationData = localStorage.getItem('reservationData');
+        
+        if (reservationData) {
+          try {
+            const data = JSON.parse(reservationData);
+            
+            // 24시간 이내의 데이터만 유효
+            const now = Date.now();
+            const dataAge = now - data.timestamp;
+            const maxAge = 24 * 60 * 60 * 1000; // 24시간
+            
+            if (dataAge < maxAge) {
+              set({
+                isReserving: true,
+                selectedMenu: data.menu,
+                selectedDesigner: data.designer,
+                isAgreed: false,
+                //showPiAgreement: false,
+              });
+              return true;
+            } else {
+              localStorage.removeItem('reservationData');
+            }
+          } catch (error) {
+            localStorage.removeItem('reservationData');
+          }
+        }
+        return false;
+      },
 
       /**
        * 개인정보 동의서 표시/숨김 토글
@@ -548,11 +612,10 @@ const useStore = create(
       name: 'app-storage', // localStorage 키
       partialize: (state) => ({
         // persist할 상태만 선택 (로그아웃까지 유지)
-        currentPage: state.currentPage,
         filters: state.filters,
         time: state.time,
         sortOption: state.sortOption,
-        currentAddress: state.currentAddress,
+      
         likedStoreIds: state.likedStoreIds,
         stores: state.stores,
       }),

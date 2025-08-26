@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
 import useUserInfo from '../hooks/user/useUserInfo';
 import { fetchUserInfo } from '../apis/authAPI';
+import Logo from '../assets/images/logo.png';
 
 const MyPage = () => {
+  const navigate = useNavigate();
   const { authUser, logoutUser, accessToken, isTokenValid, refreshTokens } = useUserInfo();
   const [userInfo, setUserInfo] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -41,6 +44,11 @@ const MyPage = () => {
 
   const handleLogout = () => {
     logoutUser();
+    window.location.reload(true);
+  };
+
+  const handleMenuClick = (path) => {
+    navigate(path);
   };
 
   return (
@@ -53,7 +61,7 @@ const MyPage = () => {
       {/* 사용자 정보 섹션 */}
       <UserInfoSection>
         <ProfileImage>
-          <ProfilePlaceholder />
+          <ProfilePlaceholder src={userInfo?.user_image_url || 'x'} />
         </ProfileImage>
         <UserDetails>
           <UserName>{userInfo?.user_nickname || authUser?.displayName || 'randomuser_99999'}</UserName>
@@ -70,37 +78,28 @@ const MyPage = () => {
 
       {/* 메뉴 목록 */}
       <MenuSection>
-        <MenuItem>
+        <MenuItem onClick={() => handleMenuClick('/notice')}>
           <MenuText>공지사항</MenuText>
         </MenuItem>
-
-        <MenuDivider />
-
-        <MenuItem>
+        <MenuItem onClick={() => handleMenuClick('/faq')}>
           <MenuText>자주 묻는 질문</MenuText>
         </MenuItem>
-
-        <MenuDivider />
-        
-        <MenuItem>
+        <MenuItem onClick={() => handleMenuClick('/terms')}>
           <MenuText>약관 및 정책</MenuText>
         </MenuItem>
-
-        <MenuDivider />
-
       </MenuSection>
 
-      {/* 프로모션 이미지 */}
-      <PromotionSection>
-        <PromotionImage />
-      </PromotionSection>
-
-      {/* 로그아웃 버튼 */}
-      <LogoutSection>
-        <LogoutButton onClick={handleLogout}>
-          로그아웃
-        </LogoutButton>
-      </LogoutSection>
+      {/* 로고 + 로그아웃 버튼 섹션 */}
+      <BottomSection>
+        <LogoSection>
+          <img src={Logo} alt="지금살래 로고" className="logo-icon" />
+        </LogoSection>
+        <LogoutSection>
+          <LogoutButton onClick={handleLogout}>
+            로그아웃
+          </LogoutButton>
+        </LogoutSection>
+      </BottomSection>
     </PageContainer>
   );
 };
@@ -110,13 +109,14 @@ export default MyPage;
 // ===== Styled Components ===== //
 
 const PageContainer = styled.div`
-  padding-top: 2rem;
   width: 100%;
+  height: 100%;
+  max-height: 100vh;
   display: flex;
   flex-direction: column;
   background: #fff;
   font-family: Pretendard;
-  padding: 0 16px;
+  padding: 0 16px 52px 16px;
 `;
 
 const Header = styled.div`
@@ -129,20 +129,13 @@ const Header = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
   z-index: 10;
   border-bottom: 2px solid #DA2538;
 `;
 
 const HeaderTitle = styled.h1`
-//  font-size: 22px;
-//  font-weight: 700;
-//  color: #000;
-//  margin: 0;
-//width: 100%;
     font-size: 22px;
     font-weight: 700;
-    line-height: 14px;
     color: #000;
 `;
 
@@ -154,8 +147,8 @@ const UserInfoSection = styled.div`
 `;
 
 const ProfileImage = styled.div`
-  width: 80px;
-  height: 80px;
+  width: 90px;
+  height: 90px;
   border-radius: 50%;
   border: 2px solid #DA2538;
   display: flex;
@@ -164,9 +157,9 @@ const ProfileImage = styled.div`
   flex-shrink: 0;
 `;
 
-const ProfilePlaceholder = styled.div`
-  width: 60px;
-  height: 60px;
+const ProfilePlaceholder = styled.img`
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   background: #f0f0f0;
   display: flex;
@@ -179,24 +172,24 @@ const ProfilePlaceholder = styled.div`
 const UserDetails = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 14px;
   flex: 1;
+  color: #000;
 `;
 
 const UserName = styled.div`
-  font-size: 16px;
-  font-weight: 600;
-  color: #000;
+  font-size: 20px;
+  font-weight: 700;
 `;
 
 const UserEmail = styled.div`
-  font-size: 14px;
-  color: #666;
+  font-size: 16px;
+  font-weight: 500;
 `;
 
 const UserSavings = styled.div`
-  font-size: 14px;
-  color: #000;
+  font-size: 16px;
+  font-weight: 500;
 `;
 
 const SavingsAmount = styled.span`
@@ -211,36 +204,32 @@ const MenuSection = styled.div`
 const MenuItem = styled.div`
   padding: 16px 0;
   cursor: pointer;
+  border-bottom: 1px solid #ccc;
 `;
 
 const MenuText = styled.div`
-  font-size: 16px;
+  font-size: 15px;
+  font-weight: 400;
   color: #000;
 `;
 
-const MenuDivider = styled.div`
-  height: 1px;
-  background: #e0e0e0;
-`;
-
-const PromotionSection = styled.div`
-  margin-top: 32px;
-//  margin-bottom: 24px;
+const BottomSection = styled.div`
+  flex: 1;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
 `;
 
-const PromotionImage = styled.div`
-  width: 108px;
-  height: 108px;
-  background: #DA2538;
-  border-radius: 12px;
+const LogoSection = styled.div`
   display: flex;
-  align-items: center;
   justify-content: center;
-  position: relative;
-  box-shadow: 0 4px 8px rgba(218, 37, 56, 0.3);
+  align-items: center;
+
+  .logo-icon {
+    width: 120px;
+    flex-shrink: 0;
+  }
 `;
 
 const LogoutSection = styled.div`
@@ -252,11 +241,11 @@ const LogoutSection = styled.div`
 const LogoutButton = styled.button`
   background: none;
   border: none;
-  color: #666;
+  color: rgba(0, 0, 0, 0.45);
   text-decoration: underline;
-  font-size: 14px;
+  font-size: 12px;
   cursor: pointer;
-  padding: 8px 16px;
+  transition: color 0.2s ease;
   
   &:hover {
     color: #DA2538;

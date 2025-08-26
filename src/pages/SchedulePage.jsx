@@ -2,18 +2,20 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { FiChevronRight } from 'react-icons/fi';
-import ReservationButton from '../components/common/ReservationButton';
-import BottomSheet from '../components/common/BottomSheet';
+import ReservationButton from '../components/ui/ReservationButton/ReservationButton';
+import BottomSheet from '../components/ui/BottomSheet/BottomSheet';
 import useStore from '../hooks/store/useStore';
 import useUserInfo from '../hooks/user/useUserInfo';
-import Spinner from '../components/common/Spinner';
-import { getNearestHour } from '../components/filter/TimeFilter';
+import Spinner from '../components/ui/Spinner/Spinner';
+import { getNearestHour } from '../components/features/filter/TimeFilter/TimeFilter';
 import { fetchUserReservations, cancelReservation } from '../apis/reservationAPI';
+import { fetchStoreSpacesCount } from '../apis/storeAPI';
 import placeholderImage from '../assets/images/placeholder.svg';
+import ScrollContainer from '../components/layout/ScrollContainer';
 
 const SchedulePage = () => {
   const navigate = useNavigate();
-  const { currentPage } = useStore();
+  const { currentPage, fromSchedulePage, setFromSchedulePage } = useStore();
   const { accessToken, isTokenValid, refreshTokens } = useUserInfo();
   
   // 로딩 상태
@@ -111,6 +113,11 @@ const SchedulePage = () => {
     }
   };
 
+  // 일정페이지 렌더링 시 fromSchedulePage 초기화
+    useEffect(() => {
+      setFromSchedulePage(false);
+    }, []);
+
   // 컴포넌트 마운트 시 예약 목록 조회
   useEffect(() => {
     if (currentPage === 'history') {
@@ -207,18 +214,37 @@ const SchedulePage = () => {
   };
 
   // 가게 제목 클릭 핸들러
-  const handleSalonClick = (storeId, visitTime) => {
-    console.log('=== 가게 클릭 디버깅 ===');
-    console.log('가게 ID:', storeId);
-    console.log('방문 시간:', visitTime);
+  const handleSalonClick = async (storeId, visitTime) => {
+    setFromSchedulePage(true); // 일정페이지에서 출발함을 표시
     
     if (!storeId) {
       console.warn('가게 ID가 없습니다.');
       return;
     }
     
-    // ShopDetailPage로 라우팅
-    navigate(`/shop/${storeId}`);
+    try {
+      // Space 개수 조회
+      const spacesData = await fetchStoreSpacesCount(storeId);
+      console.log('Space 개수 조회 결과:', spacesData);
+      
+      let targetUrl;
+      if (spacesData.count === 1) {
+        // Space가 1개인 경우: 메뉴 페이지로 직접 이동
+        targetUrl = `/shop/${storeId}/menu`;
+      } else {
+        // Space가 2개 이상인 경우: Space 목록 페이지로 직접 이동
+        targetUrl = `/shop/${storeId}/spaces`;
+      }
+      
+      console.log('ShopDetailPage로 네비게이션 시작...');
+      console.log('이동할 URL:', targetUrl);
+      navigate(targetUrl);
+      console.log('ShopDetailPage로 네비게이션 완료');
+    } catch (error) {
+      console.error('Space 개수 조회 실패:', error);
+      // 에러 발생 시 기존 방식으로 fallback
+      navigate(`/shop/${storeId}`);
+    }
   };
 
   return (
@@ -228,55 +254,57 @@ const SchedulePage = () => {
         <HeaderTitle>방문 예정</HeaderTitle>
       </Header>
 
-      {/* 예약 목록 */}
-      <ContentContainer>
-        {loading ? (
-          <LoadingContainer>
-            <Spinner />
-          </LoadingContainer>
-        ) : appointments.length > 0 ? (
-          <AppointmentList>
-            {appointments.map(appointment => (
-              <AppointmentCard key={appointment.id}>
-                <CardContent>
-                  <ProfileImage>
-                    <ProfileImageSrc 
-                      src={appointment.profileImage} 
-                      alt={appointment.salonName}
-                      onError={(e) => {
-                        e.target.src = placeholderImage;
-                      }}
-                    />
-                  </ProfileImage>
-                  <AppointmentDetails>
-                    <SalonName onClick={() => handleSalonClick(appointment.storeId, appointment.visitTime)}>
-                      <SalonNameText>{appointment.salonName}</SalonNameText>
-                      <ChevronIcon />
-                    </SalonName>
-                    <VisitTime>{appointment.visitTime} 방문</VisitTime>
-                    <ServiceInfo>
-                      {appointment.designer}
-                      {appointment.service && ` / ${appointment.service}`}
-                    </ServiceInfo>
-                  </AppointmentDetails>
-                </CardContent>
-                <ReservationButton 
-                    variant={appointment.isCancellable ? "secondary" : "primary"}
-                    disabled={!appointment.isCancellable}
-                    onClick={appointment.isCancellable ? () => handleCancelClick(appointment.id) : undefined}
-                    >
-                    {appointment.isCancellable ? "예약 취소" : "취소 불가"}
-                </ReservationButton>
-              </AppointmentCard>
-            ))}
-          </AppointmentList>
-        ) : (
-          <EmptyState>
-            <EmptyText>방문 예정인 일정이 없어요</EmptyText>
-            <EmptySubText>새로운 예약을 해보세요!</EmptySubText>
-          </EmptyState>
-        )}
-      </ContentContainer>
+      <ScrollContainer offsettop={60}>
+        {/* 예약 목록 */}
+        <ContentContainer>
+          {loading ? (
+            <LoadingContainer>
+              <Spinner />
+            </LoadingContainer>
+          ) : appointments.length > 0 ? (
+            <AppointmentList>
+              {appointments.map(appointment => (
+                <AppointmentCard key={appointment.id}>
+                  <CardContent>
+                    <ProfileImage>
+                      <ProfileImageSrc 
+                        src={appointment.profileImage} 
+                        alt={appointment.salonName}
+                        onError={(e) => {
+                          e.target.src = placeholderImage;
+                        }}
+                      />
+                    </ProfileImage>
+                    <AppointmentDetails>
+                      <SalonName onClick={() => handleSalonClick(appointment.storeId, appointment.visitTime)}>
+                        <SalonNameText>{appointment.salonName}</SalonNameText>
+                        <ChevronIcon />
+                      </SalonName>
+                      <VisitTime>{appointment.visitTime} 방문</VisitTime>
+                      <ServiceInfo>
+                        {appointment.designer}
+                        {appointment.service && ` / ${appointment.service}`}
+                      </ServiceInfo>
+                    </AppointmentDetails>
+                  </CardContent>
+                  <ReservationButton 
+                      variant={appointment.isCancellable ? "secondary" : "primary"}
+                      disabled={!appointment.isCancellable}
+                      onClick={appointment.isCancellable ? () => handleCancelClick(appointment.id) : undefined}
+                      >
+                      {appointment.isCancellable ? "예약 취소" : "취소 불가"}
+                  </ReservationButton>
+                </AppointmentCard>
+              ))}
+            </AppointmentList>
+          ) : (
+            <EmptyState>
+              <EmptyText>방문 예정인 일정이 없어요</EmptyText>
+              <EmptySubText>새로운 예약을 해보세요!</EmptySubText>
+            </EmptyState>
+          )}
+        </ContentContainer>
+      </ScrollContainer>
 
       {/* 예약 취소 확인 바텀시트 */}
       <BottomSheet
@@ -319,7 +347,7 @@ const SchedulePage = () => {
       {/* 예약 완료 알림 바텀시트 */}
       <BottomSheet
         open={reservationCompleteOpen}
-        title="예약이 완료되었습니다!"
+        title="예약이 확정되었습니다."
         onClose={handleReservationCompleteClose}
         sheetHeight="schedulePageSize"
         headerVariant="noHeaderPadding"
@@ -329,9 +357,15 @@ const SchedulePage = () => {
         <ReservationCompleteContent>
           {reservationData && (
             <ReservationInfo>
-                <InfoLabel><InfoSpan>매장</InfoSpan> <InfoSpan>예약일시</InfoSpan></InfoLabel>
+                <InfoLabel>
+                  <InfoTitle>매장</InfoTitle>
+                  <InfoTitle>예약일시</InfoTitle>
+                </InfoLabel>
                 
-                <InfoLabel><InfoSpan>{reservationData.store_name}</InfoSpan> <InfoSpan>{reservationData.reservation_date} {reservationData.reservation_time}</InfoSpan> </InfoLabel> 
+                <InfoLabel>
+                  <InfoSpan>{reservationData.store_name}</InfoSpan>
+                  <InfoSpan>{reservationData.reservation_date} {reservationData.reservation_time}</InfoSpan>
+                </InfoLabel> 
             </ReservationInfo>
           )}
         </ReservationCompleteContent>
@@ -372,14 +406,13 @@ const Header = styled.div`
 const HeaderTitle = styled.h1`
     font-size: 22px;
     font-weight: 700;
-    line-height: 14px;
     color: #000;
 `;
 
 const ContentContainer = styled.div`
   flex: 1;
   overflow-y: auto;
-  padding-top: 16px;
+  padding: 16px 16px 52px 16px;
 `;
 
 const LoadingContainer = styled.div`
@@ -393,7 +426,6 @@ const LoadingContainer = styled.div`
 const AppointmentList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 16px;
 `;
 
 const AppointmentCard = styled.div`
@@ -403,20 +435,21 @@ const AppointmentCard = styled.div`
   padding: 24px;
   display: flex;
   flex-direction: column;
-  justify-contenet: space-between;
-  gap: 12px;
+  justify-content: space-between;
+  gap: 23px;
+  margin-bottom: 12px;
 `;
 
 const CardContent = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 `;
 
 const ProfileImage = styled.div`
-  width: 60px;
-  height: 60px;
-  border-radius: 8px;
+  width: 80px;
+  height: 80px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -434,26 +467,20 @@ const ProfileImageSrc = styled.img`
 const AppointmentDetails = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 10px;
   flex: 1;
 `;
 
 const SalonName = styled.div`
   display: flex;
-//  align-items: center;
+  align-items: center;
   gap: 4px;
   cursor: pointer;
   transition: opacity 0.2s ease;
-  
-  &:hover {
-    opacity: 0.8;
-  }
 `;
 
 const SalonNameText = styled.span`
-//  background: #FFF3CD;
   color: #000;
-  padding: 2px;
   border-radius: 4px;
   font-size: 16px;
   font-weight: 700;
@@ -466,13 +493,14 @@ const ChevronIcon = styled(FiChevronRight)`
 
 const VisitTime = styled.div`
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
   color: #DA2538;
 `;
 
 const ServiceInfo = styled.div`
   font-size: 14px;
-  color: #666;
+  font-weight: 600;
+  color: #000;
 `;
 
 const EmptyState = styled.div`
@@ -480,20 +508,21 @@ const EmptyState = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 80px 20px;
   text-align: center;
+  padding: 60px 0;
 `;
 
 const EmptyText = styled.div`
   font-size: 18px;
   font-weight: 600;
-  color: #666;
+  color: #333;
   margin-bottom: 8px;
 `;
 
 const EmptySubText = styled.div`
   font-size: 14px;
-  color: #999;
+  font-weight: 500;
+  color: #555;
 `;
 
 const CancelConfirmContent = styled.div`
@@ -509,37 +538,40 @@ const ButtonGroup = styled.div`
 
 const Divider = styled.div`
   width: 100%;
-  border-bottom: 1px solid #CCCCCC;
-  padding-top: 0px;
+  height: 1px;
+  background-color: #CCC;
 `;
 
 const ReservationCompleteContent = styled.div`
-//  padding: 24px 16px;
   text-align: center;
 `;
 
 const ReservationInfo = styled.div`
-  background: #f8f9fa;
-  border-radius: 8px;
-  margin-bottom: 24px;
   text-align: left;
-  margin-top: 0.7rem;
   display: flex;
+  margin-top: 20px;
 `;
 
 const InfoLabel = styled.div`
   display: flex;
   flex-direction: column;
   font-size: 16px;
-  color: #666;
+  color: #000;
   font-weight: 500;
-  padding:  0;
+  gap: 24px;
+`;
+
+const InfoTitle = styled.span`
+  display: flex;
+  flex-direction: column;
+  font-size: 16px;
+  font-weight: 500;
+  padding-right: 36px;
 `;
 
 const InfoSpan = styled.span`
   display: flex;
   flex-direction: column;
-  padding-left: 1.5rem;
-  margin: 0.7rem 0;
+  font-size: 16px;
   font-weight: 700;
 `;

@@ -1,15 +1,15 @@
 import { forwardRef } from "react";
 import styled from 'styled-components';
-import NavBar from '../nav/BottomNavBar';
+import NavBar from './BottomNavBar/BottomNavBar';
 
 const Layout = forwardRef(({ children, currentPage = "home", onPageChange }, contentAreaRef) => {
   // 로그인/주소검색/상세 페이지에서는 NavBar 숨김
-  const showNavBar = !['login', 'search-address', 'shop-detail'].includes(currentPage);
+  const showNavBar = !['login', 'search-address', 'shop-detail', 'notice', 'faq', 'terms'].includes(currentPage);
 
   return (
     <Container>
       <PhoneFrame>
-        <ContentArea ref={contentAreaRef} className="content-area">
+        <ContentArea currentPage={currentPage} ref={contentAreaRef} className="content-area">
           {children}
         </ContentArea>
         {showNavBar && <NavBar current={currentPage} onSelect={onPageChange} />}
@@ -27,15 +27,16 @@ export default Layout;
 
 // 전체 Layout: 반응형으로 수정
 const Container = styled.div`
-  min-height: 100vh;
+  height: 100%;
+  max-height: 100vh;
   background: #f8f8f8;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px; /* 데스크톱에서만 패딩 */
+  padding: 10px;
 
   /* 모바일에서는 전체 화면 */
-  @media (max-width: 768px) {
+  @media (max-width: 500px) {
     padding: 0;
     background: #fff;
   }
@@ -45,7 +46,7 @@ const Container = styled.div`
 const PhoneFrame = styled.div`
   width: 100%;
   max-width: 360px;
-  height: 720px;
+  height: calc(100vh - 20px);
   background: #fff;
   box-shadow: 2px 2px 16px rgba(0,0,0,0.07);
   position: relative;
@@ -54,10 +55,11 @@ const PhoneFrame = styled.div`
   overflow: hidden;
 
   /* 모바일에서는 프레임 제거하고 전체 화면 */
-  @media (max-width: 768px) {
+  @media (max-width: 500px) {
     max-width: 100%;
     height: 100vh;
     box-shadow: none;
+    /* iOS 디바이스의 안전 영역(safe area)을 고려해 상단/하단 패딩을 동적으로 조정 */
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
   }
@@ -66,19 +68,11 @@ const PhoneFrame = styled.div`
 // 콘텐츠 영역: 반응형으로 수정
 const ContentArea = styled.div`
   flex: 1;
-  overflow-y: auto;
-//  padding-bottom: 80px; /* 데스크톱에서 NavBar 높이만큼 */
-
-  /* 모바일에서는 safe-area 고려 */
-  @media (max-width: 768px) {
-    //padding-bottom: calc(80px + env(safe-area-inset-bottom)); 일단 임시로 지움
-  }
+  position: relative;
+  overflow-y: ${({ currentPage }) => currentPage === 'home' ? 'auto' : 'hidden'};
 
   /* 반응형 웹 수정: 모바일에서 스크롤 최적화 */
   -webkit-overflow-scrolling: touch;
-  
-  /* sticky 포지션이 제대로 작동하도록 설정 */
-  position: relative;
   
   /* 스크롤바 스타일링 */
   &::-webkit-scrollbar {
@@ -99,7 +93,7 @@ const ContentArea = styled.div`
   }
   
   /* 반응형 웹 수정: 모바일에서 스크롤바 숨김 */
-  @media (max-width: 768px) {
+  @media (max-width: 500px) {
     &::-webkit-scrollbar {
       width: 0;
     }

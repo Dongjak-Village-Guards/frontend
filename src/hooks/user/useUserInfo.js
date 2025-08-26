@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { loginWithGoogle, refreshAccessToken, fetchUserInfo, updateUserAddress } from '../../apis/authAPI';
+import { refreshAccessToken, fetchUserInfo, updateUserAddress } from '../../apis/authAPI';
 
 const useUserInfo = create(
   persist(
@@ -40,7 +40,7 @@ const useUserInfo = create(
        * @param {Object} loginResponse - 백엔드 로그인 응답
        */
       setAuthTokens: (loginResponse) => {
-        const { access_token, refresh_token, user_email, user_image_url, user_role } = loginResponse;
+        const { access_token, refresh_token, user_email, user_role } = loginResponse;
         
         // 토큰 만료 시간 계산 (120시간 = 5일)
         const expiryTime = Date.now() + (120 * 60 * 60 * 1000);
