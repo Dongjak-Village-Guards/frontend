@@ -7,21 +7,21 @@
  * 예약 페이지 및 개인정보 동의서 표시 추가
  */
 
-import { useNavigate, useParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useEffect, useState, useRef } from 'react';
 import useStore from '../hooks/store/useStore';
 import useUserInfo from '../hooks/user/useUserInfo';
-import MenuCard from '../components/home/detail/MenuCard';
-import ShopInfo from '../components/home/detail/ShopInfo';
-import MenuList from '../components/home/detail/MenuList';
+import MenuCard from '../components/sections/shop-detail/MenuCard/MenuCard';
+import ShopInfo from '../components/sections/shop-detail/ShopInfo/ShopInfo';
+import MenuList from '../components/sections/shop-detail/MenuList/MenuList';
 import styled from 'styled-components';
-import SpaceCard from '../components/home/detail/SpaceCard';
+import SpaceCard from '../components/sections/shop-detail/SpaceCard/SpaceCard';
 import placeholderImage from "../assets/images/placeholder.svg";
-import DesignerInfo from '../components/home/detail/DesignerInfo';
+import DesignerInfo from '../components/sections/shop-detail/DesignerInfo/DesignerInfo';
 import ReservationPage from './ReservationPage';
 import Layout from '../components/layout/Layout';
-import TopNavBar from '../components/nav/TopNavBar';
-import Spinner from '../components/common/Spinner';
+import TopNavBar from '../components/layout/TopNavBar/TopNavBar';
+import Spinner from '../components/ui/Spinner/Spinner';
 import { 
   fetchStoreSpacesCount, 
   fetchStoreMenus, 
@@ -29,25 +29,53 @@ import {
   fetchSpaceDetails,
   convertTimeToParam
 } from '../apis/storeAPI';
+import ScrollContainer from '../components/layout/ScrollContainer';
 
 const ShopDetailPage = () => {
     const navigate = useNavigate();
     const { id } = useParams();
+    const location = useLocation();
     const { 
         stores,
-        currentTime,
         time,
-        isReserving,
-        selectedDesigner,
+        selectedMenu,
         showPiAgreement,
-        selectDesigner,
         startReservation,
         cancelReservation,
         togglePiAgreement,
-        toggleLikeWithAPI
+        toggleLikeWithAPI,
+        restoreReservationState,
+        fromFavoritePage,
+        fromSchedulePage,
     } = useStore();
 
     const { accessToken } = useUserInfo();
+
+    // URL에서 shop-detail 상태 파악 함수 추가
+    const getShopDetailStateFromUrl = () => {
+        const pathParts = location.pathname.split('/');
+        const storeId = pathParts[2]; // /shop/:id
+        
+        if (pathParts.length === 3) {
+            return { type: 'entry-point', storeId }; // 기본 진입점
+        }
+        if (pathParts.length === 4 && pathParts[3] === 'menu') {
+            return { type: 'single-space-menu', storeId }; // Space가 1개인 메뉴 페이지
+        }
+        if (pathParts.length === 4 && pathParts[3] === 'spaces') {
+            return { type: 'spaces-list', storeId }; // Space 목록 페이지
+        }
+        if (pathParts.length === 5 && pathParts[3] === 'space') {
+            return { type: 'space-menu', storeId, spaceId: pathParts[4] }; // 특정 Space의 메뉴 페이지
+        }
+        if (pathParts.length === 4 && pathParts[3] === 'reservation') {
+            return { type: 'reservation', storeId }; // 예약 페이지
+        }
+        if (pathParts.length === 5 && pathParts[3] === 'reservation' && pathParts[4] === 'agreement') {
+            return { type: 'agreement', storeId }; // 개인정보 동의서 페이지
+        }
+        return { type: 'entry-point', storeId };
+    };
 
     // 상태 관리
     const [storeData, setStoreData] = useState(null);
@@ -55,31 +83,213 @@ const ShopDetailPage = () => {
     const [error, setError] = useState(null);
     const [spaceCount, setSpaceCount] = useState(null);
     const [selectedSpaceId, setSelectedSpaceId] = useState(null);
+    
+    // 브라우저 히스토리 상태 추적 함수
+    const logHistoryState = (context = '') => {
+        // localStorage 상태 확인
+        const reservationData = localStorage.getItem('reservationData');
+        if (reservationData) {
+            try {
+                const data = JSON.parse(reservationData);
+            } catch (error) {
+                console.log('localStorage 데이터 파싱 실패:', error);
+            }
+        }
+    };
+    
+    // 이전 URL 추적을 위한 ref
+    const previousPathnameRef = useRef(location.pathname);
+    const isBackNavigationRef = useRef(false);
+    const isNavigatingToHomeRef = useRef(false);
+
+    // 브라우저 뒤로가기/앞으로가기 감지 및 상태 동기화
+    useEffect(() => {
+        const handlePopState = () => {
+            // URL 상태에 따라 selectedSpaceId 동기화
+            const urlState = getShopDetailStateFromUrl();
+            
+            // 데이터 로딩을 기다린 후 상태 변경 (즉시 변경하지 않음)
+            if (urlState.type === 'space-menu' && urlState.spaceId) {
+                if (selectedSpaceId !== urlState.spaceId) {
+                    // Space 상세 페이지로 이동하는 경우는 즉시 변경
+                    setSelectedSpaceId(urlState.spaceId);
+                }
+            }
+            // Space 목록으로 이동하는 경우는 데이터 로딩 후 변경하도록 제거
+            
+            // 브라우저 뒤로가기로 entry-point 상태가 되었을 때
+            if (urlState.type === 'entry-point') {
+                // 홈페이지로 이동 중임을 표시
+                isNavigatingToHomeRef.current = true;
+                
+                // 출발 페이지에 따라 조건부 처리
+                if (fromFavoritePage) {
+                    // 찜페이지에서 온 경우 찜페이지로 이동
+                    console.log(fromFavoritePage, "체크건");
+                    setTimeout(() => {
+                        navigate('/favorites', { replace: true });
+                    }, 50);
+                } 
+                else if (fromSchedulePage) {
+                    // 일정페이지에서 온 경우 일정페이지로 이동
+                    setTimeout(() => {
+                        navigate('/history', { replace: true });
+                    }, 50);
+                } 
+                else {
+                    // 다른 페이지에서 온 경우 홈페이지로 이동
+                    setTimeout(() => {
+                        navigate('/', { replace: true });
+                    }, 50);
+                }
+            }
+        };
+        
+        window.addEventListener('popstate', handlePopState);
+        
+        return () => {
+            window.removeEventListener('popstate', handlePopState);
+        };
+    }, [navigate, fromFavoritePage, fromSchedulePage]); // fromFavoritePage, fromSchedulePage 의존성 추가
+
+    // URL 변경 감지 및 브라우저 뒤로가기 처리
+    useEffect(() => {
+        
+        // URL이 변경되었을 때
+        if (previousPathnameRef.current !== location.pathname) {
+            const urlState = getShopDetailStateFromUrl();
+            
+            // URL 기반으로 showPiAgreement 상태 동기화 (브라우저 뒤로가기/앞으로가기 시에만)
+            if (urlState.type === 'agreement') {
+                if (!showPiAgreement) {
+                    console.log('🔍 브라우저 네비게이션 - showPiAgreement true로 설정');
+                    togglePiAgreement();
+                }
+            } else if (showPiAgreement) {
+                console.log('🔍 브라우저 네비게이션 - showPiAgreement false로 설정');
+                togglePiAgreement();
+            }
+            
+            // Space 목록 페이지에서 entry-point로 이동한 경우 (브라우저 뒤로가기로 추정)
+            if (previousPathnameRef.current.includes('/spaces') && urlState.type === 'entry-point') {
+                // 홈페이지로 이동 중임을 표시
+                isNavigatingToHomeRef.current = true;
+                
+                // 출발 페이지에 따라 조건부 처리
+                if (fromFavoritePage) {
+                    setTimeout(() => {
+                        navigate('/favorites', { replace: true });
+                    }, 50);
+                } 
+                // 출발 페이지에 따라 조건부 처리
+                if (fromSchedulePage) {
+                    setTimeout(() => {
+                        navigate('/history', { replace: true });
+                    }, 50);
+                } 
+                else {
+                    setTimeout(() => {
+                        navigate('/', { replace: true });
+                    }, 50);
+                }
+            }
+            
+            // 단일 메뉴 페이지에서 entry-point로 이동한 경우 (브라우저 뒤로가기로 추정)
+            if (previousPathnameRef.current.includes('/menu') && urlState.type === 'entry-point') {
+                // 홈페이지로 이동 중임을 표시
+                isNavigatingToHomeRef.current = true;
+                
+                // 출발 페이지에 따라 조건부 처리
+                if (fromFavoritePage) {
+                    setTimeout(() => {
+                        navigate('/favorites', { replace: true });
+                    }, 50);
+                } 
+                // 출발 페이지에 따라 조건부 처리
+                if (fromSchedulePage) {
+                    setTimeout(() => {
+                        navigate('/history', { replace: true });
+                    }, 50);
+                } 
+                else {
+                    setTimeout(() => {
+                        navigate('/', { replace: true });
+                    }, 50);
+                }
+            }
+            
+            // Space 메뉴 페이지에서 예약 페이지로 이동한 경우 (앞으로가기)
+            if (previousPathnameRef.current.includes('/space/') && urlState.type === 'reservation') {
+                // selectedMenu가 없으면 복원 시도
+                if (!selectedMenu) {
+                    const restored = restoreReservationState();
+                    if (!restored) {
+                        console.log('예약 상태 복원 실패 - Space 메뉴 페이지로 리다이렉트');
+                        setTimeout(() => {
+                            navigate(`/shop/${id}/space/${selectedSpaceId}`, { replace: true });
+                        }, 100);
+                    }
+                } else {
+                    console.log('selectedMenu가 있음');
+                }
+            }
+            
+            // 단일 메뉴 페이지에서 예약 페이지로 이동한 경우 (앞으로가기)
+            if (previousPathnameRef.current.includes('/menu') && urlState.type === 'reservation') {
+                // selectedMenu가 없으면 복원 시도
+                if (!selectedMenu) {
+                    const restored = restoreReservationState();
+                    if (!restored) {
+                        console.log('예약 상태 복원 실패 - 단일 메뉴 페이지로 리다이렉트');
+                        setTimeout(() => {
+                            navigate(`/shop/${id}/menu`, { replace: true });
+                        }, 100);
+                    }
+                }
+            }
+            
+            // 예약 페이지로 이동하는 경우 (앞으로가기)
+        if (urlState.type === 'reservation') {
+            // selectedMenu가 없는데 예약 페이지로 이동하려는 경우
+            if (!selectedMenu) {
+                // localStorage에서 예약 상태 복원 시도
+                const restored = restoreReservationState();
+                if (restored) {
+                    // 복원 후 히스토리 상태 재추적
+                    setTimeout(() => {
+                        logHistoryState('예약 상태 복원 후');
+                    }, 100);
+                } else {
+                    // 예약 상태 복원이 실패한 경우 Space 목록으로 리다이렉트
+                    setTimeout(() => {
+                        const storeId = urlState.storeId;
+                        if (spaceCount >= 2) {
+                            navigate(`/shop/${storeId}/spaces`, { replace: true });
+                        } else {
+                            navigate(`/shop/${storeId}/menu`, { replace: true });
+                        }
+                    }, 100);
+                    return;
+                }
+            }
+        }
+            // 이전 URL 업데이트
+            previousPathnameRef.current = location.pathname;
+        }
+    }, [location.pathname, navigate, selectedSpaceId, storeData, fromFavoritePage, fromSchedulePage]);
 
     // 현재 가게의 Zustand 상태에서 좋아요 상태 가져오기
     const currentStore = stores.find(store => store.id === parseInt(id));
     const isLiked = currentStore?.isLiked || false;
 
-
-
     // 현재 시간과 메뉴 시간 비교 (이전 시간대는 예약 불가능)
     const isTimeExpired = () => {
-        console.log('=== 시간 만료 체크 ===');
-        console.log('time 파라미터:', time);
-        console.log('time 타입:', typeof time);
-        
         if (!time) {
-            console.log('time 파라미터가 없음 - 만료되지 않음으로 처리');
             return false;
         }
         
         const currentHour = new Date().getHours();
         const menuHour = convertTimeToParam(time);
-        
-        console.log('현재 시간:', currentHour);
-        console.log('메뉴 시간 (convertTimeToParam):', menuHour);
-        console.log('시간 만료 여부:', menuHour < currentHour);
-        console.log('비교 결과:', `${menuHour} < ${currentHour} = ${menuHour < currentHour}`);
         
         return menuHour < currentHour;
     };
@@ -92,63 +302,171 @@ const ShopDetailPage = () => {
                 setError(null);
                 
                 const storeId = parseInt(id);
-                console.log('ShopDetailPage: 초기 데이터 로드 시작', { storeId, time });
+                const urlState = getShopDetailStateFromUrl();
+                console.log('🔍 loadStoreData 시작 - URL 상태:', urlState);
                 
                 // 1. Space 개수 조회
                 const spacesData = await fetchStoreSpacesCount(storeId);
                 setSpaceCount(spacesData.count);
+                console.log('🔍 Space 개수:', spacesData.count);
                 
                 const timeParam = convertTimeToParam(time);
                 
                 if (spacesData.count === 1) {
-                    // Space가 1개인 경우: 바로 메뉴 조회
-                    const menuData = await fetchStoreMenus(storeId, timeParam, accessToken);
-                    setStoreData(menuData);
+                    // Space가 1개인 경우
+                    if (urlState.type === 'entry-point') {
+                        // /shop/:id로 접근한 경우
+                        
+                        // 홈페이지로 이동 중인지 확인
+                        if (isNavigatingToHomeRef.current) {
+                            isNavigatingToHomeRef.current = false; // 플래그 초기화
+                            return;
+                        }
+                        
+                        // 일반적인 entry-point 접근인 경우
+                        navigate(`/shop/${storeId}/menu`);
+                    } else if (urlState.type === 'single-space-menu') {
+                        // /shop/:id/menu로 접근한 경우 - 정상 처리
+                        try {
+                            const menuData = await fetchStoreMenus(storeId, timeParam, accessToken);
+                            setStoreData(menuData);
+                        } catch (error) {
+                            setError(error.message || '메뉴 조회에 실패했습니다.');
+                        }
+                    } else if (urlState.type === 'reservation') {
+                        // /shop/:id/reservation으로 접근한 경우 - 예약 상태 복원 후 데이터 로드
+
+                        // localStorage에서 예약 상태 복원 시도
+                        const restored = restoreReservationState();
+                        if (!restored) {
+                            setTimeout(() => {
+                                navigate(`/shop/${storeId}/menu`, { replace: true });
+                            }, 100);
+                            return;
+                        }
+                        
+                        // 예약 상태가 복원되었거나 이미 예약 중인 경우 데이터 로드
+                        if (!storeData) {
+                            try {
+                                const menuData = await fetchStoreMenus(storeId, timeParam, accessToken);
+                                setStoreData(menuData);
+                            } catch (error) {
+                                setError(error.message || '메뉴 조회에 실패했습니다.');
+                            }
+                        }
+                    } else {
+                        // 다른 URL로 접근한 경우 - /shop/:id/menu로 리다이렉트
+                        navigate(`/shop/${storeId}/menu`);
+                    }
                 } else if (spacesData.count >= 2) {
-                    // Space가 2개 이상인 경우: Space 목록 조회
-                    const spacesListData = await fetchStoreSpacesList(storeId, timeParam, accessToken);
-                    
-                    // 각 Space의 메뉴 정보를 확인하여 is_possible 계산
-                    const spacesWithCorrectedInfo = spacesListData.spaces.map(space => {
-                        // 디버깅 로그
-                        console.log(`=== Space ${space.space_id} 디버깅 ===`);
-                        console.log('Space 이름:', space.space_name);
-                        console.log('원본 is_possible:', space.is_possible);
-                        console.log('Space의 메뉴들:', space.menus); // API 응답에 메뉴 정보가 포함되어 있다면
+                    // Space가 2개 이상인 경우
+                    if (urlState.type === 'entry-point') {
+                        // /shop/:id로 접근한 경우
                         
-                        // 시간 만료 체크
-                        const timeExpired = isTimeExpired();
-                        console.log('시간 만료 여부:', timeExpired);
+                        // 홈페이지로 이동 중인지 확인
+                        if (isNavigatingToHomeRef.current) {
+                            isNavigatingToHomeRef.current = false; // 플래그 초기화
+                            return;
+                        }
                         
-                        // 해당 Space의 메뉴들 중 하나라도 예약 불가능한지 확인
-                        const hasUnavailableMenu = space.menus && space.menus.some(menu => !menu.is_available);
-                        console.log('예약 불가능한 메뉴 존재 여부:', hasUnavailableMenu);
-                        console.log('각 메뉴의 is_available:', space.menus?.map(menu => ({ 
-                            menu_id: menu.menu_id, 
-                            menu_name: menu.menu_name, 
-                            is_available: menu.is_available 
-                        })));
+                        // 일반적인 entry-point 접근인 경우 /shop/:id/spaces로 리다이렉트
+                        navigate(`/shop/${storeId}/spaces`);
+                    } else if (urlState.type === 'spaces-list') {
+                        // /shop/:id/spaces로 접근한 경우 - 정상 처리
+                        const spacesListData = await fetchStoreSpacesList(storeId, timeParam, accessToken);
                         
-                        // 최종 is_possible 계산
-                        const finalIsPossible = space.is_possible && !timeExpired && !hasUnavailableMenu;
-                        console.log('최종 is_possible:', finalIsPossible);
-                        console.log('---');
+                        // 각 Space의 메뉴 정보를 확인하여 is_possible 계산
+                        const spacesWithCorrectedInfo = spacesListData.spaces.map(space => {
+                            
+                                                         // 시간 만료 체크
+                              const timeExpired = isTimeExpired();
+                            
+                            // 해당 Space의 메뉴들 중 하나라도 예약 불가능한지 확인
+                            const hasUnavailableMenu = space.menus && space.menus.some(menu => !menu.is_available);
+                            
+                            // 최종 is_possible 계산
+                            const finalIsPossible = space.is_possible && !timeExpired && !hasUnavailableMenu;
+                            
+                            return {
+                                ...space,
+                                is_possible: finalIsPossible
+                            };
+                        });
                         
-                        return {
-                            ...space,
-                            is_possible: finalIsPossible
-                        };
-                    });
-                    
-                    // 수정된 Space 목록으로 storeData 설정
-                    setStoreData({
-                        ...spacesListData,
-                        spaces: spacesWithCorrectedInfo
-                    });
+                        // 수정된 Space 목록으로 storeData 설정
+                        setStoreData({
+                            ...spacesListData,
+                            spaces: spacesWithCorrectedInfo
+                        });
+                        
+                        // 데이터 로딩 완료 후 selectedSpaceId를 null로 설정
+                        setSelectedSpaceId(null);
+                    } else if (urlState.type === 'space-menu') {
+                        // /shop/:id/space/:spaceId로 접근한 경우 - 정상 처리
+                        const spaceData = await fetchSpaceDetails(urlState.spaceId, timeParam, accessToken);
+                        setStoreData(spaceData);
+                        setSelectedSpaceId(urlState.spaceId);
+                    } else if (urlState.type === 'reservation') {
+                        // /shop/:id/reservation으로 접근한 경우 - 예약 상태 복원 후 데이터 로드
+                        // 새로고침으로 인한 상태 초기화 확인
+                            
+                            // localStorage에서 예약 상태 복원 시도
+                            const restored = restoreReservationState();
+                            if (restored) {
+                                const { selectedMenu } = useStore.getState();
+                                if (selectedMenu && selectedMenu.space_id) {
+                                    const spaceData = await fetchSpaceDetails(selectedMenu.space_id, timeParam, accessToken);
+                                    setStoreData(spaceData);
+                                    setSelectedSpaceId(selectedMenu.space_id);
+                                } else {
+                                    const spacesListData = await fetchStoreSpacesList(storeId, timeParam, accessToken);
+                                    setStoreData(spacesListData);
+                                }
+                                return;
+                            } else {
+                                setTimeout(() => {
+                                    navigate(`/shop/${storeId}/spaces`, { replace: true });
+                                }, 100);
+                                return;
+                            }
+                    } else if (urlState.type === 'agreement') {
+                        // /shop/:id/reservation/agreement로 접근한 경우 - 예약 상태 복원 후 데이터 로드
+                        console.log('🔍 Agreement URL 감지됨:', urlState);
+                        
+                        // loadStoreData에서는 showPiAgreement 상태 변경하지 않음 (의존성 배열에서 제거했으므로)
+                        
+                        const restored = restoreReservationState();
+                        console.log('🔍 예약 상태 복원 결과:', restored);
+                        if (restored) {
+                            const { selectedMenu } = useStore.getState();
+                            console.log('🔍 selectedMenu:', selectedMenu);
+                            if (selectedMenu && selectedMenu.space_id) {
+                                console.log('🔍 Space ID로 데이터 로드:', selectedMenu.space_id);
+                                const spaceData = await fetchSpaceDetails(selectedMenu.space_id, timeParam, accessToken);
+                                setStoreData(spaceData);
+                                setSelectedSpaceId(selectedMenu.space_id);
+                            } else {
+                                console.log('🔍 예약 페이지용 메뉴 데이터 로드');
+                                const menuData = await fetchStoreMenus(storeId, timeParam, accessToken);
+                                setStoreData(menuData);
+                            }
+                            console.log('🔍 Agreement 데이터 로드 완료');
+                            return;
+                        } else {
+                            console.log('🔍 예약 상태 복원 실패 - spaces로 리다이렉트');
+                            setTimeout(() => {
+                                navigate(`/shop/${storeId}/spaces`, { replace: true });
+                            }, 100);
+                            return;
+                        }
+                    } else {
+                        // 다른 URL로 접근한 경우 - /shop/:id/spaces로 리다이렉트
+                        console.log('🔍 알 수 없는 URL 상태 - spaces로 리다이렉트:', urlState);
+                        navigate(`/shop/${storeId}/spaces`);
+                    }
                 }
                 
             } catch (error) {
-                console.error('ShopDetailPage: 데이터 로드 실패', error);
                 setError(error.message);
             } finally {
                 setLoading(false);
@@ -158,56 +476,14 @@ const ShopDetailPage = () => {
         if (id && time !== null) {
             loadStoreData();
         }
-    }, [id, time, accessToken]);
+    }, [id, time, accessToken, location.pathname, navigate, fromFavoritePage, fromSchedulePage]); // showPiAgreement 제거
 
     // 특정 Space 선택 시 상세 데이터 로드
     const handleSpaceSelect = async (spaceId) => {
-        try {
-            setLoading(true);
-            setError(null);
-            
-            const timeParam = convertTimeToParam(time);
-            const spaceData = await fetchSpaceDetails(spaceId, timeParam, accessToken);
-            
-            // 디버깅 로그: Space 상세 정보와 메뉴들의 is_available 값들
-            console.log('=== Space 상세 정보 디버깅 ===');
-            console.log('Space ID:', spaceId);
-            console.log('Space 이름:', spaceData.space_name);
-            console.log('전체 Space 데이터:', spaceData);
-            console.log('메뉴 개수:', spaceData.menus?.length);
-            
-            if (spaceData.menus && spaceData.menus.length > 0) {
-                console.log('=== 각 메뉴의 is_available 상태 ===');
-                spaceData.menus.forEach((menu, index) => {
-                    console.log(`메뉴 ${index + 1}:`, {
-                        menu_id: menu.menu_id,
-                        menu_name: menu.menu_name,
-                        is_available: menu.is_available,
-                        discount_rate: menu.discount_rate,
-                        item_id: menu.item_id
-                    });
-                });
-                
-                // 예약 가능한 메뉴 개수 확인
-                const availableMenus = spaceData.menus.filter(menu => menu.is_available);
-                const unavailableMenus = spaceData.menus.filter(menu => !menu.is_available);
-                console.log('예약 가능한 메뉴 개수:', availableMenus.length);
-                console.log('예약 불가능한 메뉴 개수:', unavailableMenus.length);
-                console.log('예약 불가능한 메뉴들:', unavailableMenus.map(menu => menu.menu_name));
-            } else {
-                console.log('메뉴 정보가 없습니다.');
-            }
-            console.log('---');
-            
-            setStoreData(spaceData);
-            setSelectedSpaceId(spaceId);
-            
-        } catch (error) {
-            console.error('Space 상세 데이터 로드 실패', error);
-            setError(error.message);
-        } finally {
-            setLoading(false);
-        }
+        // 이동할 URL 생성
+        const targetUrl = `/shop/${id}/space/${spaceId}`;
+        // URL 변경으로 Space 선택
+        navigate(targetUrl);
     };
 
     // 좋아요 토글 처리 - Zustand 스토어만 업데이트
@@ -224,6 +500,7 @@ const ShopDetailPage = () => {
 
     // 이미지 처리 함수
     const getImageSrc = (imageUrl) => {
+        
         if (imageUrl && imageUrl !== '') {
             return imageUrl;
         }
@@ -233,83 +510,91 @@ const ShopDetailPage = () => {
 
     // 대표 메뉴 선택 (최대 할인율 기준)
     const getFeaturedMenu = () => {
-        if (!storeData || !storeData.menus) return null;
-        return storeData.menus.reduce((prev, curr) => 
+        
+        if (!storeData || !storeData.menus) {
+            return null;
+        }
+        
+        const featured = storeData.menus.reduce((prev, curr) => 
             prev.discount_rate > curr.discount_rate ? prev : curr
         );
+        return featured;
     };
 
     // 나머지 메뉴 목록
     const getOtherMenus = () => {
-        if (!storeData || !storeData.menus) return [];
+        if (!storeData || !storeData.menus) {
+            return [];
+        }
+        
         const featured = getFeaturedMenu();
-        if (!featured) return storeData.menus;
-        return storeData.menus.filter(menu => menu.menu_id !== featured.menu_id);
+        if (!featured) {
+            return storeData.menus;
+        }
+        
+        const otherMenus = storeData.menus.filter(menu => menu.menu_id !== featured.menu_id);
+        return otherMenus;
     };
 
-    // 예약 가능한 메뉴가 있는지 확인
-    const hasAvailableMenus = () => {
-        if (!storeData || !storeData.menus) return false;
-        return storeData.menus.some(menu => menu.is_available);
-    };
-
-    // Space 상세 화면에서는 모든 메뉴가 예약 가능한 상태로 가정
-    // (Space 목록에서 이미 필터링되었으므로)
-    const isMenuUnavailable = (menu) => {
-        return false; // 항상 예약 가능
-    };
-
-    // Space 상세 화면에서는 모든 메뉴가 예약 가능한 상태로 가정
-    // (Space 목록에서 이미 필터링되었으므로)
-    const areAllMenusUnavailable = () => {
-        return false; // 항상 예약 가능
-    };
-
-    // Space 상세 화면에서는 모든 메뉴가 예약 가능한 상태로 가정
-    // (Space 목록에서 이미 필터링되었으므로)
-    const getUnavailableReason = () => {
-        return '예약 가능한 메뉴가 있습니다.';
-    };
-
-    // 뒤로 가기 처리
+    // 뒤로 가기 처리 (URL 기반 네비게이션)
     const handleBack = () => {
-        if (showPiAgreement) {
-            togglePiAgreement(); // 동의서 숨김
-        } else if (isReserving) {
-            cancelReservation(); // 예약 상태 초기화
+        const urlState = getShopDetailStateFromUrl();
+        
+        if (urlState.type === 'agreement') {
+            togglePiAgreement(); // false로 설정
+            navigate(`/shop/${id}/reservation`)
+        } else if (urlState.type === 'reservation') {
+            // 예약 페이지에서 뒤로가기: 메뉴 페이지로
+            //cancelReservation(); // 예약 상태 초기화
+            
+            if (spaceCount >= 2 && selectedSpaceId) {
+                navigate(`/shop/${id}/space/${selectedSpaceId}`);
+            } else if (spaceCount === 1) {
+                navigate(`/shop/${id}/menu`);
+            } else {
+                navigate(`/shop/${id}/spaces`);
+            }
         } else if (spaceCount >= 2 && selectedSpaceId) {
-            // Space 선택 해제하고 Space 목록으로 돌아가기
+            // 특정 Space 메뉴 페이지에서 뒤로가기: Space 목록으로
             setSelectedSpaceId(null);
-            const loadSpacesList = async () => {
-                try {
-                    setLoading(true);
-                    const storeId = parseInt(id);
-                    const timeParam = convertTimeToParam(time);
-                    const spacesListData = await fetchStoreSpacesList(storeId, timeParam, accessToken);
-                    setStoreData(spacesListData);
-                } catch (error) {
-                    console.error('Space 목록 재로드 실패', error);
-                } finally {
-                    setLoading(false);
-                }
-            };
-            loadSpacesList();
+            navigate(`/shop/${id}/spaces`);
+        } else if (spaceCount >= 2 && !selectedSpaceId) {
+            if (fromFavoritePage) {
+                // 찜페이지에서 온 경우 찜페이지로 이동
+                navigate('/favorites');
+            }
+            else if (fromSchedulePage) {
+                // 스케줄 페이지에서 온 경우 스케줄 페이지로 이동
+                navigate('/history');
+            }
+            else navigate('/');
+
+        } else if (spaceCount === 1) {
+            // 출발 페이지에 따라 조건부 처리
+            if (fromFavoritePage) {
+                // 찜페이지에서 온 경우 찜페이지로 이동
+                navigate('/favorites');
+            }
+            else if (fromSchedulePage) {
+                // 스케줄 페이지에서 온 경우 스케줄 페이지로 이동
+                navigate('/history');
+            }
+            else navigate('/');
         } else {
-            navigate('/');
+                // 기본: 브라우저 히스토리 뒤로가기
+                navigate(-1);
         }
     };
 
     // 예약 버튼 클릭 시
     const handleReserve = (menu) => {
-        console.log('=== 메뉴 선택 디버깅 ===');
-        console.log('선택된 메뉴 객체:', menu);
-        console.log('item_id 존재 여부:', !!menu?.item_id);
-        console.log('item_id 값:', menu?.item_id);
-        console.log('메뉴 ID:', menu?.menu_id);
-        console.log('메뉴 이름:', menu?.menu_name);
-        console.log('Space 개수:', spaceCount);
-        console.log('선택된 Space ID:', selectedSpaceId);
+        
+        // 기존 예약 상태 초기화 후 새로운 예약 시작
+        cancelReservation();
         startReservation(menu, null);
+        
+        // 예약 페이지로 URL 변경
+        navigate(`/shop/${id}/reservation`);
     };
 
     // Space 선택 (디자이너 선택과 동일한 역할)
@@ -320,146 +605,212 @@ const ShopDetailPage = () => {
     // 대표 메뉴 이름 (전문 분야로 사용)
     const getSpecialty = () => {
         const featured = getFeaturedMenu();
-        return featured ? featured.menu_name : 'N/A';
+        
+        if (featured) {
+            const specialty = `${featured.menu_name}`;
+            return specialty;
+        }
+        return 'N/A';
     };
 
     // 페이지 제목 결정
     const getPageTitle = () => {
-        if (showPiAgreement) return '개인정보 제3자 제공 동의서';
-        if (isReserving) return '예약하기';
-        if (spaceCount >= 2 && selectedSpaceId && storeData) {
-            return `${storeData.store_name} / ${storeData.space_name}`;
+        const urlState = getShopDetailStateFromUrl();
+        
+        if (urlState.type === 'agreement') {
+            return '개인정보 제3자 제공 동의서';
         }
-        if (storeData) return storeData.store_name;
+        if (urlState.type === 'reservation') {
+            return '예약하기';
+        }
+        if (spaceCount >= 2 && selectedSpaceId && storeData) {
+            // Space 상세 페이지인 경우
+            if (storeData.space_name) {
+                const title = `${storeData.store_name} / ${storeData.space_name}`;
+                return title;
+            } else {
+                // space_name이 없는 경우 (Space 목록 데이터에서 특정 Space 찾기)
+                const selectedSpace = storeData.spaces?.find(space => space.space_id === parseInt(selectedSpaceId));
+                if (selectedSpace) {
+                    const title = `${storeData.store_name} / ${selectedSpace.space_name}`;
+                    return title;
+                } else {
+                    return storeData.store_name;
+                }
+            }
+        }
+        if (storeData) {
+            return storeData.store_name;
+        }
         return '가게 상세';
     };
 
   return (
     <Layout currentPage="shop-detail">
         <PageContainer>
-            <TopNavBar
-                onBack={handleBack}
-                title={getPageTitle()}
-                showLike={!isReserving && !showPiAgreement}
-                storeId={parseInt(id)}
-                isLiked={isLiked}
-                onLikeToggle={handleLikeToggle}
-            />
-    
-            {/* 콘텐츠 영역 */}
-            <ContentContainer>
-                {loading ? (
-                    <LoadingContainer>
-                        <Spinner />
-                    </LoadingContainer>
-                ) : error ? (
-                    <ErrorContainer>
-                        <ErrorText>데이터를 불러오는데 실패했습니다.</ErrorText>
-                        <ErrorSubText>{error}</ErrorSubText>
-                    </ErrorContainer>
-                ) : isReserving ? (
-                    <ReservationPage shop={storeData} />
-                ) : (
-                    <>
-                    {/* Space가 1개이거나(메뉴목록) Space space 화면일 때(디자이너목록)만 이미지 표시 */}
-                    {spaceCount === 1 || (spaceCount >= 2 && !selectedSpaceId) ? (
-                        <>
-                            <ShopImage 
-                                src={getImageSrc(storeData?.store_image_url || storeData?.space_image_url)} 
-                                alt={storeData?.store_name || storeData?.space_name}
-                                onError={(e) => {
-                                    console.warn('가게 이미지 로드 실패, placeholder 이미지로 대체');
-                                    e.target.src = placeholderImage;
-                                }}
-                            />
-                            <ShopInfo
-                                name={storeData?.store_name}
-                                address={storeData?.store_address}
-                                distance={`${storeData?.distance}m`}
-                                reservationTime={`${time} 예약`}
-                            />
-                        </>
-                    ) : null}
-                    
-                    {/* Space가 1개인 경우: 가게 정보 표시 */}
-                    {spaceCount === 1 ? (
-                        <></>
-                        //<ShopInfo
-                        //    name={storeData?.store_name}
-                        //    address={storeData?.store_address}
-                        //    distance={`${storeData?.distance}m`}
-                        //    reservationTime={`${time} 예약`}
-                        ///>
-                    ) : spaceCount >= 2 && selectedSpaceId ? (
-                        /* Space 상세 화면: Space 정보 표시 */
-                        <DesignerInfo
-                            name={storeData?.space_name}
-                            specialty={`${getSpecialty()} 전문`}
-                            reservationTime={`${time} 방문`}
+            {/* 네브 바 영역 */}
+            <NavBarContainer>
+                {(() => {
+                    console.log('🔍 렌더링 조건 확인 - showPiAgreement:', showPiAgreement);
+                    console.log('🔍 렌더링 조건 확인 - location.pathname:', location.pathname);
+                    console.log('🔍 렌더링 조건 확인 - urlState.type:', getShopDetailStateFromUrl().type);
+                    return (
+                        <TopNavBar
+                            onBack={handleBack}
+                            title={getPageTitle()}
+                            showLike={!location.pathname.includes('/reservation') && !showPiAgreement && !(spaceCount >= 2 && selectedSpaceId)}
+                            storeId={parseInt(id)}
+                            isLiked={isLiked}
+                            onLikeToggle={handleLikeToggle}
                         />
-                    ) : null}
-                    
-                    {/* Space가 2개 이상인 경우 */}
-                    {spaceCount >= 2 ? (
-                        !selectedSpaceId ? (
-                            /* Space 목록 화면 */
-                            <>
-                                <Line />
-                                <DesignerSection>
-                                    {storeData?.spaces?.map(space => (
-                                        <SpaceCard
-                                            key={space.space_id}
-                                            space={{
-                                                id: space.space_id,
-                                                name: space.space_name,
-                                                image: space.space_image_url,
-                                                maxDiscountRate: space.max_discount_rate,
-                                                isPossible: space.is_possible
-                                            }}
-                                            onSelect={handleSelectSpace}
-                                        />
-                                    ))}
-                                </DesignerSection>
-                            </>
-                        ) : (
-                            /* Space 상세 화면: 메뉴 목록 */
-                            <>
-                                <Line />
-                                <MenuSection>
-                                    <SectionTitle>가장 할인율이 큰 대표 메뉴!</SectionTitle>
-                                    <MenuCard
-                                        menu={getFeaturedMenu()}
-                                        onReserve={() => handleReserve(getFeaturedMenu())}
-                                    />
-                                </MenuSection>
-                                <Line />
-                                <MenuSection>
-                                    <SectionTitle>다른 할인 메뉴</SectionTitle>
-                                    <MenuList menus={getOtherMenus()} onReserve={handleReserve} />
-                                </MenuSection>
-                            </>
-                        )
+                    );
+                })()}
+            </NavBarContainer>
+    
+            <ScrollContainer offsettop={72}>
+                {/* 콘텐츠 영역 */}
+                <ContentContainer>
+                    {loading ? (
+                        <LoadingContainer>
+                            <Spinner />
+                        </LoadingContainer>
+                    ) : error ? (
+                        <ErrorContainer>
+                            <ErrorText>데이터를 불러오는데 실패했습니다.</ErrorText>
+                            <ErrorSubText>{error}</ErrorSubText>
+                        </ErrorContainer>
+                    ) : location.pathname.includes('/reservation') ? (
+                        <ReservationPage shop={storeData} />
                     ) : (
-                        /* Space가 1개인 경우: 바로 메뉴 목록 */
                         <>
-                            <Line />
-                            <MenuSection>
-                                <SectionTitle>가장 할인율이 큰 대표 메뉴!</SectionTitle>
-                                <MenuCard
-                                    menu={getFeaturedMenu()}
-                                    onReserve={() => handleReserve(getFeaturedMenu())}
+                        {/* Space가 1개이거나(메뉴목록) Space space 화면일 때(디자이너목록)만 이미지 표시 */}
+                        {(spaceCount === 1 || (spaceCount >= 2 && !selectedSpaceId)) && !location.pathname.includes('/reservation') ? (
+                            <IntroductionSection>
+                                {(() => {
+                                    const imageUrl = getImageSrc(storeData?.store_image_url || storeData?.space_image_url);
+                                    const imageAlt = storeData?.store_name || storeData?.space_name;
+                                    
+                                    return (
+                                        <ShopImage 
+                                            src={imageUrl} 
+                                            alt={imageAlt}
+                                            onError={(e) => {
+                                                console.warn('가게 이미지 로드 실패, placeholder 이미지로 대체');
+                                                e.target.src = placeholderImage;
+                                            }}
+                                        />
+                                    );
+                                })()}
+                                <ShopInfo
+                                    name={storeData?.store_name}
+                                    address={storeData?.store_address}
+                                    distance={`${storeData?.distance}m`}
+                                    reservationTime={`${time} 예약`}
+                                    walkTime={storeData?.on_foot}
                                 />
-                            </MenuSection>
-                            <Line />
-                            <MenuSection>
-                                <SectionTitle>다른 할인 메뉴</SectionTitle>
-                                <MenuList menus={getOtherMenus()} onReserve={handleReserve} />
-                            </MenuSection>
-                        </>
-                    )}
+                            </IntroductionSection>
+                        ) : null}
+                        
+                        {/* Space가 1개인 경우: 가게 정보 표시 */}
+                        {spaceCount === 1 ? (
+                            <></>
+                        ) : spaceCount >= 2 && selectedSpaceId ? (
+                            /* Space 상세 화면: Space 정보 표시 */
+                            <DesignerInfo
+                                name={storeData?.space_name}
+                                specialty={`${getSpecialty()} 전문`}
+                                reservationTime={`${time} 방문`}
+                                designerImage={storeData?.space_image_url}
+                            />
+                        ) : null}
+                        
+                        {/* Space가 2개 이상인 경우 */}
+                        {spaceCount >= 2 ? (
+                            !selectedSpaceId && storeData?.spaces ? (
+                                /* Space 목록 화면 */
+                                <>
+                                    <Line />
+                                    <DesignerSection>
+                                        {storeData.spaces.map(space => (
+                                            <SpaceCard
+                                                key={space.space_id}
+                                                space={{
+                                                    id: space.space_id,
+                                                    name: space.space_name,
+                                                    image: space.space_image_url,
+                                                    maxDiscountRate: space.max_discount_rate,
+                                                    isPossible: space.is_possible
+                                                }}
+                                                onSelect={handleSelectSpace}
+                                            />
+                                        ))}
+                                    </DesignerSection>
+                                </>
+                            ) : selectedSpaceId && storeData?.menus ? (
+                                /* Space 상세 화면: 메뉴 목록 */
+                                (() => {
+                                    const featuredMenu = getFeaturedMenu();
+                                    const otherMenus = getOtherMenus();
+                                    return (
+                                        <>
+                                            <Line />
+                                            <MenuSection>
+                                                <SectionTitle>가장 할인율이 큰 대표 메뉴!</SectionTitle>
+                                                {featuredMenu ? (
+                                                    <MenuCard
+                                                        menu={featuredMenu}
+                                                        onReserve={() => handleReserve(featuredMenu)}
+                                                    />
+                                                ) : (
+                                                    <div>메뉴를 불러오는 중...</div>
+                                                )}
+                                            </MenuSection>
+                                            <Line />
+                                            <MenuSection>
+                                                <SectionTitle>다른 할인 메뉴</SectionTitle>
+                                                <MenuList menus={otherMenus} onReserve={handleReserve} />
+                                            </MenuSection>
+                                        </>
+                                    );
+                                })()
+                            ) : (
+                                /* 로딩 상태 */
+                                <LoadingContainer>
+                                    <Spinner />
+                                </LoadingContainer>
+                            )
+                        ) : (
+                            /* Space가 1개인 경우: 바로 메뉴 목록 */
+                            (() => {
+                                const featuredMenu = getFeaturedMenu();
+                                const otherMenus = getOtherMenus();
+                                return (
+                                    <>
+                                        <Line />
+                                        <MenuSection>
+                                            <SectionTitle>가장 할인율이 큰 대표 메뉴!</SectionTitle>
+                                            {featuredMenu ? (
+                                                <MenuCard
+                                                    menu={featuredMenu}
+                                                    onReserve={() => handleReserve(featuredMenu)}
+                                                />
+                                            ) : (
+                                                <div>메뉴를 불러오는 중...</div>
+                                            )}
+                                        </MenuSection>
+                                        <Line />
+                                        <MenuSection>
+                                            <SectionTitle>다른 할인 메뉴</SectionTitle>
+                                            <MenuList menus={otherMenus} onReserve={handleReserve} />
+                                        </MenuSection>
+                                    </>
+                                );
+                            })()
+                        )}
                     </>
                 )}
                 </ContentContainer>
+            </ScrollContainer>
         </PageContainer>
     </Layout>
   );
@@ -473,16 +824,20 @@ export default ShopDetailPage;
 const PageContainer = styled.div`
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    height: 100%;
+    max-height: 100vh;
     background: #fff;
+`;
+
+/* 네브 바 영역 */
+const NavBarContainer = styled.div`
 `;
 
 /* 콘텐츠 영역 (스크롤 가능) */
 const ContentContainer = styled.div`
-    flex: 1;
-    //overflow-y: auto;
-    //position: relative;
-    //top: 100px;
+    overflow-y: visible;
+    position: relative;
+    min-height: calc(100vh - 72px);
 `;
 
 /* 가게 이미지 */
@@ -494,9 +849,14 @@ const ShopImage = styled.img`
     opacity: 0.65;
 `;
 
+const IntroductionSection = styled.div`
+    display: flex;
+    flex-direction: column;
+`;
+
 /* 디자이너 선택 섹션 */
 const DesignerSection = styled.div`
-    padding: 16px;
+    padding: 16px 16px 0px 16px;
 `;
 
 /* 섹션 제목 (대표 메뉴, 다른 메뉴) */
@@ -549,11 +909,4 @@ const ErrorText = styled.div`
 const ErrorSubText = styled.div`
     font-size: 14px;
     color: #999;
-`;
-
-const UnavailableMessage = styled.div`
-    padding: 16px;
-    text-align: center;
-    color: #999;
-    font-size: 14px;
 `;
