@@ -89,7 +89,6 @@ def fetch_stats_data(store_id, day):
     if not headers: return None
     try:
         response = requests.get(API_URL, headers=headers)
-        print(response.json())
         if response.status_code == 200: 
 
             return response.json()
