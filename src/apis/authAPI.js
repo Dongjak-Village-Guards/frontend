@@ -1,5 +1,5 @@
 // 사용자 인증 관련 API 함수들
-const REST_API_BASE_URL = 'https://buynow.n-e.kr';
+const REST_API_BASE_URL = 'https://buynow2-django.o-r.kr';
 
 /**
  * 구글 로그인/회원가입
@@ -9,6 +9,7 @@ const REST_API_BASE_URL = 'https://buynow.n-e.kr';
 export const loginWithGoogle = async (idToken) => {
   try {
     console.log('구글 로그인/회원가입 시작...');
+    //console.log(REST_API_BASE_URL, "test");
     
     const response = await fetch(`${REST_API_BASE_URL}/v1/accounts/login/`, {
       method: 'POST',
