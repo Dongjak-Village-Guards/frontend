@@ -171,7 +171,7 @@ def render_slot_grid(slots):
 
 def render_dashboard():
     st.set_page_config(layout="wide")
-    st.sidebar.success(f"**{st.session_state.get('store_name', '가게')}**으로 로그인 됨")
+    st.sidebar.success(f"**{st.session_state.get('store_name', '가게')}**(으)로 로그인 됨")
     
     # 새로고침 버튼을 사이드바에 추가
     st.sidebar.markdown("---")
