@@ -1,11 +1,11 @@
 import { signInWithPopup } from 'firebase/auth';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { auth, provider } from '../../../../firebase';
 import useUserInfo from '../../../../hooks/user/useUserInfo';
 import useStore from '../../../../hooks/store/useStore';
 import { loginWithGoogle } from '../../../../apis/authAPI';
 import { SignInwithGoogle } from './Google.styles';
+import { auth, provider } from '../../../../firebase';
 
 const Google = ({
   className,
