@@ -1,5 +1,5 @@
 // 예약 관련 API 함수들
-const REST_API_BASE_URL = 'https://buynow2-django.o-r.kr';
+const REST_API_BASE_URL = 'https://buynow2.o-r.kr';
 
 /**
  * 사용자의 예약 목록 조회
