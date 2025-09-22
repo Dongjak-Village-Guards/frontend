@@ -7,9 +7,7 @@ const REST_API_BASE_URL = 'https://buynow2.o-r.kr';
  * @returns {number} API time 파라미터 (0~23)
  */
 export const convertTimeToParam = (time) => {
-  console.log('=== convertTimeToParam 호출 ===');
-  console.log('입력 time:', time, '타입:', typeof time);
-  
+
   if (time === null) {
     const currentHour = new Date().getHours();
     console.log('time이 null이므로 현재 시간 반환:', currentHour);
@@ -114,7 +112,7 @@ export const fetchStoresFromAPI = async (time, category = null, accessToken = nu
     console.log('가게 목록 조회 시작...');
     console.log('time:', time);
     console.log('category:', category);
-    console.log('accessToken:', accessToken ? `${accessToken.substring(0, 20)}...` : 'null');
+    console.log('accessToken:', accessToken ? `${accessToken}` : 'null');
     
     // 시간 파라미터 변환
     const timeParam = convertTimeToParam(time);

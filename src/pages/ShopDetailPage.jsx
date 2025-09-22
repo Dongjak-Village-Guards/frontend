@@ -303,12 +303,10 @@ const ShopDetailPage = () => {
                 
                 const storeId = parseInt(id);
                 const urlState = getShopDetailStateFromUrl();
-                console.log('🔍 loadStoreData 시작 - URL 상태:', urlState);
                 
                 // 1. Space 개수 조회
                 const spacesData = await fetchStoreSpacesCount(storeId);
                 setSpaceCount(spacesData.count);
-                console.log('🔍 Space 개수:', spacesData.count);
                 
                 const timeParam = convertTimeToParam(time);
                 
