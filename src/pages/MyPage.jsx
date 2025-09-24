@@ -19,10 +19,8 @@ const MyPage = () => {
       setLoading(true);
       try {
         // 토큰 유효성 확인 및 갱신
-        if (!isTokenValid()) {
-          const refreshSuccess = await refreshTokens();
+        const refreshSuccess = await refreshTokens();
           if (!refreshSuccess) return;
-        }
         
         // 갱신된 토큰 가져오기
         const { accessToken: currentToken } = useUserInfo.getState();
@@ -40,7 +38,7 @@ const MyPage = () => {
     };
 
     loadUserInfo();
-  }, [authUser, accessToken, isTokenValid, refreshTokens]);
+  }, [authUser, refreshTokens]);
 
   const handleLogout = () => {
     logoutUser();

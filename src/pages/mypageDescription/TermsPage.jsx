@@ -24,7 +24,7 @@ const TermsPage = () => {
               <SectionContent>
               <Paragraph>
                 <ol>
-                  <li>예약 부도(No-Show)의 정의: 예약 시간으로부터 15분이 지날 때까지 매장에 방문하지 않거나, 사전 연락 없이 예약을 이행하지 않는 경우.</li>
+                  <li>예약 부도(No-Show)의 정의: 예약 시간으로부터 15분이 지날 때까지 매장에 방문하지 않거나, 사전 연락 없이 예약을 이행하지 않는 경우.</li>
                   <br />
                   <li>패널티 적용:</li>
                   <ul>
@@ -87,7 +87,7 @@ const SectionContent = styled.div`
   gap: 12px;
 `;
 
-const Paragraph = styled.p`
+const Paragraph = styled.div`
   font-size: 14px;
   color: #444;
   line-height: 1.4;

@@ -22,8 +22,8 @@ function App() {
 
     useEffect(() => {
     const checkTokenAndRefresh = async () => {
-        if (authUser && !isTokenValid()) {
-        console.log('토큰 만료 5분 전, 자동 갱신 시도');
+        if (authUser) {
+        console.log('토큰 만료 체크, 자동 갱신 시도');
         const success = await refreshTokens();
         if (!success) {
             console.log('토큰 갱신 실패로 자동 로그아웃');

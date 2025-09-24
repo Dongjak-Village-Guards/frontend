@@ -10,31 +10,20 @@ export const convertTimeToParam = (time) => {
 
   if (time === null) {
     const currentHour = new Date().getHours();
-    console.log('time이 null이므로 현재 시간 반환:', currentHour);
-    console.log('=== convertTimeToParam 종료 (null 처리) ===');
     return currentHour;
   }
   
   if (typeof time === 'string') {
     const hour = parseInt(time.split(':')[0]);
     const currentHour = new Date().getHours();
-    console.log('문자열 파싱 - hour:', hour, '현재 시간:', currentHour);
     
     // 백엔드 요청 ( time 0~36으로 반환, 다음날(24~36) ) 
     if(currentHour > 12 && hour / 12 < 1) {
       const result = hour + 24;
-      console.log('오후 조건 만족 - 다음날로 계산:', hour, '+ 24 =', result);
-      console.log('=== convertTimeToParam 종료 (오후 조건) ===');
       return result;
     }
-
-    console.log('일반 시간 반환:', hour);
-    console.log('=== convertTimeToParam 종료 (일반) ===');
     return hour;
   }
-  
-  console.log('기타 타입 반환:', time);
-  console.log('=== convertTimeToParam 종료 (기타) ===');
   return time;
 };
 
@@ -105,9 +94,10 @@ const transformApiData = (apiData) => {
  * @param {string|number|null} time - 시간 필터 (HH:MM 형식, 숫자, 또는 null)
  * @param {string|null} category - 업종 필터 (선택)
  * @param {string|null} accessToken - 액세스 토큰
+ * @param {Function|null} refreshTokens - 토큰 갱신 함수
  * @returns {Promise<Array>} 가게 목록
  */
-export const fetchStoresFromAPI = async (time, category = null, accessToken = null) => {
+export const fetchStoresFromAPI = async (time, category = null, accessToken = null, refreshTokens = null) => {
   try {
     console.log('가게 목록 조회 시작...');
     console.log('time:', time);
@@ -135,6 +125,36 @@ export const fetchStoresFromAPI = async (time, category = null, accessToken = nu
     console.log('response ok:', response.ok);
     
     if (!response.ok) {
+      // 401 에러 처리 - 토큰 갱신 시도
+      if (response.status === 401 && accessToken && refreshTokens) {
+        console.log('🚨 401 에러 발생 - AccessToken이 만료되었습니다');
+        console.log('🔄 RefreshToken으로 AccessToken 재발급 시도...');
+        const refreshSuccess = await refreshTokens();
+        if (refreshSuccess) {
+          console.log('✅ 토큰 갱신 성공, API 재시도 중...');
+          // 갱신된 토큰으로 재시도
+          const { accessToken: newToken } = (await import('../hooks/user/useUserInfo')).default.getState();
+          const newHeaders = buildHeaders(newToken);
+          const retryResponse = await fetch(url, {
+            method: 'GET',
+            headers: newHeaders,
+          });
+          
+          if (retryResponse.ok) {
+            const stores = await retryResponse.json();
+            console.log('🎉 토큰 갱신 후 가게 목록 조회 성공:', stores.length, '개');
+            const transformedStores = transformApiData(stores);
+            return transformedStores;
+          } else {
+            console.error('❌ 토큰 갱신 후에도 API 호출 실패:', retryResponse.status);
+          }
+        } else {
+          console.error('❌ 토큰 갱신 실패 - 로그아웃이 필요합니다');
+          // 토큰 갱신 실패 시 에러를 던져서 상위에서 로그아웃 처리하도록 함
+          throw new Error('토큰 갱신 실패 - 로그인이 필요합니다');
+        }
+      }
+      
       const errorData = await response.json().catch(() => ({}));
       console.error('API 응답 에러:', errorData);
       throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
@@ -259,9 +279,10 @@ export const fetchStoresByOwner = async (ownerId) => {
  * @param {number} time - 시간 필터 (0~23)
  * @param {string} category - 업종 필터 (선택)
  * @param {string} accessToken - 액세스 토큰
+ * @param {Function|null} refreshTokens - 토큰 갱신 함수
  * @returns {Promise<Array>} 찜한 가게 목록
  */
-export const fetchUserLikes = async (time, category = null, accessToken) => {
+export const fetchUserLikes = async (time, category = null, accessToken, refreshTokens = null) => {
   try {
     console.log('사용자 찜 목록 조회 시작...');
     
@@ -282,6 +303,36 @@ export const fetchUserLikes = async (time, category = null, accessToken) => {
     });
     
     if (!response.ok) {
+      // 401 에러 처리 - 토큰 갱신 시도
+      if (response.status === 401 && accessToken && refreshTokens) {
+        console.log('🚨 401 에러 발생 - AccessToken이 만료되었습니다 (찜 목록 조회)');
+        console.log('🔄 RefreshToken으로 AccessToken 재발급 시도...');
+        const refreshSuccess = await refreshTokens();
+        if (refreshSuccess) {
+          console.log('✅ 토큰 갱신 성공, 찜 목록 조회 API 재시도 중...');
+          // 갱신된 토큰으로 재시도
+          const { accessToken: newToken } = (await import('../hooks/user/useUserInfo')).default.getState();
+          const retryResponse = await fetch(url, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${newToken}`,
+              'Content-Type': 'application/json',
+            },
+          });
+          
+          if (retryResponse.ok) {
+            const likes = await retryResponse.json();
+            console.log('🎉 토큰 갱신 후 찜 목록 조회 성공:', likes.length, '개');
+            return likes;
+          } else {
+            console.error('❌ 토큰 갱신 후에도 찜 목록 조회 실패:', retryResponse.status);
+          }
+        } else {
+          console.error('❌ 토큰 갱신 실패 (찜 목록 조회) - 로그아웃이 필요합니다');
+          throw new Error('토큰 갱신 실패 - 로그인이 필요합니다');
+        }
+      }
+      
       const errorData = await response.json();
       throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
@@ -300,9 +351,10 @@ export const fetchUserLikes = async (time, category = null, accessToken) => {
  * 찜 생성
  * @param {number} storeId - 가게 ID
  * @param {string} accessToken - 액세스 토큰
+ * @param {Function|null} refreshTokens - 토큰 갱신 함수
  * @returns {Promise<Object>} 생성된 찜 정보
  */
-export const createLike = async (storeId, accessToken) => {
+export const createLike = async (storeId, accessToken, refreshTokens = null) => {
   try {
     console.log(`찜 생성 시작... (가게 ID: ${storeId})`);
     
@@ -318,6 +370,39 @@ export const createLike = async (storeId, accessToken) => {
     });
     
     if (!response.ok) {
+      // 401 에러 처리 - 토큰 갱신 시도
+      if (response.status === 401 && accessToken && refreshTokens) {
+        console.log('🚨 401 에러 발생 - AccessToken이 만료되었습니다 (찜 생성)');
+        console.log('🔄 RefreshToken으로 AccessToken 재발급 시도...');
+        const refreshSuccess = await refreshTokens();
+        if (refreshSuccess) {
+          console.log('✅ 토큰 갱신 성공, 찜 생성 API 재시도 중...');
+          // 갱신된 토큰으로 재시도
+          const { accessToken: newToken } = (await import('../hooks/user/useUserInfo')).default.getState();
+          const retryResponse = await fetch(`${REST_API_BASE_URL}/v1/reservations/userlikes/`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${newToken}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              store_id: storeId,
+            }),
+          });
+          
+          if (retryResponse.ok) {
+            const like = await retryResponse.json();
+            console.log('🎉 토큰 갱신 후 찜 생성 성공:', like.like_id);
+            return like;
+          } else {
+            console.error('❌ 토큰 갱신 후에도 찜 생성 실패:', retryResponse.status);
+          }
+        } else {
+          console.error('❌ 토큰 갱신 실패 (찜 생성) - 로그아웃이 필요합니다');
+          throw new Error('토큰 갱신 실패 - 로그인이 필요합니다');
+        }
+      }
+      
       const errorData = await response.json();
       throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
@@ -336,9 +421,10 @@ export const createLike = async (storeId, accessToken) => {
  * 찜 삭제
  * @param {number} likeId - 찜 ID
  * @param {string} accessToken - 액세스 토큰
+ * @param {Function|null} refreshTokens - 토큰 갱신 함수
  * @returns {Promise<void>}
  */
-export const deleteLike = async (likeId, accessToken) => {
+export const deleteLike = async (likeId, accessToken, refreshTokens = null) => {
   try {
     console.log(`찜 삭제 시작... (찜 ID: ${likeId})`);
     console.log('전달받은 accessToken:', accessToken ? `${accessToken.substring(0, 20)}...` : 'null');
@@ -361,6 +447,38 @@ export const deleteLike = async (likeId, accessToken) => {
     console.log('삭제 요청 body:', { like_id: likeId });
     
     if (!response.ok) {
+      // 401 에러 처리 - 토큰 갱신 시도
+      if (response.status === 401 && accessToken && refreshTokens) {
+        console.log('🚨 401 에러 발생 - AccessToken이 만료되었습니다 (찜 삭제)');
+        console.log('🔄 RefreshToken으로 AccessToken 재발급 시도...');
+        const refreshSuccess = await refreshTokens();
+        if (refreshSuccess) {
+          console.log('✅ 토큰 갱신 성공, 찜 삭제 API 재시도 중...');
+          // 갱신된 토큰으로 재시도
+          const { accessToken: newToken } = (await import('../hooks/user/useUserInfo')).default.getState();
+          const retryResponse = await fetch(`${REST_API_BASE_URL}/v1/reservations/userlikes/`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${newToken}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              like_id: likeId,
+            }),
+          });
+          
+          if (retryResponse.ok) {
+            console.log('🎉 토큰 갱신 후 찜 삭제 성공');
+            return;
+          } else {
+            console.error('❌ 토큰 갱신 후에도 찜 삭제 실패:', retryResponse.status);
+          }
+        } else {
+          console.error('❌ 토큰 갱신 실패 (찜 삭제) - 로그아웃이 필요합니다');
+          throw new Error('토큰 갱신 실패 - 로그인이 필요합니다');
+        }
+      }
+      
       const errorData = await response.json();
       console.error('삭제 응답 에러:', errorData);
       throw new Error(errorData.message || errorData.error || `HTTP error! status: ${response.status}`);
@@ -378,15 +496,47 @@ export const deleteLike = async (likeId, accessToken) => {
 /**
  * 특정 Store의 Space 개수 및 id 조회
  * @param {number} storeId - 가게 ID
+ * @param {string|null} accessToken - 액세스 토큰
+ * @param {Function|null} refreshTokens - 토큰 갱신 함수
  * @returns {Promise<Object>} Space 개수와 ID 목록
  */
-export const fetchStoreSpacesCount = async (storeId) => {
+export const fetchStoreSpacesCount = async (storeId, accessToken = null, refreshTokens = null) => {
   try {
     console.log(`Store Space 개수 조회 시작... (Store ID: ${storeId})`);
     
-    const response = await fetch(`${REST_API_BASE_URL}/v1/stores/${storeId}/`);
+    const response = await fetch(`${REST_API_BASE_URL}/v1/stores/${storeId}/`, {
+      method: 'GET',
+      headers: buildHeaders(accessToken),
+    });
     
     if (!response.ok) {
+      // 401 에러 처리 - 토큰 갱신 시도
+      if (response.status === 401 && accessToken && refreshTokens) {
+        console.log('🚨 401 에러 발생 - AccessToken이 만료되었습니다 (Store Space 개수 조회)');
+        console.log('🔄 RefreshToken으로 AccessToken 재발급 시도...');
+        const refreshSuccess = await refreshTokens();
+        if (refreshSuccess) {
+          console.log('✅ 토큰 갱신 성공, Store Space 개수 조회 API 재시도 중...');
+          // 갱신된 토큰으로 재시도
+          const { accessToken: newToken } = (await import('../hooks/user/useUserInfo')).default.getState();
+          const retryResponse = await fetch(`${REST_API_BASE_URL}/v1/stores/${storeId}/`, {
+            method: 'GET',
+            headers: buildHeaders(newToken),
+          });
+          
+          if (retryResponse.ok) {
+            const data = await retryResponse.json();
+            console.log('🎉 토큰 갱신 후 Store Space 개수 조회 성공:', data);
+            return data;
+          } else {
+            console.error('❌ 토큰 갱신 후에도 Store Space 개수 조회 실패:', retryResponse.status);
+          }
+        } else {
+          console.error('❌ 토큰 갱신 실패 (Store Space 개수 조회) - 로그아웃이 필요합니다');
+          throw new Error('토큰 갱신 실패 - 로그인이 필요합니다');
+        }
+      }
+      
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
@@ -406,9 +556,10 @@ export const fetchStoreSpacesCount = async (storeId) => {
  * @param {number} storeId - 가게 ID
  * @param {number} time - 시간 (0~23)
  * @param {string} accessToken - 액세스 토큰
+ * @param {Function|null} refreshTokens - 토큰 갱신 함수
  * @returns {Promise<Object>} 가게 정보와 메뉴 목록
  */
-export const fetchStoreMenus = async (storeId, time, accessToken) => {
+export const fetchStoreMenus = async (storeId, time, accessToken, refreshTokens = null) => {
   try {
     console.log(`Store 메뉴 조회 시작... (Store ID: ${storeId}, Time: ${time})`);
     
@@ -418,6 +569,33 @@ export const fetchStoreMenus = async (storeId, time, accessToken) => {
     });
     
     if (!response.ok) {
+      // 401 에러 처리 - 토큰 갱신 시도
+      if (response.status === 401 && accessToken && refreshTokens) {
+        console.log('🚨 401 에러 발생 - AccessToken이 만료되었습니다 (Store 메뉴 조회)');
+        console.log('🔄 RefreshToken으로 AccessToken 재발급 시도...');
+        const refreshSuccess = await refreshTokens();
+        if (refreshSuccess) {
+          console.log('✅ 토큰 갱신 성공, Store 메뉴 조회 API 재시도 중...');
+          // 갱신된 토큰으로 재시도
+          const { accessToken: newToken } = (await import('../hooks/user/useUserInfo')).default.getState();
+          const retryResponse = await fetch(`${REST_API_BASE_URL}/v1/stores/${storeId}/menus/?time=${time}`, {
+            method: 'GET',
+            headers: buildHeaders(newToken),
+          });
+          
+          if (retryResponse.ok) {
+            const data = await retryResponse.json();
+            console.log('🎉 토큰 갱신 후 Store 메뉴 조회 성공:', data);
+            return data;
+          } else {
+            console.error('❌ 토큰 갱신 후에도 Store 메뉴 조회 실패:', retryResponse.status);
+          }
+        } else {
+          console.error('❌ 토큰 갱신 실패 (Store 메뉴 조회) - 로그아웃이 필요합니다');
+          throw new Error('토큰 갱신 실패 - 로그인이 필요합니다');
+        }
+      }
+      
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
@@ -443,9 +621,10 @@ export const fetchStoreMenus = async (storeId, time, accessToken) => {
  * @param {number} storeId - 가게 ID
  * @param {number} time - 시간 (0~23)
  * @param {string} accessToken - 액세스 토큰
+ * @param {Function|null} refreshTokens - 토큰 갱신 함수
  * @returns {Promise<Object>} 가게 정보와 Space 목록
  */
-export const fetchStoreSpacesList = async (storeId, time, accessToken) => {
+export const fetchStoreSpacesList = async (storeId, time, accessToken, refreshTokens = null) => {
   try {
     console.log(`Store Space 목록 조회 시작... (Store ID: ${storeId}, Time: ${time})`);
     
@@ -455,6 +634,33 @@ export const fetchStoreSpacesList = async (storeId, time, accessToken) => {
     });
     
     if (!response.ok) {
+      // 401 에러 처리 - 토큰 갱신 시도
+      if (response.status === 401 && accessToken && refreshTokens) {
+        console.log('🚨 401 에러 발생 - AccessToken이 만료되었습니다 (Store Space 목록 조회)');
+        console.log('🔄 RefreshToken으로 AccessToken 재발급 시도...');
+        const refreshSuccess = await refreshTokens();
+        if (refreshSuccess) {
+          console.log('✅ 토큰 갱신 성공, Store Space 목록 조회 API 재시도 중...');
+          // 갱신된 토큰으로 재시도
+          const { accessToken: newToken } = (await import('../hooks/user/useUserInfo')).default.getState();
+          const retryResponse = await fetch(`${REST_API_BASE_URL}/v1/stores/${storeId}/spaces/?time=${time}`, {
+            method: 'GET',
+            headers: buildHeaders(newToken),
+          });
+          
+          if (retryResponse.ok) {
+            const data = await retryResponse.json();
+            console.log('🎉 토큰 갱신 후 Store Space 목록 조회 성공:', data);
+            return data;
+          } else {
+            console.error('❌ 토큰 갱신 후에도 Store Space 목록 조회 실패:', retryResponse.status);
+          }
+        } else {
+          console.error('❌ 토큰 갱신 실패 (Store Space 목록 조회) - 로그아웃이 필요합니다');
+          throw new Error('토큰 갱신 실패 - 로그인이 필요합니다');
+        }
+      }
+      
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
@@ -464,6 +670,7 @@ export const fetchStoreSpacesList = async (storeId, time, accessToken) => {
     
     return data;
   } catch (error) {
+    // tmeper note
     console.error('Store Space 목록 조회 실패:', error);
     throw error;
   }
@@ -474,9 +681,10 @@ export const fetchStoreSpacesList = async (storeId, time, accessToken) => {
  * @param {number} spaceId - Space ID
  * @param {number} time - 시간 (0~23)
  * @param {string} accessToken - 액세스 토큰
+ * @param {Function|null} refreshTokens - 토큰 갱신 함수
  * @returns {Promise<Object>} Space 정보와 메뉴 목록
  */
-export const fetchSpaceDetails = async (spaceId, time, accessToken) => {
+export const fetchSpaceDetails = async (spaceId, time, accessToken, refreshTokens = null) => {
   try {
     console.log(`=== fetchSpaceDetails API 호출 ===`);
     console.log(`Space ID: ${spaceId}`);
@@ -503,6 +711,34 @@ export const fetchSpaceDetails = async (spaceId, time, accessToken) => {
     console.log(`API 응답 헤더:`, response.headers);
     
     if (!response.ok) {
+      // 401 에러 처리 - 토큰 갱신 시도
+      if (response.status === 401 && accessToken && refreshTokens) {
+        console.log('🚨 401 에러 발생 - AccessToken이 만료되었습니다 (Space 상세 조회)');
+        console.log('🔄 RefreshToken으로 AccessToken 재발급 시도...');
+        const refreshSuccess = await refreshTokens();
+        if (refreshSuccess) {
+          console.log('✅ 토큰 갱신 성공, Space 상세 조회 API 재시도 중...');
+          // 갱신된 토큰으로 재시도
+          const { accessToken: newToken } = (await import('../hooks/user/useUserInfo')).default.getState();
+          const newHeaders = buildHeaders(newToken);
+          const retryResponse = await fetch(url, {
+            method: 'GET',
+            headers: newHeaders,
+          });
+          
+          if (retryResponse.ok) {
+            const data = await retryResponse.json();
+            console.log('🎉 토큰 갱신 후 Space 상세 조회 성공:', data);
+            return data;
+          } else {
+            console.error('❌ 토큰 갱신 후에도 Space 상세 조회 실패:', retryResponse.status);
+          }
+        } else {
+          console.error('❌ 토큰 갱신 실패 (Space 상세 조회) - 로그아웃이 필요합니다');
+          throw new Error('토큰 갱신 실패 - 로그인이 필요합니다');
+        }
+      }
+      
       const errorData = await response.json().catch(() => ({}));
       console.error(`API 에러 응답:`, errorData);
       throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
@@ -557,9 +793,10 @@ export const fetchSpaceDetails = async (spaceId, time, accessToken) => {
  * 특정 Menu 단일 조회 (예약화면용)
  * @param {number} itemId - 아이템 ID
  * @param {string} accessToken - 액세스 토큰
+ * @param {Function|null} refreshTokens - 토큰 갱신 함수
  * @returns {Promise<Object>} 메뉴 상세 정보
  */
-export const fetchMenuItemDetails = async (itemId, accessToken) => {
+export const fetchMenuItemDetails = async (itemId, accessToken, refreshTokens = null) => {
   try {
     console.log(`메뉴 상세 조회 시작... (Item ID: ${itemId})`);
     
@@ -569,6 +806,33 @@ export const fetchMenuItemDetails = async (itemId, accessToken) => {
     });
     
     if (!response.ok) {
+      // 401 에러 처리 - 토큰 갱신 시도
+      if (response.status === 401 && accessToken && refreshTokens) {
+        console.log('🚨 401 에러 발생 - AccessToken이 만료되었습니다 (메뉴 상세 조회)');
+        console.log('🔄 RefreshToken으로 AccessToken 재발급 시도...');
+        const refreshSuccess = await refreshTokens();
+        if (refreshSuccess) {
+          console.log('✅ 토큰 갱신 성공, 메뉴 상세 조회 API 재시도 중...');
+          // 갱신된 토큰으로 재시도
+          const { accessToken: newToken } = (await import('../hooks/user/useUserInfo')).default.getState();
+          const retryResponse = await fetch(`${REST_API_BASE_URL}/v1/stores/items/${itemId}/`, {
+            method: 'GET',
+            headers: buildHeaders(newToken),
+          });
+          
+          if (retryResponse.ok) {
+            const data = await retryResponse.json();
+            console.log('🎉 토큰 갱신 후 메뉴 상세 조회 성공:', data);
+            return data;
+          } else {
+            console.error('❌ 토큰 갱신 후에도 메뉴 상세 조회 실패:', retryResponse.status);
+          }
+        } else {
+          console.error('❌ 토큰 갱신 실패 (메뉴 상세 조회) - 로그아웃이 필요합니다');
+          throw new Error('토큰 갱신 실패 - 로그인이 필요합니다');
+        }
+      }
+      
       const errorData = await response.json().catch(() => ({}));
       const error = new Error(errorData.message || `HTTP error! status: ${response.status}`);
       error.status = response.status;
@@ -589,9 +853,10 @@ export const fetchMenuItemDetails = async (itemId, accessToken) => {
  * 예약 생성
  * @param {number} itemId - 아이템 ID
  * @param {string} accessToken - 액세스 토큰
+ * @param {Function|null} refreshTokens - 토큰 갱신 함수
  * @returns {Promise<Object>} 예약 생성 결과
  */
-export const createReservation = async (itemId, accessToken) => {
+export const createReservation = async (itemId, accessToken, refreshTokens = null) => {
   try {
     console.log('=== API 요청 데이터 확인 ===');
     console.log('요청 URL:', `${REST_API_BASE_URL}/v1/reservations/`);
@@ -619,7 +884,39 @@ export const createReservation = async (itemId, accessToken) => {
     });
     
     if (!response.ok) {
-      console.error('=== 예약 생성 400 에러 상세 ===');
+      // 401 에러 처리 - 토큰 갱신 시도
+      if (response.status === 401 && accessToken && refreshTokens) {
+        console.log('🚨 401 에러 발생 - AccessToken이 만료되었습니다 (예약 생성)');
+        console.log('🔄 RefreshToken으로 AccessToken 재발급 시도...');
+        const refreshSuccess = await refreshTokens();
+        if (refreshSuccess) {
+          console.log('✅ 토큰 갱신 성공, 예약 생성 API 재시도 중...');
+          // 갱신된 토큰으로 재시도
+          const { accessToken: newToken } = (await import('../hooks/user/useUserInfo')).default.getState();
+          const newHeaders = {
+            ...buildHeaders(newToken),
+            'Content-Type': 'application/json',
+          };
+          const retryResponse = await fetch(`${REST_API_BASE_URL}/v1/reservations/`, {
+            method: 'POST',
+            headers: newHeaders,
+            body: JSON.stringify(requestBody),
+          });
+          
+          if (retryResponse.ok) {
+            const data = await retryResponse.json();
+            console.log('🎉 토큰 갱신 후 예약 생성 성공:', data);
+            return data;
+          } else {
+            console.error('❌ 토큰 갱신 후에도 예약 생성 실패:', retryResponse.status);
+          }
+        } else {
+          console.error('❌ 토큰 갱신 실패 (예약 생성) - 로그아웃이 필요합니다');
+          throw new Error('토큰 갱신 실패 - 로그인이 필요합니다');
+        }
+      }
+      
+      console.error('=== 예약 생성 에러 상세 ===');
       console.error('Status:', response.status);
       console.error('Status Text:', response.statusText);
       console.error('Response URL:', response.url);

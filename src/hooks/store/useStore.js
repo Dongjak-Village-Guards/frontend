@@ -278,28 +278,16 @@ const useStore = create(
       fetchStores: async (time = null, category = null) => {
         set({ loading: true });
         try {
-          // accessToken 가져오기
+          // 토큰과 토큰 갱신 함수 가져오기
           const { accessToken, isTokenValid, refreshTokens } = useUserInfo.getState();
           
-          console.log('fetchStores 호출 - accessToken:', accessToken ? `${accessToken.substring(0, 20)}...` : 'null');
+          console.log('확인용: accessToken, isTokenValid', accessToken ? `${accessToken}, ${isTokenValid}` : 'null');
           
-          // 토큰이 있으면 유효성 확인 및 갱신
-          if (accessToken && !isTokenValid()) {
-            console.log('토큰이 만료되었습니다. 토큰 갱신을 시도합니다.');
-            const refreshSuccess = await refreshTokens();
-            if (!refreshSuccess) {
-              console.error('토큰 갱신에 실패했습니다.');
-              // 토큰 갱신 실패 시에도 계속 진행 (익명 요청)
-            } else {
-              console.log('토큰 갱신 성공');
-            }
-          }
-          
-          // 갱신된 토큰 가져오기
-          const { accessToken: currentToken } = useUserInfo.getState();
+          // 토큰이 있으면 백엔드에서 401 에러 발생 시 자동으로 갱신 처리됨
+          // 클라이언트에서는 사전 체크하지 않음
           
           // API 호출 (storeAPI에서 모든 로직 처리)
-          const stores = await fetchStoresFromAPI(time, category, currentToken);
+          const stores = await fetchStoresFromAPI(time, category, accessToken, refreshTokens);
           
           // 백엔드에서 받은 is_liked 필드 그대로 사용
           set({ stores: stores, loading: false });
@@ -307,6 +295,17 @@ const useStore = create(
         } catch (error) {
           console.error('가게 목록 가져오기 실패:', error);
           set({ loading: false });
+          
+          // 토큰 갱신 실패 에러인 경우 로그아웃 처리
+          if (error.message && error.message.includes('토큰 갱신 실패')) {
+            console.log('🚪 토큰 갱신 실패로 인한 로그아웃 처리');
+            const { logoutUser } = useUserInfo.getState();
+            logoutUser();
+            // 로그인 페이지로 리다이렉트
+            window.location.href = '/login';
+            return;
+          }
+          
           // 에러 발생 시 빈 배열로 설정
           set({ stores: [] });
         }
@@ -341,21 +340,10 @@ const useStore = create(
           return;
         }
 
-        // 토큰 유효성 확인 및 갱신
-        if (!isTokenValid()) {
-          console.log('토큰이 만료되었습니다. 토큰 갱신을 시도합니다.');
-          const refreshSuccess = await refreshTokens();
-          if (!refreshSuccess) {
-            console.error('토큰 갱신에 실패했습니다.');
-            alert('로그인이 만료되었습니다. 다시 로그인해주세요.');
-            return;
-          }
-          console.log('토큰 갱신 성공');
-        }
+        // 토큰 유효성은 백엔드에서 401 에러로 처리됨
+        // 클라이언트에서는 사전 체크하지 않음
 
-        // 갱신된 토큰 가져오기
-        const { accessToken: refreshedToken } = useUserInfo.getState();
-        const tokenToUse = refreshedToken || accessToken;
+        const tokenToUse = accessToken;
 
         // 현재 가게의 찜 상태 확인
         const currentStore = stores.find(store => store.id === storeId);
@@ -384,7 +372,7 @@ const useStore = create(
             
             console.log('찜 목록 조회 파라미터:', { timeParam, categoryParam });
             
-            const likes = await fetchUserLikes(timeParam, categoryParam, tokenToUse);
+            const likes = await fetchUserLikes(timeParam, categoryParam, tokenToUse, refreshTokens);
             const targetLike = likes.find(like => like.store_id === storeId);
             
             console.log('찜 목록 조회 결과:', likes);
@@ -394,7 +382,7 @@ const useStore = create(
               throw new Error('찜 정보를 찾을 수 없습니다.');
             }
             
-            await deleteLike(targetLike.like_id, tokenToUse);
+            await deleteLike(targetLike.like_id, tokenToUse, refreshTokens);
             console.log(`가게 ${storeId} 찜 삭제 성공 (like_id: ${targetLike.like_id})`);
             
             // likedStoreIds에서 제거
@@ -403,7 +391,7 @@ const useStore = create(
             }));
           } else {
             // 아직 찜하지 않은 상태면 생성
-            const newLike = await createLike(storeId, tokenToUse);
+            const newLike = await createLike(storeId, tokenToUse, refreshTokens);
             console.log(`가게 ${storeId} 찜 생성 성공:`, newLike.like_id);
             
             // likedStoreIds에 추가
@@ -413,6 +401,16 @@ const useStore = create(
           }
         } catch (error) {
           console.error('찜 토글 실패:', error);
+          
+          // 토큰 갱신 실패 에러인 경우 로그아웃 처리
+          if (error.message && error.message.includes('토큰 갱신 실패')) {
+            console.log('🚪 토큰 갱신 실패로 인한 로그아웃 처리');
+            const { logoutUser } = useUserInfo.getState();
+            logoutUser();
+            // 로그인 페이지로 리다이렉트
+            window.location.href = '/login';
+            return;
+          }
           
           // 에러 발생 시 원래 상태로 되돌리기
           set((state) => ({

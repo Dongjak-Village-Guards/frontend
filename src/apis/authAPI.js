@@ -8,9 +8,6 @@ const REST_API_BASE_URL = 'https://buynow2.o-r.kr';
  */
 export const loginWithGoogle = async (idToken) => {
   try {
-    console.log('구글 로그인/회원가입 시작...');
-    //console.log(REST_API_BASE_URL, "test");
-    
     const response = await fetch(`${REST_API_BASE_URL}/v1/accounts/login/`, {
       method: 'POST',
       headers: {
@@ -27,9 +24,8 @@ export const loginWithGoogle = async (idToken) => {
     }
 
     const data = await response.json();
-    console.log('구글 로그인/회원가입 성공:', data.message);
-    
     return data;
+
   } catch (error) {
     console.error('구글 로그인/회원가입 실패:', error);
     throw error;
@@ -44,7 +40,6 @@ export const loginWithGoogle = async (idToken) => {
 export const refreshAccessToken = async (refreshToken) => {
   try {
     console.log('액세스 토큰 재발급 시작...');
-    
     const response = await fetch(`${REST_API_BASE_URL}/v1/accounts/login/refresh/`, {
       method: 'POST',
       headers: {
@@ -61,9 +56,8 @@ export const refreshAccessToken = async (refreshToken) => {
     }
 
     const data = await response.json();
-    console.log('액세스 토큰 재발급 성공');
-    
     return data;
+
   } catch (error) {
     console.error('액세스 토큰 재발급 실패:', error);
     throw error;
@@ -73,12 +67,11 @@ export const refreshAccessToken = async (refreshToken) => {
 /**
  * 현재 인증된 사용자 정보 조회
  * @param {string} accessToken - 액세스 토큰
+ * @param {Function|null} refreshTokens - 토큰 갱신 함수
  * @returns {Promise<Object>} 사용자 정보
  */
-export const fetchUserInfo = async (accessToken) => {
+export const fetchUserInfo = async (accessToken, refreshTokens = null) => {
   try {
-    console.log('사용자 정보 조회 시작...');
-    
     const response = await fetch(`${REST_API_BASE_URL}/v1/accounts/user/me/`, {
       method: 'GET',
       headers: {
@@ -88,14 +81,43 @@ export const fetchUserInfo = async (accessToken) => {
     });
 
     if (!response.ok) {
+      // 401 에러 처리 - 토큰 갱신 시도
+      if (response.status === 401 && accessToken && refreshTokens) {
+        console.log('🚨 401 에러 발생 - AccessToken이 만료되었습니다 (사용자 정보 조회)');
+        console.log('🔄 RefreshToken으로 AccessToken 재발급 시도...');
+        const refreshSuccess = await refreshTokens();
+        if (refreshSuccess) {
+          console.log('✅ 토큰 갱신 성공, 사용자 정보 조회 API 재시도 중...');
+          // 갱신된 토큰으로 재시도
+          const { accessToken: newToken } = (await import('../hooks/user/useUserInfo')).default.getState();
+          const retryResponse = await fetch(`${REST_API_BASE_URL}/v1/accounts/user/me/`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${newToken}`,
+              'Content-Type': 'application/json',
+            },
+          });
+          
+          if (retryResponse.ok) {
+            const data = await retryResponse.json();
+            console.log('🎉 토큰 갱신 후 사용자 정보 조회 성공');
+            return data;
+          } else {
+            console.error('❌ 토큰 갱신 후에도 사용자 정보 조회 실패:', retryResponse.status);
+          }
+        } else {
+          console.error('❌ 토큰 갱신 실패 (사용자 정보 조회) - 로그아웃이 필요합니다');
+          throw new Error('토큰 갱신 실패 - 로그인이 필요합니다');
+        }
+      }
+      
       const errorData = await response.json();
       throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log('사용자 정보 조회 성공:', data.user_nickname);
-    
     return data;
+
   } catch (error) {
     console.error('사용자 정보 조회 실패:', error);
     throw error;
@@ -106,13 +128,11 @@ export const fetchUserInfo = async (accessToken) => {
  * 사용자 주소 업데이트
  * @param {string} accessToken - 액세스 토큰
  * @param {string} address - 새로운 주소
+ * @param {Function|null} refreshTokens - 토큰 갱신 함수
  * @returns {Promise<Object>} 업데이트 응답
  */
-export const updateUserAddress = async (accessToken, address) => {
+export const updateUserAddress = async (accessToken, address, refreshTokens = null) => {
   try {
-    console.log('사용자 주소 업데이트 시작...');
-    console.log('업데이트할 주소:', address);
-    
     const response = await fetch(`${REST_API_BASE_URL}/v1/accounts/user/me/`, {
       method: 'PATCH',
       headers: {
@@ -125,6 +145,39 @@ export const updateUserAddress = async (accessToken, address) => {
     });
 
     if (!response.ok) {
+      // 401 에러 처리 - 토큰 갱신 시도
+      if (response.status === 401 && accessToken && refreshTokens) {
+        console.log('🚨 401 에러 발생 - AccessToken이 만료되었습니다 (주소 업데이트)');
+        console.log('🔄 RefreshToken으로 AccessToken 재발급 시도...');
+        const refreshSuccess = await refreshTokens();
+        if (refreshSuccess) {
+          console.log('✅ 토큰 갱신 성공, 주소 업데이트 API 재시도 중...');
+          // 갱신된 토큰으로 재시도
+          const { accessToken: newToken } = (await import('../hooks/user/useUserInfo')).default.getState();
+          const retryResponse = await fetch(`${REST_API_BASE_URL}/v1/accounts/user/me/`, {
+            method: 'PATCH',
+            headers: {
+              'Authorization': `Bearer ${newToken}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              user_address: address,
+            }),
+          });
+          
+          if (retryResponse.ok) {
+            const data = await retryResponse.json();
+            console.log('🎉 토큰 갱신 후 주소 업데이트 성공');
+            return data;
+          } else {
+            console.error('❌ 토큰 갱신 후에도 주소 업데이트 실패:', retryResponse.status);
+          }
+        } else {
+          console.error('❌ 토큰 갱신 실패 (주소 업데이트) - 로그아웃이 필요합니다');
+          throw new Error('토큰 갱신 실패 - 로그인이 필요합니다');
+        }
+      }
+      
       const errorData = await response.json();
       
       // API 명세서에 따른 구체적인 에러 처리
@@ -145,9 +198,8 @@ export const updateUserAddress = async (accessToken, address) => {
     }
 
     const data = await response.json();
-    console.log('사용자 주소 업데이트 성공:', data);
-    
     return data;
+
   } catch (error) {
     console.error('사용자 주소 업데이트 실패:', error);
     throw error;

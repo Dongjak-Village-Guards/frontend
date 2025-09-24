@@ -28,7 +28,6 @@ const Google = ({
       
       // 2. Firebase idToken 가져오기
       const idToken = await result.user.getIdToken();
-      console.log(idToken, "Firebase idToken 획득");
       
       // 3. 백엔드로 idToken 전송하여 로그인/회원가입
       const loginResponse = await loginWithGoogle(idToken);
