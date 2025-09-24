@@ -10,6 +10,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import useStore from '../hooks/store/useStore';
+import useUserInfo from '../hooks/user/useUserInfo';
 import Card from '../components/features/shop/ShopCard/ShopCard';
 import Spinner from '../components/ui/Spinner/Spinner';
 import FilterContainer from '../components/features/filter/FilterContainer/FilterContainer';
@@ -32,6 +33,8 @@ const FavoritePage = () => {
     fromFavoritePage,
     setFromFavoritePage,
   } = useStore();
+  
+  const { refreshTokens } = useUserInfo();
 
   // 컴포넌트 마운트 시 초기 로딩 처리
   useEffect(() => {
@@ -73,6 +76,15 @@ const FavoritePage = () => {
       await fetchStores(selectedTime, filters.categories.length > 0 ? filters.categories[0] : null);
     } catch (error) {
       console.error('FavoritePage 시간 필터 적용 실패:', error);
+      // 토큰 갱신 실패 에러인 경우 로그아웃 처리
+      if (error.message && error.message.includes('토큰 갱신 실패')) {
+        console.log('🚪 토큰 갱신 실패로 인한 로그아웃 처리');
+        const { logoutUser } = useUserInfo.getState();
+        logoutUser();
+        // 로그인 페이지로 리다이렉트
+        window.location.href = '/login';
+        return;
+      }
     }
     
     // 로딩 처리
@@ -91,6 +103,15 @@ const FavoritePage = () => {
       await fetchStores(time, category);
     } catch (error) {
       console.error('FavoritePage 업종 필터 적용 실패:', error);
+      // 토큰 갱신 실패 에러인 경우 로그아웃 처리
+      if (error.message && error.message.includes('토큰 갱신 실패')) {
+        console.log('🚪 토큰 갱신 실패로 인한 로그아웃 처리');
+        const { logoutUser } = useUserInfo.getState();
+        logoutUser();
+        // 로그인 페이지로 리다이렉트
+        window.location.href = '/login';
+        return;
+      }
     }
     
     // 로딩 처리
