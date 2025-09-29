@@ -3,20 +3,6 @@
 <div align="center">
     <h3>서비스업의 공실 시간을 AI로 해결하는 하이퍼로컬 타임커머스 플랫폼 ⏰</h3>
     <h4>바로가기 → https://nowsale.netlify.app</h4>
-    <br>
-    <p>※ 공지사항 ※</p>
-    <p>현재 <strong>국가정보자원관리원 화재로 인해 주소 검색이 불가능한 상태</strong>로, 초기 로그인 계정의 서비스 이용이 어렵습니다.</p>
-    <p>아래 테스트 계정을 이용하시기 바랍니다. (메인 화면 동작만 확인 가능, 주소지 수정 불가) </p>
-  <table>
-    <tr>
-      <th>ID</th>
-      <th>PW</th>
-    </tr>
-    <tr>
-      <td>parkdongjak@gmail.com</td>
-      <td>caulikelion13@</td>
-    </tr>
-  </table>
 </div>
 
 > ### 목차
