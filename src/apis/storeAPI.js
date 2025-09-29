@@ -99,39 +99,28 @@ const transformApiData = (apiData) => {
  */
 export const fetchStoresFromAPI = async (time, category = null, accessToken = null, refreshTokens = null) => {
   try {
-    console.log('가게 목록 조회 시작...');
-    console.log('time:', time);
-    console.log('category:', category);
-    console.log('accessToken:', accessToken ? `${accessToken}` : 'null');
-    
     // 시간 파라미터 변환
     const timeParam = convertTimeToParam(time);
-    console.log('백엔드에 전송된 timeParam', timeParam);
     
     // URL 구성
     const url = buildUrl(timeParam, category);
-    console.log('API 호출 URL:', url);
     
     // 헤더 구성
     const headers = buildHeaders(accessToken);
-    console.log('요청 헤더:', headers);
     
     const response = await fetch(url, {
       method: 'GET',
       headers: headers,
     });
     
-    console.log('response status:', response.status);
-    console.log('response ok:', response.ok);
-    
     if (!response.ok) {
       // 401 에러 처리 - 토큰 갱신 시도
       if (response.status === 401 && accessToken && refreshTokens) {
-        console.log('🚨 401 에러 발생 - AccessToken이 만료되었습니다');
-        console.log('🔄 RefreshToken으로 AccessToken 재발급 시도...');
+        console.log('401 에러 발생 - AccessToken이 만료되었습니다');
+        console.log('RefreshToken으로 AccessToken 재발급 시도...');
         const refreshSuccess = await refreshTokens();
         if (refreshSuccess) {
-          console.log('✅ 토큰 갱신 성공, API 재시도 중...');
+          console.log('토큰 갱신 성공, API 재시도 중...');
           // 갱신된 토큰으로 재시도
           const { accessToken: newToken } = (await import('../hooks/user/useUserInfo')).default.getState();
           const newHeaders = buildHeaders(newToken);
@@ -142,14 +131,14 @@ export const fetchStoresFromAPI = async (time, category = null, accessToken = nu
           
           if (retryResponse.ok) {
             const stores = await retryResponse.json();
-            console.log('🎉 토큰 갱신 후 가게 목록 조회 성공:', stores.length, '개');
+            console.log('토큰 갱신 후 가게 목록 조회 성공:', stores.length, '개');
             const transformedStores = transformApiData(stores);
             return transformedStores;
           } else {
-            console.error('❌ 토큰 갱신 후에도 API 호출 실패:', retryResponse.status);
+            console.error('토큰 갱신 후에도 API 호출 실패:', retryResponse.status);
           }
         } else {
-          console.error('❌ 토큰 갱신 실패 - 로그아웃이 필요합니다');
+          console.error('토큰 갱신 실패 - 로그아웃이 필요합니다');
           // 토큰 갱신 실패 시 에러를 던져서 상위에서 로그아웃 처리하도록 함
           throw new Error('토큰 갱신 실패 - 로그인이 필요합니다');
         }
@@ -161,7 +150,6 @@ export const fetchStoresFromAPI = async (time, category = null, accessToken = nu
     }
     
     const stores = await response.json();
-    console.log('가게 목록 조회 성공:', stores.length, '개');
     
     // 백엔드 응답을 UI 구조로 변환
     const transformedStores = transformApiData(stores);
@@ -179,8 +167,6 @@ export const fetchStoresFromAPI = async (time, category = null, accessToken = nu
  */
 export const fetchStoreById = async (storeId) => {
   try {
-    console.log(`가게 상세 조회 시작... (ID: ${storeId})`);
-    
     const response = await fetch(`${REST_API_BASE_URL}/stores?store_id=${storeId}`);
     
     if (!response.ok) {
@@ -191,7 +177,6 @@ export const fetchStoreById = async (storeId) => {
     }
     
     const store = await response.json();
-    console.log('가게 상세 조회 성공:', store.store_name);
     
     return store;
   } catch (error) {
@@ -207,8 +192,6 @@ export const fetchStoreById = async (storeId) => {
  */
 export const fetchStoresByCategory = async (category) => {
   try {
-    console.log(`카테고리별 가게 조회 시작... (카테고리: ${category})`);
-    
     const response = await fetch(`${REST_API_BASE_URL}/stores?store_category=${encodeURIComponent(category)}`);
     
     if (!response.ok) {
@@ -216,7 +199,6 @@ export const fetchStoresByCategory = async (category) => {
     }
     
     const stores = await response.json();
-    console.log('카테고리별 가게 조회 성공:', stores.length, '개');
     
     return stores;
   } catch (error) {
@@ -231,8 +213,6 @@ export const fetchStoresByCategory = async (category) => {
  */
 export const fetchActiveStores = async () => {
   try {
-    console.log('활성화된 가게 조회 시작...');
-    
     const response = await fetch(`${REST_API_BASE_URL}/stores?is_active=true`);
     
     if (!response.ok) {
@@ -240,7 +220,6 @@ export const fetchActiveStores = async () => {
     }
     
     const stores = await response.json();
-    console.log('활성화된 가게 조회 성공:', stores.length, '개');
     
     return stores;
   } catch (error) {
@@ -256,8 +235,6 @@ export const fetchActiveStores = async () => {
  */
 export const fetchStoresByOwner = async (ownerId) => {
   try {
-    console.log(`운영자별 가게 조회 시작... (운영자 ID: ${ownerId})`);
-    
     const response = await fetch(`${REST_API_BASE_URL}/stores?store_owner_id=${encodeURIComponent(ownerId)}`);
     
     if (!response.ok) {
@@ -265,7 +242,6 @@ export const fetchStoresByOwner = async (ownerId) => {
     }
     
     const stores = await response.json();
-    console.log('운영자별 가게 조회 성공:', stores.length, '개');
     
     return stores;
   } catch (error) {
@@ -890,7 +866,7 @@ export const createReservation = async (itemId, accessToken, refreshTokens = nul
         console.log('🔄 RefreshToken으로 AccessToken 재발급 시도...');
         const refreshSuccess = await refreshTokens();
         if (refreshSuccess) {
-          console.log('✅ 토큰 갱신 성공, 예약 생성 API 재시도 중...');
+          console.log('토큰 갱신 성공, 예약 생성 API 재시도 중...');
           // 갱신된 토큰으로 재시도
           const { accessToken: newToken } = (await import('../hooks/user/useUserInfo')).default.getState();
           const newHeaders = {
@@ -908,10 +884,10 @@ export const createReservation = async (itemId, accessToken, refreshTokens = nul
             console.log('🎉 토큰 갱신 후 예약 생성 성공:', data);
             return data;
           } else {
-            console.error('❌ 토큰 갱신 후에도 예약 생성 실패:', retryResponse.status);
+            console.error('토큰 갱신 후에도 예약 생성 실패:', retryResponse.status);
           }
         } else {
-          console.error('❌ 토큰 갱신 실패 (예약 생성) - 로그아웃이 필요합니다');
+          console.error('토큰 갱신 실패 (예약 생성) - 로그아웃이 필요합니다');
           throw new Error('토큰 갱신 실패 - 로그인이 필요합니다');
         }
       }
@@ -939,22 +915,17 @@ export const createReservation = async (itemId, accessToken, refreshTokens = nul
         error.serverResponse = errorData;
         throw error;
       } catch (jsonError) {
-        console.error('JSON 파싱 실패:', jsonError);
-        console.error('원본 텍스트 응답:', responseText);
-        
-        const error = new Error(`HTTP error! status: ${response.status}`);
-        error.status = response.status;
-        error.serverResponse = { error: responseText };
-        throw error;
+            const error = new Error(`HTTP error! status: ${response.status}`);
+            error.status = response.status;
+            error.serverResponse = { error: responseText };
+            throw error;
       }
     }
     
     const data = await response.json();
-    console.log('예약 생성 성공:', data);
     
     return data;
   } catch (error) {
-    console.error('예약 생성 실패:', error);
     throw error;
   }
 }; 

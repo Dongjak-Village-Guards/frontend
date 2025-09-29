@@ -84,22 +84,8 @@ const ShopDetailPage = () => {
     const [spaceCount, setSpaceCount] = useState(null);
     const [selectedSpaceId, setSelectedSpaceId] = useState(null);
     
-    // 브라우저 히스토리 상태 추적 함수
-    const logHistoryState = (context = '') => {
-        // localStorage 상태 확인
-        const reservationData = localStorage.getItem('reservationData');
-        if (reservationData) {
-            try {
-                const data = JSON.parse(reservationData);
-            } catch (error) {
-                console.log('localStorage 데이터 파싱 실패:', error);
-            }
-        }
-    };
-    
     // 이전 URL 추적을 위한 ref
     const previousPathnameRef = useRef(location.pathname);
-    const isBackNavigationRef = useRef(false);
     const isNavigatingToHomeRef = useRef(false);
 
     // 브라우저 뒤로가기/앞으로가기 감지 및 상태 동기화
@@ -257,7 +243,6 @@ const ShopDetailPage = () => {
                 if (restored) {
                     // 복원 후 히스토리 상태 재추적
                     setTimeout(() => {
-                        logHistoryState('예약 상태 복원 후');
                     }, 100);
                 } else {
                     // 예약 상태 복원이 실패한 경우 Space 목록으로 리다이렉트

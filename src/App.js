@@ -5,39 +5,15 @@
  */
 
 import './App.css';
-import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import MainPageApp from './pages/MainPageApp';
-import useUserInfo from './hooks/user/useUserInfo';
 import ShopDetailPage from './pages/ShopDetailPage';
-
 import NoticePage from './pages/mypageDescription/NoticePage';
 import FAQPage from './pages/mypageDescription/FAQPage';
 import TermsPage from './pages/mypageDescription/TermsPage';
 import GlobalStyle from './styles/GlobalStyle';
 
 function App() {
-  // useUserInfo에서 사용자 상태 가져오기
-  const { authUser, logoutUser, refreshTokens, isTokenValid } = useUserInfo();
-
-    //useEffect(() => {
-    //const checkTokenAndRefresh = async () => {
-    //    if (authUser) {
-    //    console.log('토큰 만료 체크, 자동 갱신 시도');
-    //    const success = await refreshTokens();
-    //    if (!success) {
-    //        console.log('토큰 갱신 실패로 자동 로그아웃');
-    //        alert('토큰이 만료되었습니다. 다시 로그인해주세요.');
-    //        logoutUser();
-    //    }
-    //    }
-    //};
-    
-    //checkTokenAndRefresh();
-    //}, [authUser, isTokenValid, refreshTokens, logoutUser]);
-
-
-  
   return (
     <>
       <GlobalStyle />

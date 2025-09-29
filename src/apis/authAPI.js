@@ -147,8 +147,8 @@ export const updateUserAddress = async (accessToken, address, refreshTokens = nu
     if (!response.ok) {
       // 401 에러 처리 - 토큰 갱신 시도
       if (response.status === 401 && accessToken && refreshTokens) {
-        console.log('🚨 401 에러 발생 - AccessToken이 만료되었습니다 (주소 업데이트)');
-        console.log('🔄 RefreshToken으로 AccessToken 재발급 시도...');
+        console.log(' 401 에러 발생 - AccessToken이 만료되었습니다 (주소 업데이트)');
+        console.log(' RefreshToken으로 AccessToken 재발급 시도...');
         const refreshSuccess = await refreshTokens();
         if (refreshSuccess) {
           console.log('✅ 토큰 갱신 성공, 주소 업데이트 API 재시도 중...');

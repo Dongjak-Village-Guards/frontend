@@ -29,7 +29,7 @@ const useUserInfo = create(
        * @param {Object} loginResponse - 백엔드 로그인 응답
        */
       setAuthTokens: (loginResponse) => {
-        const { access_token, refresh_token, user_email, user_role } = loginResponse;
+        const { access_token, refresh_token } = loginResponse;
         
         // 토큰만 저장, 만료 시간은 백엔드에서 관리
         set({ 
@@ -83,7 +83,7 @@ const useUserInfo = create(
        * @param {Object} address - 주소 정보 객체
        */
       setUserAddress: async (address) => {
-        const { accessToken, isTokenValid, refreshTokens } = get();
+        const { accessToken } = get();
         
         // 로컬 저장소에 먼저 저장 (Optimistic Update)
         set({ userAddress: address });

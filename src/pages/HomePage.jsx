@@ -16,7 +16,7 @@ import useStore from "../hooks/store/useStore";
 import useUserInfo from "../hooks/user/useUserInfo";
 import Card from "../components/features/shop/ShopCard/ShopCard";
 import { useNavigate } from "react-router-dom";
-import { CATEGORY_OPTIONS } from "../components/features/filter/CategoryFilter/CategoryFilter";
+//import { CATEGORY_OPTIONS } from "../components/features/filter/CategoryFilter/CategoryFilter";
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -31,7 +31,6 @@ export default function HomePage() {
   
   /* Zustand 상태 */
   const { 
-   
     currentTime, 
     updateCurrentTime, 
     sortOption, 
@@ -60,7 +59,6 @@ export default function HomePage() {
       checkAndUpdateTimeIfExpired();
       
       // 초기 시간 설정 (새로고침 시에만 실행)
-      console.log('updateCurrentTime 호출');
       updateCurrentTime();
       
       // 백엔드 API에서 가게 목록 가져오기 (현재 설정된 필터들 사용)
@@ -97,8 +95,6 @@ export default function HomePage() {
       setCurrentPage('search-address');
       setFromHomePage(true); // 주소 설정 페이지로 이동할 때 fromHomePage 플래그를 true로 설정
       navigate('/search-address');
-    } else {
-      console.log('로딩 중이므로 클릭 무시');
     }
   };
 
@@ -107,7 +103,6 @@ export default function HomePage() {
    * @param {string} selectedTime - 선택된 시간
    */
   const handleTimeSelect = async (selectedTime) => {
-    console.log('시간 선택됨:', selectedTime);
     setTime(selectedTime);
     
     try {
@@ -126,7 +121,6 @@ export default function HomePage() {
    * @param {string|null} category - 선택된 업종 (단일 값)
    */
   const handleCategorySelect = async (category) => {
-    console.log('handleCategorySelect 호출됨, category:', category);
     setFilters({ categories: category ? [category] : [] });
     
     // 카테고리 필터 적용 시 API 재호출 (현재 설정된 시간 필터도 함께 사용)

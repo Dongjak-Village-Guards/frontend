@@ -7,7 +7,7 @@ import Logo from '../assets/images/logo.png';
 
 const MyPage = () => {
   const navigate = useNavigate();
-  const { authUser, logoutUser, accessToken, isTokenValid, refreshTokens } = useUserInfo();
+  const { authUser, logoutUser, accessToken, refreshTokens } = useUserInfo();
   const [userInfo, setUserInfo] = useState(null);
   const [loading, setLoading] = useState(false);
 
