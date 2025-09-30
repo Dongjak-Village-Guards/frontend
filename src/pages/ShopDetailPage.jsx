@@ -144,6 +144,9 @@ const ShopDetailPage = () => {
         // URL이 변경되었을 때
         if (previousPathnameRef.current !== location.pathname) {
             const urlState = getShopDetailStateFromUrl();
+
+            // '개인정보동의'에서 '예약'으로 돌아온 경우인지 확인
+            const isReturningFromAgreement = previousPathnameRef.current.includes('/reservation/agreement') && location.pathname.includes('/reservation');
             
             // URL 기반으로 showPiAgreement 상태 동기화 (브라우저 뒤로가기/앞으로가기 시에만)
             if (urlState.type === 'agreement') {
@@ -237,7 +240,7 @@ const ShopDetailPage = () => {
             // 예약 페이지로 이동하는 경우 (앞으로가기)
         if (urlState.type === 'reservation') {
             // selectedMenu가 없는데 예약 페이지로 이동하려는 경우
-            if (!selectedMenu) {
+            if (!isReturningFromAgreement && !selectedMenu) {
                 // localStorage에서 예약 상태 복원 시도
                 const restored = restoreReservationState();
                 if (restored) {
@@ -347,6 +350,35 @@ const ShopDetailPage = () => {
                                 setError(error.message || '메뉴 조회에 실패했습니다.');
                             }
                         }
+                    } else if (urlState.type === 'agreement') {
+                        // /shop/:id/reservation/agreement로 접근한 경우 - 예약 상태 복원 후 데이터 로드
+                        console.log('Agreement URL 감지됨:', urlState);
+                        // loadStoreData에서는 showPiAgreement 상태 변경하지 않음 (의존성 배열에서 제거했으므로)
+                        
+                        const restored = restoreReservationState();
+                        console.log('예약 상태 복원 결과:', restored);
+                        if (restored) {
+                            const { selectedMenu } = useStore.getState();
+                            console.log('selectedMenu:', selectedMenu);
+                            if (selectedMenu && selectedMenu.space_id) {
+                                console.log('Space ID로 데이터 로드:', selectedMenu.space_id);
+                                const spaceData = await fetchSpaceDetails(selectedMenu.space_id, timeParam, accessToken, refreshTokens);
+                                setStoreData(spaceData);
+                                setSelectedSpaceId(selectedMenu.space_id);
+                            } else {
+                                console.log('예약 페이지용 메뉴 데이터 로드');
+                                const menuData = await fetchStoreMenus(storeId, timeParam, accessToken, refreshTokens);
+                                setStoreData(menuData);
+                            }
+                            console.log('Agreement 데이터 로드 완료');
+                            return;
+                        } else {
+                            console.log('예약 상태 복원 실패 - spaces로 리다이렉트');
+                            setTimeout(() => {
+                                navigate(`/shop/${storeId}/spaces`, { replace: true });
+                            }, 100);
+                            return;
+                        }
                     } else {
                         // 다른 URL로 접근한 경우 - /shop/:id/menu로 리다이렉트
                         navigate(`/shop/${storeId}/menu`);
@@ -370,9 +402,8 @@ const ShopDetailPage = () => {
                         
                         // 각 Space의 메뉴 정보를 확인하여 is_possible 계산
                         const spacesWithCorrectedInfo = spacesListData.spaces.map(space => {
-                            
-                                                         // 시간 만료 체크
-                              const timeExpired = isTimeExpired();
+                            // 시간 만료 체크
+                            const timeExpired = isTimeExpired();
                             
                             // 해당 Space의 메뉴들 중 하나라도 예약 불가능한지 확인
                             const hasUnavailableMenu = space.menus && space.menus.some(menu => !menu.is_available);
@@ -391,14 +422,15 @@ const ShopDetailPage = () => {
                             ...spacesListData,
                             spaces: spacesWithCorrectedInfo
                         });
-                        
                         // 데이터 로딩 완료 후 selectedSpaceId를 null로 설정
                         setSelectedSpaceId(null);
+
                     } else if (urlState.type === 'space-menu') {
                         // /shop/:id/space/:spaceId로 접근한 경우 - 정상 처리
                         const spaceData = await fetchSpaceDetails(urlState.spaceId, timeParam, accessToken, refreshTokens);
                         setStoreData(spaceData);
                         setSelectedSpaceId(urlState.spaceId);
+
                     } else if (urlState.type === 'reservation') {
                         // /shop/:id/reservation으로 접근한 경우 - 예약 상태 복원 후 데이터 로드
                         // 새로고침으로 인한 상태 초기화 확인
@@ -424,29 +456,28 @@ const ShopDetailPage = () => {
                             }
                     } else if (urlState.type === 'agreement') {
                         // /shop/:id/reservation/agreement로 접근한 경우 - 예약 상태 복원 후 데이터 로드
-                        console.log('🔍 Agreement URL 감지됨:', urlState);
-                        
+                        console.log('Agreement URL 감지됨:', urlState);
                         // loadStoreData에서는 showPiAgreement 상태 변경하지 않음 (의존성 배열에서 제거했으므로)
                         
                         const restored = restoreReservationState();
-                        console.log('🔍 예약 상태 복원 결과:', restored);
+                        console.log('예약 상태 복원 결과:', restored);
                         if (restored) {
                             const { selectedMenu } = useStore.getState();
-                            console.log('🔍 selectedMenu:', selectedMenu);
+                            console.log('selectedMenu:', selectedMenu);
                             if (selectedMenu && selectedMenu.space_id) {
-                                console.log('🔍 Space ID로 데이터 로드:', selectedMenu.space_id);
+                                console.log('Space ID로 데이터 로드:', selectedMenu.space_id);
                                 const spaceData = await fetchSpaceDetails(selectedMenu.space_id, timeParam, accessToken, refreshTokens);
                                 setStoreData(spaceData);
                                 setSelectedSpaceId(selectedMenu.space_id);
                             } else {
-                                console.log('🔍 예약 페이지용 메뉴 데이터 로드');
+                                console.log('예약 페이지용 메뉴 데이터 로드');
                                 const menuData = await fetchStoreMenus(storeId, timeParam, accessToken, refreshTokens);
                                 setStoreData(menuData);
                             }
-                            console.log('🔍 Agreement 데이터 로드 완료');
+                            console.log('Agreement 데이터 로드 완료');
                             return;
                         } else {
-                            console.log('🔍 예약 상태 복원 실패 - spaces로 리다이렉트');
+                            console.log('예약 상태 복원 실패 - spaces로 리다이렉트');
                             setTimeout(() => {
                                 navigate(`/shop/${storeId}/spaces`, { replace: true });
                             }, 100);
