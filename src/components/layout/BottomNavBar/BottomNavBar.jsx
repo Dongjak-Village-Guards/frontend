@@ -11,7 +11,7 @@ export default function BottomNavBar({ current = "home", onSelect }) {
   // 나중에 onSelect에 따라 페이지 전환 (state로 연동)
   return (
     <NavBarWrapper>
-      <NavItem active={current === "home"} onClick={() => onSelect?.("home")}>
+      <NavItem active="current === 'home'" onClick={() => onSelect?.("home")}> {/* 임시 */}
         <NavIcon active={current === "home"}>
           <AiFillHome size={32} color={current === "home" ? "#DA2538" : "#4F4F4F"} />
         </NavIcon>
